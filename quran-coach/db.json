@@ -1,0 +1,141 @@
+{
+  "admin": {
+    "password_hash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "quotes": [
+      {
+        "id": "q001",
+        "text_ar": "إن الذي يحفظ القرآن لا يفتقر أبداً",
+        "category": "motivation",
+        "active": true
+      },
+      {
+        "id": "q002",
+        "text_ar": "الاستمرار ولو بالقليل خير من الانقطاع",
+        "category": "technique",
+        "active": true
+      }
+    ],
+    "algorithm_weights": {
+      "hesitation_penalty_per_second": 8,
+      "erratic_penalty_per_count": 2,
+      "focus_bonus_per_minute": 4,
+      "afi_skip_penalty": 5,
+      "afi_complete_bonus": 3,
+      "absence_intervention_days": 3,
+      "energy_ema_weight": 0.65,
+      "procrastination_threshold": 60,
+      "plan_decay_factor": 0.85,
+      "plan_growth_factor": 1.15
+    },
+    "broadcast_messages": [],
+    "stats": {
+      "total_users": 1,
+      "total_sessions_today": 1,
+      "total_pages_memorized_alltime": 0.5
+    }
+  },
+  "users": {
+    "ali": {
+      "username": "ali",
+      "password_hash": "bd94dcda26fccb4e68d6a31f9b5aac0b571ae266d822620e901ef7ebe3a11d4f",
+      "display_name": "علي",
+      "created_at": "2026-04-21T16:08:27.464Z",
+      "last_active": "2026-04-21T16:08:27.645Z",
+      "avatar_color": "#0bb88f",
+      "bio": "",
+      "is_banned": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-04-21T16:08:27.600Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-04-21T16:08:27.600Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.5,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-04-21",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-04-21T16:08:27.689Z",
+          "pages_done": 0.5,
+          "difficulty": "easy",
+          "duration_minutes": 25,
+          "technique_used": null,
+          "mood_score": 8
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 92,
+        "friction": 0.5,
+        "afi": 92,
+        "history": [
+          75,
+          92
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 2.6,
+          "interval": 1,
+          "reps": 1,
+          "next_review": "2026-04-22T16:08:27.690Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
+    }
+  },
+  "chats": {},
+  "groups": {},
+  "posts": [],
+  "support_tickets": {},
+  "voice_permissions": {}
+}

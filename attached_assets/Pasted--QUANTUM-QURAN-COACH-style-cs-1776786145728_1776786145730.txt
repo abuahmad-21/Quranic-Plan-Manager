@@ -1,0 +1,2610 @@
+/* ═══════════════════════════════════════════════════════════════
+   QUANTUM QURAN COACH — style.css
+   Billion-Dollar Glassmorphism Design System
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg:            #0a0f1e;
+  --surface:       rgba(255,255,255,0.04);
+  --surface-hover: rgba(255,255,255,0.07);
+  --border:        rgba(255,255,255,0.08);
+  --border-active: rgba(255,255,255,0.18);
+
+  --text-1: #f1f5f9;
+  --text-2: #94a3b8;
+  --text-3: #475569;
+
+  --blue:       #3b82f6;
+  --blue-d:     #1d4ed8;
+  --blue-glow:  rgba(59,130,246,0.35);
+
+  --gold:       #f59e0b;
+  --gold-glow:  rgba(245,158,11,0.35);
+
+  --red:        #ef4444;
+  --red-glow:   rgba(239,68,68,0.35);
+
+  --green:  #10b981;
+  --purple: #8b5cf6;
+  --teal:   #06b6d4;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+
+  --t-fast:  0.15s;
+  --t-med:   0.35s;
+  --t-morph: 0.8s;
+
+  --island-size: clamp(200px, 45vmin, 280px);
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Tajawal', sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  direction: rtl;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ── QUANTUM BACKGROUND ── */
+.quantum-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 20% 10%, #0f1b3d 0%, var(--bg) 60%);
+  pointer-events: none;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  animation: orbFloat 18s ease-in-out infinite alternate;
+}
+.orb-1 { width:500px; height:500px; background:#1e3a8a; top:-150px; right:-100px; opacity:0.4; animation-delay:0s; }
+.orb-2 { width:380px; height:380px; background:#4c1d95; bottom:0;   left:-80px;  opacity:0.3; animation-delay:-4s; }
+.orb-3 { width:300px; height:300px; background:#064e3b; top:40%;    right:20%;   opacity:0.25; animation-delay:-8s; }
+.orb-4 { width:200px; height:200px; background:#1e40af; top:20%;    left:30%;    opacity:0.2; animation-delay:-12s; }
+
+@keyframes orbFloat {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(30px,40px) scale(1.15); }
+}
+
+/* ── GLASS CARD ── */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
+}
+.glass-card:hover { border-color: var(--border-active); }
+
+/* ── APP SHELL ── */
+.app-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100dvh;
+}
+.app-shell.hidden { display: none; }
+
+/* ── VIEWS ── */
+.view {
+  display: none;
+  min-height: 100dvh;
+  padding-bottom: 90px;
+  animation: fadeUp var(--t-med) ease-out both;
+}
+.view.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── LOADING ── */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--bg); gap: 20px;
+}
+.loader-ring {
+  width:56px; height:56px; border-radius:50%;
+  border:3px solid var(--border);
+  border-top-color: var(--blue);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { color: var(--text-2); font-size: 0.9rem; }
+
+/* ── TOAST ── */
+#toast-container {
+  position: fixed; top:20px; left:50%; transform:translateX(-50%);
+  z-index:9998; display:flex; flex-direction:column; gap:10px;
+  width: min(90vw,380px); pointer-events:none;
+}
+.toast {
+  padding:14px 20px; border-radius:var(--r-md);
+  backdrop-filter:blur(16px); font-size:0.9rem;
+  pointer-events:auto; border:1px solid var(--border-active);
+  animation: slideDown var(--t-med) ease-out both;
+}
+.toast-success { background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.4); }
+.toast-error   { background:rgba(239,68,68,0.15);  border-color:rgba(239,68,68,0.4); }
+.toast-info    { background:rgba(59,130,246,0.15);  border-color:rgba(59,130,246,0.4); }
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ═══════════════════════════════════
+   AUTH VIEW
+═══════════════════════════════════ */
+.auth-container {
+  max-width:440px; margin:0 auto;
+  padding:40px 20px 30px;
+  display:flex; flex-direction:column; gap:18px;
+}
+.auth-logo { text-align:center; margin-bottom:10px; }
+.logo-orb {
+  width:72px; height:72px; border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, var(--blue), var(--purple));
+  box-shadow: 0 0 40px var(--blue-glow), 0 0 80px rgba(139,92,246,0.2);
+  margin:0 auto 16px;
+  animation: breathe 3s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { transform:scale(1); box-shadow:0 0 40px var(--blue-glow); }
+  50%      { transform:scale(1.06); box-shadow:0 0 60px var(--blue-glow),0 0 100px rgba(139,92,246,0.3); }
+}
+.logo-title    { font-size:1.7rem; font-weight:900; margin-bottom:4px; }
+.logo-subtitle { font-size:0.85rem; color:var(--text-2); font-family:'JetBrains Mono',monospace; letter-spacing:0.1em; }
+
+.auth-tabs {
+  display:flex; padding:6px; gap:6px; border-radius:var(--r-md);
+}
+.tab-btn {
+  flex:1; padding:10px; border:none; border-radius:10px;
+  background:transparent; color:var(--text-2);
+  font-family:'Tajawal',sans-serif; font-size:0.95rem;
+  cursor:pointer; transition:all var(--t-fast) ease;
+}
+.tab-btn.active { background:var(--blue); color:#fff; box-shadow:0 4px 14px var(--blue-glow); }
+
+.auth-form { padding:24px; display:flex; flex-direction:column; gap:16px; }
+.auth-form.hidden { display:none; }
+
+/* ── FIELDS ── */
+.field-group { display:flex; flex-direction:column; gap:6px; }
+.field-label { font-size:0.85rem; color:var(--text-2); font-weight:500; }
+.field-hint  { font-size:0.75rem; color:var(--text-3); margin-right:4px; }
+.field-input {
+  width:100%; padding:13px 16px;
+  background:rgba(0,0,0,0.25);
+  border:1px solid var(--border); border-radius:var(--r-sm);
+  color:var(--text-1); font-family:'Tajawal',sans-serif; font-size:0.95rem;
+  outline:none; direction:rtl;
+  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
+}
+.field-input::placeholder { color:var(--text-3); }
+.field-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(59,130,246,0.15); }
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px; padding:13px 24px; border:none; border-radius:var(--r-sm);
+  font-family:'Tajawal',sans-serif; font-size:1rem; font-weight:600;
+  cursor:pointer; transition:all var(--t-fast) cubic-bezier(0.34,1.56,0.64,1);
+  outline:none; white-space:nowrap; position:relative; overflow:hidden;
+}
+.btn::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0); transition:background var(--t-fast) ease; }
+.btn:hover::after { background:rgba(255,255,255,0.07); }
+.btn:active { transform:scale(0.96); }
+
+.btn-primary  { background:linear-gradient(135deg,var(--blue),var(--blue-d)); color:#fff; box-shadow:0 4px 18px var(--blue-glow); }
+.btn-primary:hover { box-shadow:0 6px 28px var(--blue-glow); transform:translateY(-1px); }
+.btn-secondary { background:var(--surface); color:var(--text-2); border:1px solid var(--border); }
+.btn-secondary:hover { color:var(--text-1); border-color:var(--border-active); }
+.btn-ghost { background:transparent; color:var(--text-2); border:1px solid var(--border); }
+.btn-ghost:hover { color:var(--text-1); }
+
+.btn-full { width:100%; }
+.btn-sm   { padding:8px 16px; font-size:0.85rem; border-radius:8px; }
+.btn-lg   { padding:16px 28px; font-size:1.05rem; }
+
+/* ═══════════════════════════════════
+   ONBOARDING
+═══════════════════════════════════ */
+.onboarding-container {
+  max-width:480px; margin:0 auto;
+  padding:30px 20px; display:flex; flex-direction:column; gap:16px;
+}
+.onboarding-header { text-align:center; margin-bottom:4px; }
+.view-title    { font-size:1.5rem; font-weight:800; margin-bottom:6px; }
+.view-subtitle { color:var(--text-2); font-size:0.9rem; }
+.onboarding-card { padding:20px; display:flex; flex-direction:column; gap:14px; }
+
+.option-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.option-btn {
+  padding:12px 10px; border:1px solid var(--border); border-radius:var(--r-sm);
+  background:rgba(0,0,0,0.2); color:var(--text-2);
+  font-family:'Tajawal',sans-serif; font-size:0.9rem;
+  cursor:pointer; transition:all var(--t-fast) ease; text-align:center;
+}
+.option-btn:hover { border-color:var(--blue); color:var(--text-1); }
+.option-btn.active { background:rgba(59,130,246,0.18); border-color:var(--blue); color:var(--text-1); box-shadow:0 0 12px rgba(59,130,246,0.2); }
+
+/* ═══════════════════════════════════
+   TOP BAR
+═══════════════════════════════════ */
+.top-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 18px; margin:12px 16px; border-radius:var(--r-md);
+}
+.user-pill { display:flex; align-items:center; gap:10px; }
+.user-pill-name { font-size:0.95rem; font-weight:600; }
+.avatar-dot {
+  width:34px; height:34px; border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  flex-shrink:0; box-shadow:0 0 10px var(--blue-glow);
+}
+.top-bar-actions { display:flex; align-items:center; gap:8px; }
+.icon-btn {
+  background:none; border:1px solid var(--border); border-radius:8px;
+  color:var(--text-2); padding:8px 10px; cursor:pointer;
+  font-size:1rem; position:relative; transition:all var(--t-fast) ease;
+}
+.icon-btn:hover { color:var(--text-1); border-color:var(--border-active); }
+.badge {
+  position:absolute; top:-5px; left:-5px;
+  min-width:18px; height:18px; background:var(--red); border-radius:9px;
+  font-size:0.65rem; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:700; padding:0 4px;
+}
+.badge.hidden { display:none; }
+
+.broadcast-banner {
+  margin:0 16px 4px; padding:14px 18px; border-radius:var(--r-md);
+  border-color:rgba(245,158,11,0.3); color:var(--text-1);
+  font-size:0.9rem; line-height:1.5;
+}
+.broadcast-banner.hidden { display:none; }
+
+/* ═══════════════════════════════════
+   ISLAND
+═══════════════════════════════════ */
+.island-section {
+  display:flex; flex-direction:column; align-items:center;
+  padding:20px 16px 12px; gap:12px;
+}
+.island {
+  position:relative; width:var(--island-size); height:var(--island-size);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  transition:all var(--t-morph) cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.island-normal {
+  background:radial-gradient(ellipse at 35% 30%,#3b82f6,#1d4ed8 60%,#1e1b4b);
+  box-shadow:0 0 40px var(--blue-glow),0 0 80px rgba(59,130,246,0.15),
+             inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -4px 20px rgba(0,0,0,0.3);
+  animation:islandBreathe 4s ease-in-out infinite;
+}
+.island-challenge {
+  background:radial-gradient(ellipse at 30% 25%,#f59e0b,#d97706 30%,#0ea5e9 70%);
+  box-shadow:0 0 50px var(--gold-glow),0 0 100px rgba(245,158,11,0.2),inset 0 1px 0 rgba(255,255,255,0.2);
+  border-radius:48% 52% 55% 45%/46% 54% 46% 54%;
+  animation:islandPulse 2.5s ease-in-out infinite;
+}
+.island-reload {
+  background:radial-gradient(ellipse at 40% 35%,#4b5563,#1f2937 60%,#0a0f1e);
+  box-shadow:0 0 30px rgba(239,68,68,0.15),inset 0 1px 0 rgba(255,255,255,0.05);
+  filter:saturate(0.4) brightness(0.85);
+  animation:islandFlicker 3s ease-in-out infinite;
+}
+.island-interrupt {
+  background:radial-gradient(ellipse at 35% 30%,#ef4444,#dc2626 40%,#7c3aed);
+  box-shadow:0 0 50px var(--red-glow),0 0 100px rgba(220,38,38,0.2),inset 0 1px 0 rgba(255,255,255,0.2);
+  border-radius:42% 58% 60% 40%/50% 44% 56% 50%;
+  animation:islandShake 0.5s cubic-bezier(0.36,0.07,0.19,0.97) 1,islandBreathe 3s ease-in-out 0.6s infinite;
+}
+
+@keyframes islandBreathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.03);} }
+@keyframes islandPulse   { 0%,100%{transform:scale(1);box-shadow:0 0 50px var(--gold-glow);} 50%{transform:scale(1.05);box-shadow:0 0 80px var(--gold-glow);} }
+@keyframes islandFlicker { 0%,100%{opacity:1;} 50%{opacity:0.82;} }
+@keyframes islandShake   { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+.island-orbit {
+  position:absolute; inset:-20px; border-radius:50%;
+  border:1px dashed rgba(255,255,255,0.1);
+  animation:orbitSpin 20s linear infinite; pointer-events:none;
+}
+.island-orbit::before {
+  content:''; position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:6px; height:6px; border-radius:50%;
+  background:var(--blue); box-shadow:0 0 8px var(--blue);
+}
+@keyframes orbitSpin { to { transform:rotate(360deg); } }
+
+.island-core {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  text-align:center; z-index:1;
+}
+.island-mode {
+  font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase;
+  color:rgba(255,255,255,0.6); font-family:'JetBrains Mono',monospace;
+}
+.island-energy-value {
+  font-size:clamp(2.5rem,8vmin,4rem); font-weight:300; line-height:1;
+  color:#fff; text-shadow:0 0 20px rgba(255,255,255,0.4);
+  font-family:'JetBrains Mono',monospace;
+}
+.island-energy-unit { font-size:0.8rem; color:rgba(255,255,255,0.55); }
+.island-state-text  { font-size:0.85rem; color:var(--text-2); text-align:center; }
+
+/* ── SENSORS ── */
+.sensor-row { display:flex; gap:18px; align-items:center; justify-content:center; }
+.sensor-item { display:flex; align-items:center; gap:5px; }
+.sensor-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--text-3);
+  transition:background var(--t-fast) ease, box-shadow var(--t-fast) ease;
+}
+.sensor-dot.active { background:var(--teal); box-shadow:0 0 8px var(--teal); }
+.sensor-label { font-size:0.7rem; color:var(--text-3); font-family:'JetBrains Mono',monospace; }
+
+/* ═══════════════════════════════════
+   STATS ROW
+═══════════════════════════════════ */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px; margin-bottom:12px; }
+.stat-card  { padding:14px 10px; text-align:center; display:flex; flex-direction:column; gap:4px; border-radius:var(--r-md); }
+.stat-value { font-size:1.5rem; font-weight:700; color:var(--text-1); }
+.stat-label { font-size:0.72rem; color:var(--text-2); }
+
+/* ═══════════════════════════════════
+   GOAL CARD
+═══════════════════════════════════ */
+.goal-card   { margin:0 16px 12px; padding:20px; }
+.goal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.goal-badge  { font-size:0.8rem; font-weight:700; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:var(--blue); padding:4px 10px; border-radius:20px; }
+.goal-surah  { font-size:0.8rem; color:var(--text-2); }
+.goal-body   { display:flex; align-items:baseline; gap:8px; margin-bottom:14px; }
+.goal-pages  { font-size:3rem; font-weight:900; color:var(--blue); line-height:1; text-shadow:0 0 20px var(--blue-glow); }
+.goal-unit   { font-size:1rem; color:var(--text-2); }
+.goal-progress-track { width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:8px; }
+.goal-progress-fill  { height:100%; background:linear-gradient(90deg,var(--blue),var(--teal)); border-radius:3px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); box-shadow:0 0 8px var(--blue-glow); }
+.goal-progress-label { font-size:0.78rem; color:var(--text-2); font-family:'JetBrains Mono',monospace; }
+
+/* ═══════════════════════════════════
+   ALERT CARD
+═══════════════════════════════════ */
+.alert-card   { margin:0 16px 12px; padding:18px; }
+.alert-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.alert-icon   { font-size:1.2rem; }
+.alert-title  { font-size:0.85rem; font-weight:700; color:var(--text-2); letter-spacing:0.05em; text-transform:uppercase; }
+.alert-text   { font-size:0.95rem; color:var(--text-1); line-height:1.65; }
+
+/* ═══════════════════════════════════
+   ACTION ROW
+═══════════════════════════════════ */
+.action-row { padding:0 16px 16px; display:flex; flex-direction:column; gap:10px; }
+
+/* ═══════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════ */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  display:flex; justify-content:space-around;
+  padding:12px 8px; border-radius:var(--r-xl) var(--r-xl) 0 0;
+  border-bottom:none; z-index:100;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.4);
+}
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:none; border:none; color:var(--text-3);
+  cursor:pointer; padding:6px 4px; border-radius:var(--r-sm);
+  font-family:'Tajawal',sans-serif;
+  transition:color var(--t-fast) ease;
+}
+.nav-btn:hover  { color:var(--text-2); }
+.nav-btn.active { color:var(--blue); }
+.nav-icon  { font-size:1.2rem; line-height:1; }
+.nav-label { font-size:0.68rem; font-weight:600; }
+.bottom-spacer { height:80px; }
+
+/* ═══════════════════════════════════
+   SESSION
+═══════════════════════════════════ */
+.session-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; margin:12px 16px; border-radius:var(--r-md); }
+.session-title  { font-size:1rem; font-weight:700; }
+.session-timer  { font-family:'JetBrains Mono',monospace; font-size:0.9rem; color:var(--text-2); background:rgba(0,0,0,0.2); padding:4px 10px; border-radius:8px; }
+
+.technique-card  { margin:0 16px 12px; padding:20px; }
+.technique-badge { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--purple); margin-bottom:10px; }
+.technique-text  { font-size:0.95rem; line-height:1.7; color:var(--text-1); }
+
+.target-card  { margin:0 16px 12px; padding:20px; }
+.target-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.target-label  { font-size:0.85rem; color:var(--text-2); }
+.mode-badge { font-size:0.72rem; padding:3px 10px; border-radius:20px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; }
+.mode-normal    { background:rgba(59,130,246,0.15);  color:var(--blue);   border:1px solid rgba(59,130,246,0.3); }
+.mode-challenge { background:rgba(245,158,11,0.15);  color:var(--gold);   border:1px solid rgba(245,158,11,0.3); }
+.mode-reload    { background:rgba(239,68,68,0.12);   color:var(--red);    border:1px solid rgba(239,68,68,0.25); }
+.mode-interrupt { background:rgba(139,92,246,0.15);  color:var(--purple); border:1px solid rgba(139,92,246,0.3); }
+
+.target-value-row    { display:flex; align-items:baseline; gap:10px; }
+.target-pages        { font-size:2.5rem; font-weight:900; color:var(--blue); text-shadow:0 0 14px var(--blue-glow); }
+.target-unit         { font-size:1rem; color:var(--text-2); }
+.session-surah-info  { font-size:0.85rem; color:var(--text-2); margin-top:8px; }
+
+.steps-card  { margin:0 16px 12px; padding:20px; }
+.steps-title { font-size:0.9rem; font-weight:700; color:var(--text-2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px; }
+.steps-list  { list-style:none; display:flex; flex-direction:column; gap:10px; counter-reset:steps; }
+.steps-list li {
+  counter-increment:steps; display:flex; gap:12px;
+  align-items:flex-start; font-size:0.9rem; color:var(--text-1); line-height:1.5;
+}
+.steps-list li::before {
+  content:counter(steps); min-width:22px; height:22px;
+  background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.4);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:0.7rem; font-weight:700; color:var(--blue); flex-shrink:0; margin-top:1px;
+}
+
+.feedback-card    { margin:0 16px 12px; padding:20px; text-align:center; }
+.feedback-title   { font-size:1rem; fon
+'use strict';
+
+const express    = require('express');
+const cors       = require('cors');
+const bodyParser = require('body-parser');
+const fs         = require('fs');
+const path       = require('path');
+const crypto     = require('crypto');
+
+/* ── ai_core import (safe fallback if file missing) ── */
+let aiCore;
+try {
+  aiCore = require('./ai_core');
+} catch (e) {
+  console.warn('[WARN] ai_core.js not found — using fallback logic.');
+  aiCore = null;
+}
+
+const app  = express();
+const PORT = 3000;
+
+/* ─── PATHS ─── */
+const DB_PATH      = path.join(__dirname, 'quran_database.json');
+const ALERTS_PATH  = path.join(__dirname, 'data', 'motivational_alerts.json');
+const SURAH_PATH   = path.join(__dirname, 'data', 'surah_map.json');
+
+/* ─── MIDDLEWARE ─── */
+app.use(cors({ origin: '*' }));
+app.use(bodyParser.json({ limit: '2mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+/* ─── CONSTANTS ─── */
+const ADMIN_PASSWORD    = 'hranin';
+const TOTAL_PAGES       = 604;
+const PAGES_PER_JUZ     = 20;
+const AVATAR_COLORS     = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316','#ec4899'];
+
+/* ══════════════════════════════════════════════════════════
+   DATABASE  (atomic fs JSON — zero compiled deps)
+══════════════════════════════════════════════════════════ */
+
+const DEFAULT_DB = {
+  users: {}, chats: {}, groups: {},
+  admin: {
+    password_hash: '',
+    quotes: [
+      { id:'q001', text_ar:'الاستمرار ولو بالقليل خير من الانقطاع', text_en:'Consistency beats perfection', source:'Al-Ghawthani', category:'technique', added_at: new Date().toISOString(), active: true },
+      { id:'q002', text_ar:'إن الذي يحفظ القرآن لا يفتقر أبداً', text_en:'Quran memorizers are never in need', source:'Classical Scholars', category:'motivation', added_at: new Date().toISOString(), active: true },
+    ],
+    algorithm_weights: {
+      hesitation_penalty_per_second: 8,
+      erratic_penalty_per_count: 2,
+      focus_bonus_per_minute: 4,
+      afi_skip_penalty: 5,
+      afi_complete_bonus: 3,
+      absence_intervention_days: 3,
+      energy_ema_weight: 0.65,
+    },
+    broadcast_messages: [],
+    stats: { total_users:0, total_sessions_today:0, total_pages_memorized_alltime:0 },
+  },
+};
+
+function readDB() {
+  try {
+    if (!fs.existsSync(DB_PATH)) { writeDB(DEFAULT_DB); return clone(DEFAULT_DB); }
+    return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  } catch (e) { console.error('[DB] Read error:', e.message); return clone(DEFAULT_DB); }
+}
+
+function writeDB(data) {
+  const tmp = DB_PATH + '.tmp';
+  try { fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8'); fs.renameSync(tmp, DB_PATH); }
+  catch (e) { try { fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8'); } catch (_) {} }
+}
+
+function loadJSON(p) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { return []; } }
+function clone(o)    { return JSON.parse(JSON.stringify(o)); }
+
+/* ─── UTILITIES ─── */
+function sha256(s) { return crypto.createHash('sha256').update(s).digest('hex'); }
+function uid()     { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function today()   { return new Date().toISOString().split('T')[0]; }
+function daysBetween(a, b) { return Math.floor(Math.abs(new Date(b) - new Date(a)) / 86400000); }
+function chatId(u1, u2)    { return [u1, u2].sort().join('__'); }
+
+/* ══════════════════════════════════════════════════════════
+   QUANTUM PROGRESSION ALGORITHM
+══════════════════════════════════════════════════════════ */
+
+const PHASE_MAP = [
+  { phase:'ramp_to_0.25',  pages:0.25, duration:7  },
+  { phase:'ramp_to_0.5',   pages:0.5,  duration:7  },
+  { phase:'ramp_to_0.75',  pages:0.75, duration:7  },
+  { phase:'ramp_to_1.0',   pages:1.0,  duration:7  },
+  { phase:'plateau_1',     pages:1.0,  duration:14 },
+  { phase:'ramp_to_1.25',  pages:1.25, duration:7  },
+  { phase:'ramp_to_1.5',   pages:1.5,  duration:7  },
+  { phase:'ramp_to_1.75',  pages:1.75, duration:7  },
+  { phase:'ramp_to_2.0',   pages:2.0,  duration:7  },
+  { phase:'plateau_2',     pages:2.0,  duration:21 },
+  { phase:'ramp_to_2.25',  pages:2.25, duration:7  },
+  { phase:'ramp_to_2.5',   pages:2.5,  duration:7  },
+  { phase:'ramp_to_2.75',  pages:2.75, duration:7  },
+  { phase:'ramp_to_3.0',   pages:3.0,  duration:7  },
+  { phase:'plateau_3',     pages:3.0,  duration:30 },
+  { phase:'ramp_to_3.25',  pages:3.25, duration:7  },
+  { phase:'ramp_to_3.5',   pages:3.5,  duration:7  },
+  { phase:'ramp_to_3.75',  pages:3.75, duration:7  },
+  { phase:'ramp_to_4.0',   pages:4.0,  duration:7  },
+  { phase:'plateau_4',     pages:4.0,  duration:30 },
+  { phase:'stable',        pages:4.0,  duration:Infinity },
+];
+
+const OVERRIDE_PHASES = [
+  { phase:'ramp_to_4.25', pages:4.25, duration:7  },
+  { phase:'ramp_to_4.5',  pages:4.5,  duration:7  },
+  { phase:'ramp_to_4.75', pages:4.75, duration:7  },
+  { phase:'ramp_to_5.0',  pages:5.0,  duration:7  },
+  { phase:'plateau_5',    pages:5.0,  duration:30 },
+  { phase:'max_stable',   pages:5.0,  duration:Infinity },
+];
+
+function advancePhase(plan) {
+  if (plan.type !== 'quantum_auto') return plan;
+  const list = plan.manual_override ? [...PHASE_MAP, ...OVERRIDE_PHASES] : PHASE_MAP;
+  const idx  = list.findIndex(p => p.phase === plan.phase);
+  if (idx === -1) return plan;
+  const cfg  = list[idx];
+  if ((plan.phase_days_elapsed || 0) >= cfg.duration) {
+    const next = list[Math.min(idx + 1, list.length - 1)];
+    plan.phase               = next.phase;
+    plan.current_daily_pages = next.pages;
+    plan.phase_start_date    = today();
+    plan.phase_days_elapsed  = 0;
+  }
+  return plan;
+}
+
+function buildCustomPlan(goalMonths) {
+  const days  = (goalMonths || 24) * 30;
+  const pages = +Math.min(5, Math.max(0.25, TOTAL_PAGES / days)).toFixed(2);
+  return { type:'custom', start_date:today(), current_daily_pages:pages,
+           phase:'custom_steady', phase_start_date:today(), phase_days_elapsed:0,
+           manual_override:false, override_target:null, weekly_off_days:[] };
+}
+
+function projectedCompletion(pagesMemorized, dailyPages) {
+  const rem = TOTAL_PAGES - pagesMemorized;
+  if (rem <= 0) return today();
+  const d = new Date();
+  d.setDate(d.getDate() + Math.ceil(rem / dailyPages));
+  return d.toISOString().split('T')[0];
+}
+
+/* ══════════════════════════════════════════════════════════
+   REVIEW SYSTEM ENGINE
+══════════════════════════════════════════════════════════ */
+
+function assignReviewSystem(sessions, dailyMinutes, juzNum) {
+  // Use ai_core if available
+  if (aiCore && aiCore.assignReviewSystem) {
+    return aiCore.assignReviewSystem(sessions, dailyMinutes, juzNum);
+  }
+  // Fallback
+  const recent   = sessions.slice(-20);
+  const total    = Math.max(1, recent.length);
+  const hardRatio = recent.filter(s => s.difficulty === 'hard').length   / total;
+  const medRatio  = recent.filter(s => s.difficulty === 'medium').length / total;
+  if (hardRatio > 0.6 && dailyMinutes < 30) {
+    return { type:'full_stop', dedicated_days_per_week:null,
+             message_ar:`أتممت الجزء ${juzNum}! توقف مؤقت للتثبيت.`,
+             message_en:`Juz ${juzNum} complete! Pausing to solidify.` };
+  }
+  if (hardRatio > 0.35 || medRatio > 0.5) {
+    const days = dailyMinutes >= 45 ? 2 : 3;
+    return { type:'dedicated_days', dedicated_days_per_week:days,
+             message_ar:`أتممت الجزء ${juzNum}! ${days} أيام للمراجعة.`,
+             message_en:`Juz ${juzNum} complete! ${days} days/week review.` };
+  }
+  return { type:'daily_mix', dedicated_days_per_week:null,
+           message_ar:`أتممت الجزء ${juzNum}! مزيج يومي.`,
+           message_en:`Juz ${juzNum} complete! Daily mix.` };
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOCAL AI ENGINE (fallback when ai_core not loaded)
+══════════════════════════════════════════════════════════ */
+
+let alertsPool = loadJSON(ALERTS_PATH);
+let surahMap   = loadJSON(SURAH_PATH);
+
+function selectAlert(user, trigger) {
+  if (aiCore && aiCore.AlertSelector) {
+    const sel = new aiCore.AlertSelector(alertsPool);
+    return sel.select(user, trigger);
+  }
+  // Simple fallback selector
+  const style   = user.onboarding?.learning_style || 'visual';
+  const absent  = user.progress?.consecutive_absences || 0;
+  const energy  = user.energy?.score || 75;
+  let pool = [...alertsPool];
+  if (absent >= 3)  pool = pool.filter(a => a.category === 'intervention' || a.trigger?.startsWith('absence'));
+  else if (energy < 40) pool = pool.filter(a => a.category === 'breathing' || a.category === 'psychology');
+  else if (energy > 80) pool = pool.filter(a => a.intensity === 'high');
+  if (trigger) {
+    const exact = pool.filter(a => a.trigger === trigger);
+    if (exact.length) return exact[Math.floor(Math.random() * exact.length)];
+  }
+  if (!pool.length) pool = alertsPool;
+  return pool[Math.floor(Math.random() * pool.length)] || { text_ar:'استمر، أنت قادر!', text_en:'Keep going!', id:'fallback' };
+}
+
+function surahAtPage(p)  { return surahMap.find(s => p >= s.page_start && p <= s.page_end) || { name_ar:'غير معروف', number:0 }; }
+function juzAtPage(p)    { return Math.min(30, Math.max(1, Math.ceil(p / PAGES_PER_JUZ))); }
+
+/* ══════════════════════════════════════════════════════════
+   PROCESS-STATE — Real-time Quantum AI Pipeline
+   Connects frontend sensors → ai_core → UI decision
+══════════════════════════════════════════════════════════ */
+
+function runProcessStatePipeline(sensors, userRecord, adminWeights) {
+  if (aiCore && aiCore.processState) {
+    // Full ai_core pipeline (Kalman, Bayesian, Local ML, etc.)
+    return aiCore.processState(sensors, userRecord, adminWeights, alertsPool);
+  }
+
+  // ── Fallback heuristic pipeline ──
+  const w = adminWeights || {};
+  let energy = userRecord.energy?.score || 75;
+
+  // Sensor deductions
+  energy -= Math.min(40, (sensors.hesitationMs   || 0) / 1000 * 8);
+  energy -= Math.min(20, (sensors.mouseErratics  || 0) * 2);
+  energy -= Math.min(25, (sensors.hiddenSeconds  || 0) / 30 * 5);
+  energy -= Math.min(30, (sensors.exitAttempts   || 0) * 10);
+  energy += Math.min(20, (sensors.focusSeconds   || 0) / 60 * 4);
+  if (sensors.scrolledToBottom) energy += 5;
+
+  energy = Math.max(0, Math.min(100, Math.round(energy)));
+
+  let mode = 'NORMAL_MODE';
+  if (energy < 38)                                mode = 'RELOAD_MODE';
+  else if (energy > 80)                           mode = 'CHALLENGE_MODE';
+  if ((userRecord.energy?.afi || 100) < 22)       mode = 'PATTERN_INTERRUPT';
+  if (sensors.trigger === 'exit_intent')           mode = 'PATTERN_INTERRUPT';
+
+  const base = userRecord.plan?.current_daily_pages || 0.25;
+  let targetPages = base;
+  if (mode === 'RELOAD_MODE')       targetPages = Math.max(0.25, base * 0.5);
+  if (mode === 'CHALLENGE_MODE')    targetPages = Math.min(base * 2, 5);
+
+  const friction = Math.min(10, (sensors.hesitationMs || 0) / 1000 * 0.9 + (sensors.mouseErratics || 0) * 0.15);
+
+  return {
+    mode,
+    energy,
+    friction:     +friction.toFixed(2),
+    afi:          userRecord.energy?.afi || 100,
+    decay_rate:   0.02,
+    circadian:    1.0,
+    target_pages: +targetPages.toFixed(2),
+    absence_risk: 0,
+    intervention: null,
+    alert:        selectAlert(userRecord, sensors.trigger || 'generic_daily'),
+    streak:       userRecord.progress?.current_streak_days || 0,
+    diagnostics:  { ml_samples: 0, fallback: true },
+  };
+}
+
+/* ══════════════════════════════════════════════════════════
+   AUTH MIDDLEWARE
+══════════════════════════════════════════════════════════ */
+
+function requireAuth(req, res, next) {
+  const username = (req.headers['x-username'] || '').toLowerCase().trim();
+  const token    = req.headers['x-token'] || '';
+  if (!username || !token) return res.status(401).json({ error:'Unauthenticated' });
+  const db   = readDB();
+  const user = db.users[username];
+  if (!user || user.session_token !== token) return res.status(401).json({ error:'Invalid session' });
+  req.username = username;
+  req.user     = user;
+  req.db       = db;
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  const pwd = req.headers['x-admin-password'] || req.body?.admin_password || '';
+  if (sha256(pwd) !== sha256(ADMIN_PASSWORD)) return res.status(403).json({ error:'Forbidden' });
+  next();
+}
+
+/* ══════════════════════════════════════════════════════════
+   USER TEMPLATE
+══════════════════════════════════════════════════════════ */
+
+function blankUser(username, passwordHash, displayName) {
+  return {
+    username,
+    password_hash:  passwordHash,
+    display_name:   displayName || username,
+    created_at:     new Date().toISOString(),
+    last_active:    new Date().toISOString(),
+    avatar_color:   AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+    session_token:  null,
+    ml_state:       null,
+    onboarding: {
+      completed:       false, daily_minutes:30, goal_months:24,
+      preferred_time: 'after_fajr', learning_style:'visual',
+      current_level:  'beginner', plan_type:'quantum_auto',
+    },
+    plan: {
+      type:'quantum_auto', start_date:today(),
+      current_daily_pages:0.25, phase:'ramp_to_0.25',
+      phase_start_date:today(), phase_days_elapsed:0,
+      manual_override:false, override_target:null, weekly_off_days:[],
+    },
+    progress: {
+      total_pages_memorized:0, total_sessions_completed:0,
+      current_streak_days:0, longest_streak_days:0,
+      last_session_date:null, juz_completed:[], current_juz:1,
+      current_page:1, total_absences:0, consecutive_absences:0,
+      last_absence_intervention:null,
+    },
+    sessions: [],
+    review_system: {
+      active:false, type:null, assigned_at:null,
+      trigger_juz:null, dedicated_days_per_week:null, solidified_juz:[],
+    },
+    energy: { score:75, friction:0, afi:100, history:[] },
+    friends:[], friend_requests_sent:[], friend_requests_received:[],
+    notifications:[],
+  };
+}
+
+function updateAbsence(user) {
+  const last = user.progress.last_session_date;
+  if (!last) return;
+  const diff = daysBetween(last, today());
+  if (diff > 1) {
+    user.progress.consecutive_absences = diff - 1;
+    user.progress.total_absences      += diff - 1;
+    user.progress.current_streak_days  = 0;
+  } else {
+    user.progress.consecutive_absences = 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ██  ROUTES  ██
+══════════════════════════════════════════════════════════ */
+
+/* ── AUTH ── */
+
+app.post('/api/auth/register', (req, res) => {
+  const { username, password, display_name } = req.body;
+  if (!username || !password) return res.status(400).json({ error:'Missing fields' });
+  const key = username.toLowerCase().trim();
+  if (!/^[a-z0-9_]{3,20}$/.test(key)) return res.status(400).json({ error:'Username: 3-20 chars (a-z 0-9 _)' });
+  const db = readDB();
+  if (db.users[key]) return res.status(409).json({ error:'Username taken' });
+  const token = uid() + uid();
+  const user  = blankUser(key, sha256(password), display_name);
+  user.session_token = token;
+  db.users[key] = user;
+  db.admin.stats.total_users++;
+  writeDB(db);
+  return res.json({ success:true, token, username:key, display_name:user.display_name, onboarding_done:false });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error:'Missing fields' });
+  const key = username.toLowerCase().trim();
+  const db  = readDB();
+  const u   = db.users[key];
+  if (!u || u.password_hash !== sha256(password)) return res.status(401).json({ error:'Invalid credentials' });
+  const token = uid() + uid();
+  u.session_token = token;
+  u.last_active   = new Date().toISOString();
+  updateAbsence(u);
+  let intervention = null;
+  if ((u.progress.consecutive_absences || 0) >= (db.admin.algorithm_weights.absence_intervention_days || 3)) {
+    const absent = u.progress.consecutive_absences;
+    const pages  = u.plan?.current_daily_pages || 0.25;
+    const reduced = absent >= 5 ? Math.max(0.25, pages*0.5) : Math.max(0.25, pages*0.75);
+    intervention = {
+      type:'absence_intervention', absent_days:absent, reduced_pages:reduced,
+      message_ar:`غبت ${absent} أيام. هدفك اليوم: ${reduced} صفحة فقط.`,
+      message_en:`Absent ${absent} days. Today's goal: ${reduced} page(s).`,
+    };
+    u.notifications.push({ id:uid(), type:'ai_nudge', message:intervention.message_ar, timestamp:new Date().toISOString(), read:false });
+  }
+  writeDB(db);
+  return res.json({ success:true, token, username:key, display_name:u.display_name,
+                    avatar_color:u.avatar_color, onboarding_done:u.onboarding.completed, intervention });
+});
+
+app.post('/api/auth/logout', requireAuth, (req, res) => {
+  const db = readDB();
+  db.users[req.username].session_token = null;
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+/* ── ONBOARDING ── */
+
+app.post('/api/onboarding', requireAuth, (req, res) => {
+  const { daily_minutes, goal_months, preferred_time, learning_style,
+          current_level, plan_type, weekly_off_days } = req.body;
+  const db   = readDB();
+  const user = db.users[req.username];
+  user.onboarding = { completed:true,
+    daily_minutes:  daily_minutes  || 30,
+    goal_months:    goal_months    || 24,
+    preferred_time: preferred_time || 'after_fajr',
+    learning_style: learning_style || 'visual',
+    current_level:  current_level  || 'beginner',
+    plan_type:      plan_type      || 'quantum_auto',
+  };
+  user.plan.weekly_off_days = weekly_off_days || [];
+  if (plan_type === 'custom') user.plan = buildCustomPlan(goal_months);
+  writeDB(db);
+  return res.json({ success:true, plan:user.plan, onboarding:user.onboarding,
+                    first_alert: selectAlert(user, 'session_start') });
+});
+
+/* ── PROFILE & PLAN ── */
+
+app.get('/api/me', requireAuth, (req, res) => {
+  const db   = readDB();
+  const user = clone(db.users[req.username]);
+  delete user.password_hash; delete user.session_token;
+
+  // Advance phase
+  if (user.plan.type === 'quantum_auto') {
+    user.plan.phase_days_elapsed = daysBetween(user.plan.phase_start_date, today());
+    const advanced = advancePhase(clone(user.plan));
+    if (advanced.phase !== user.plan.phase) {
+      db.users[req.username].plan = advanced;
+      user.plan = advanced;
+      writeDB(db);
+    }
+  }
+
+  const todayOff = (user.plan.weekly_off_days || []).includes(new Date().getDay());
+  const rs       = user.review_system;
+  let todayGoal  = { pages: todayOff ? 0 : user.plan.current_daily_pages, is_review_day:false, is_off_day:todayOff };
+  if (rs.active && rs.type === 'full_stop') todayGoal = { pages:0, is_review_day:true, is_off_day:false };
+  if (rs.active && rs.type === 'dedicated_days' && new Date().getDay() < (rs.dedicated_days_per_week || 2))
+    todayGoal = { pages:0, is_review_day:true, is_off_day:false };
+
+  const projection = user.plan.current_daily_pages > 0
+    ? projectedCompletion(user.progress.total_pages_memorized, user.plan.current_daily_pages) : null;
+  const broadcasts = (db.admin.broadcast_messages || []).filter(m => m.active).slice(-3);
+
+  return res.json({
+    user, today_goal: todayGoal,
+    current_surah:  surahAtPage(user.progress.current_page || 1),
+    daily_alert:    selectAlert(user, 'generic_daily'),
+    broadcasts, projection,
+    unread_notifications: (user.notifications || []).filter(n => !n.read).length,
+  });
+});
+
+app.patch('/api/plan/override', requireAuth, (req, res) => {
+  const db   = readDB();
+  const user = db.users[req.username];
+  if (user.plan.current_daily_pages < 4)
+    return res.status(400).json({ error:'Must reach 4 pages/day before requesting override.' });
+  user.plan.manual_override    = true;
+  user.plan.override_target    = 5;
+  user.plan.phase              = 'ramp_to_4.25';
+  user.plan.current_daily_pages = 4.25;
+  user.plan.phase_start_date   = today();
+  user.plan.phase_days_elapsed = 0;
+  writeDB(db);
+  return res.json({ success:true, plan:user.plan });
+});
+
+/* ── REAL-TIME SENSOR PIPELINE ── */
+
+app.post('/api/process-state', requireAuth, (req, res) => {
+  try {
+    const sensors = req.body;
+    const db      = readDB();
+    const user    = db.users[req.username];
+    const result  = runProcessStatePipeline(sensors, user, db.admin.algorithm_weights);
+
+    // Persist ML state back to DB if ai_core returned it
+    if (result._ml_state) {
+      db.users[req.username].ml_state = result._ml_state;
+      delete result._ml_state;
+    }
+    // Persist updated energy score
+    db.users[req.username].energy.score   = result.energy;
+    db.users[req.username].energy.friction = result.friction;
+    writeDB(db);
+
+    return res.json(result);
+  } catch (err) {
+    console.error('[/api/process-state]', err.message);
+    return res.status(500).json({ error:'Internal error', mode:'NORMAL_MODE', energy:75 });
+  }
+});
+
+/* ── SESSIONS ── */
+
+app.post('/api/session/complete', requireAuth, (req, res) => {
+  const { pages_done, difficulty, duration_minutes, technique_used, mood_score } = req.body;
+  if (!pages_done || !difficulty)                                return res.status(400).json({ error:'Missing pages_done or difficulty' });
+  if (!['easy','medium','hard'].includes(difficulty))           return res.status(400).json({ error:'difficulty must be easy|medium|hard' });
+
+  const db   = readDB();
+  const user = db.users[req.username];
+  const t    = today();
+  const alert = selectAlert(user, `difficulty_${difficulty}`);
+
+  const entry = {
+    id: uid(), date:t,
+    pages_done:        parseFloat(pages_done),
+    difficulty,
+    duration_minutes:  duration_minutes  || 0,
+    technique_used:    technique_used    || 'standard',
+    ai_alert_shown:    alert?.id || null,
+    mood_score:        mood_score || 5,
+  };
+
+  user.sessions.push(entry);
+  if (user.sessions.length > 90) user.sessions = user.sessions.slice(-90);
+
+  user.progress.total_pages_memorized  = +(user.progress.total_pages_memorized + parseFloat(pages_done)).toFixed(2);
+  user.progress.total_sessions_completed += 1;
+  user.progress.current_page = Math.min(TOTAL_PAGES, Math.ceil(user.progress.total_pages_memorized));
+
+  // Juz tracking
+  const newJuz  = juzAtPage(user.progress.current_page);
+  const prevJuz = user.progress.current_juz || 1;
+  let reviewAssigned = null;
+  if (newJuz > prevJuz && !user.progress.juz_completed.includes(prevJuz)) {
+    user.progress.juz_completed.push(prevJuz);
+    user.progress.current_juz = newJuz;
+    const rv = assignReviewSystem(user.sessions, user.onboarding.daily_minutes, prevJuz);
+    user.review_system = { active:true, type:rv.type, assigned_at:new Date().toISOString(),
+                           trigger_juz:prevJuz, dedicated_days_per_week:rv.dedicated_days_per_week||null,
+                           solidified_juz: user.review_system.solidified_juz || [] };
+    reviewAssigned = rv;
+    user.notifications.push({ id:uid(), type:'milestone', message:rv.message_ar, timestamp:new Date().toISOString(), read:false });
+  } else {
+    user.progress.current_juz = newJuz;
+  }
+
+  // Streak
+  const last = user.progress.last_session_date;
+  if (!last)                           { user.progress.current_streak_days = 1; }
+  else if (daysBetween(last, t) === 1) { user.progress.current_streak_days++; }
+  else if (daysBetween(last, t) > 1)   { user.progress.current_streak_days = 1; }
+  user.progress.longest_streak_days  = Math.max(user.progress.longest_streak_days, user.progress.current_streak_days);
+  user.progress.last_session_date    = t;
+  user.progress.consecutive_absences = 0;
+
+  // Phase advancement
+  if (user.plan.type === 'quantum_auto') {
+    user.plan.phase_days_elapsed = daysBetween(user.plan.phase_start_date, t);
+    user.plan = advancePhase(user.plan);
+  }
+
+  // Energy & AFI
+  const w        = db.admin.algorithm_weights;
+  const delta    = difficulty === 'easy' ? 10 : difficulty === 'medium' ? 5 : -5;
+  user.energy.score = Math.max(0, Math.min(100, (user.energy.score||75) + delta));
+  user.energy.history.push(user.energy.score);
+  if (user.energy.history.length > 10) user.energy.history.shift();
+  const afiDelta = difficulty === 'easy' ? -(w.afi_skip_penalty||5) : (w.afi_complete_bonus||3);
+  user.energy.afi = +Math.max(0, Math.min(100, (user.energy.afi||100) + afiDelta)).toFixed(1);
+
+  // Notify friends
+  for (const fn of (user.friends || [])) {
+    const f = db.users[fn];
+    if (f) f.notifications.push({ id:uid(), type:'friend_activity',
+              message:`${user.display_name} أكمل جلسة الحفظ اليوم 🎯`,
+              timestamp:new Date().toISOString(), read:false });
+  }
+
+  db.admin.stats.total_sessions_today++;
+  db.admin.stats.total_pages_memorized_alltime = +(db.admin.stats.total_pages_memorized_alltime + parseFloat(pages_done)).toFixed(2);
+
+  writeDB(db);
+
+  return res.json({
+    success:true, session:entry,
+    progress: {
+      total_pages_memorized:  user.progress.total_pages_memorized,
+      current_streak_days:    user.progress.current_streak_days,
+      longest_streak_days:    user.progress.longest_streak_days,
+      juz_completed_count:    user.progress.juz_completed.length,
+      current_juz:            user.progress.current_juz,
+      current_surah:          surahAtPage(user.progress.current_page),
+    },
+    plan:            user.plan,
+    post_alert:      selectAlert(user, 'session_end'),
+    review_assigned: reviewAssigned,
+    energy:          user.energy,
+  });
+});
+
+app.get('/api/session/today', requireAuth, (req, res) => {
+  const user = readDB().users[req.username];
+  const ts   = (user.sessions || []).filter(s => s.date === today());
+  const done = +ts.reduce((a, s) => a + s.pages_done, 0).toFixed(2);
+  return res.json({ today_sessions:ts, pages_done_today:done,
+                    target:user.plan.current_daily_pages, is_complete: done >= user.plan.current_daily_pages });
+});
+
+app.get('/api/history', requireAuth, (req, res) => {
+  const user = readDB().users[req.username];
+  return res.json({ sessions: (user.sessions||[]).slice(-30).reverse() });
+});
+
+/* ── NOTIFICATIONS ── */
+
+app.get('/api/notifications', requireAuth, (req, res) => {
+  return res.json({ notifications: (readDB().users[req.username].notifications||[]).slice(-50).reverse() });
+});
+
+app.patch('/api/notifications/read-all', requireAuth, (req, res) => {
+  const db = readDB();
+  (db.users[req.username].notifications||[]).forEach(n => n.read = true);
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+/* ── FRIENDS ── */
+
+app.post('/api/friends/request', requireAuth, (req, res) => {
+  const t  = (req.body.target_username||'').toLowerCase().trim();
+  if (!t)  return res.status(400).json({ error:'Missing target_username' });
+  const db = readDB();
+  const me = db.users[req.username];
+  const tg = db.users[t];
+  if (!tg)  return res.status(404).json({ error:'User not found' });
+  if (t === req.username)            return res.status(400).json({ error:'Cannot add yourself' });
+  if (me.friends.includes(t))        return res.status(409).json({ error:'Already friends' });
+  if (me.friend_requests_sent.includes(t)) return res.status(409).json({ error:'Request already sent' });
+  me.friend_requests_sent.push(t);
+  tg.friend_requests_received.push(req.username);
+  tg.notifications.push({ id:uid(), type:'friend_activity',
+    message:`${me.display_name} أرسل إليك طلب صداقة.`,
+    timestamp:new Date().toISOString(), read:false });
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+app.post('/api/friends/accept', requireAuth, (req, res) => {
+  const from = (req.body.from_username||'').toLowerCase().trim();
+  if (!from) return res.status(400).json({ error:'Missing from_username' });
+  const db   = readDB();
+  const me   = db.users[req.username];
+  const s    = db.users[from];
+  if (!s)    return res.status(404).json({ error:'User not found' });
+  me.friend_requests_received = me.friend_requests_received.filter(u => u !== from);
+  s.friend_requests_sent      = s.friend_requests_sent.filter(u => u !== req.username);
+  if (!me.friends.includes(from))        me.friends.push(from);
+  if (!s.friends.includes(req.username)) s.friends.push(req.username);
+  s.notifications.push({ id:uid(), type:'friend_activity',
+    message:`${me.display_name} قَبِل طلب صداقتك!`,
+    timestamp:new Date().toISOString(), read:false });
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+app.post('/api/friends/reject', requireAuth, (req, res) => {
+  const from = (req.body.from_username||'').toLowerCase().trim();
+  const db   = readDB();
+  const me   = db.users[req.username];
+  if (!me)   return res.status(404).json({ error:'User not found' });
+  me.friend_requests_received            = me.friend_requests_received.filter(u => u !== from);
+  const s = db.users[from];
+  if (s) s.friend_requests_sent          = s.friend_requests_sent.filter(u => u !== req.username);
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+app.get('/api/friends', requireAuth, (req, res) => {
+  const db  = readDB();
+  const me  = db.users[req.username];
+  const friends = (me.friends||[]).map(u => {
+    const f = db.users[u]; if (!f) return null;
+    return { username:u, display_name:f.display_name, avatar_color:f.avatar_color,
+             streak:f.progress?.current_streak_days||0, pages:f.progress?.total_pages_memorized||0,
+             last_active:f.last_active,
+             is_online: daysBetween(f.last_active?.split('T')[0]||today(), today()) === 0 };
+  }).filter(Boolean);
+  const pending = (me.friend_requests_received||[]).map(u => {
+    const f = db.users[u];
+    return f ? { username:u, display_name:f.display_name, avatar_color:f.avatar_color } : null;
+  }).filter(Boolean);
+  return res.json({ friends, pending_requests:pending });
+});
+
+app.get('/api/friends/search', requireAuth, (req, res) => {
+  const q  = (req.query.q||'').toLowerCase().trim();
+  if (q.length < 2) return res.json({ results:[] });
+  const db = readDB();
+  const r  = Object.values(db.users)
+    .filter(u => u.username !== req.username &&
+                 (u.username.includes(q) || u.display_name.toLowerCase().includes(q)))
+    .slice(0, 10)
+    .map(u => ({ username:u.username, display_name:u.display_name, avatar_color:u.avatar_color }));
+  return res.json({ results:r });
+});
+
+/* ── CHAT (DM) ── */
+
+app.get('/api/chat/:with_user', requireAuth, (req, res) => {
+  const db  = readDB();
+  const w   = req.params.with_user.toLowerCase();
+  const cid = chatId(req.username, w);
+  if (!db.chats[cid]) {
+    db.chats[cid] = { participants:[req.username, w], messages:[], last_message_at:null, motivation_score:70 };
+    writeDB(db);
+  }
+  db.chats[cid].messages.forEach(m => { if (m.from !== req.username) m.read = true; });
+  writeDB(db);
+  return res.json({ chat_id:cid, messages:db.chats[cid].messages.slice(-50), motivation_score:db.chats[cid].motivation_score });
+});
+
+app.post('/api/chat/:with_user', requireAuth, (req, res) => {
+  const { text } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error:'Empty message' });
+  const db  = readDB();
+  const w   = req.params.with_user.toLowerCase();
+  if (!db.users[w]) return res.status(404).json({ error:'User not found' });
+  const cid = chatId(req.username, w);
+  if (!db.chats[cid]) db.chats[cid] = { participants:[req.username, w], messages:[], last_message_at:null, motivation_score:70 };
+  const msg = { id:uid(), from:req.username, text:text.trim().slice(0, 1000), timestamp:new Date().toISOString(), read:false };
+  db.chats[cid].messages.push(msg);
+  if (db.chats[cid].messages.length > 200) db.chats[cid].messages = db.chats[cid].messages.slice(-200);
+  db.chats[cid].last_message_at = msg.timestamp;
+  // Simple motivation score update
+  const hoursSince = db.chats[cid].messages.length > 1
+    ? (Date.now() - new Date(db.chats[cid].messages.at(-2)?.timestamp||0)) / 3600000 : 0;
+  db.chats[cid].motivation_score = Math.max(10, Math.min(100, db.chats[cid].motivation_score + (hoursSince < 24 ? 5 : -10)));
+  const recip = db.users[w];
+  if (recip) recip.notifications.push({ id:uid(), type:'friend_activity',
+    message:`رسالة جديدة من ${db.users[req.username]?.display_name||req.username}`,
+    timestamp:new Date().toISOString(), read:false });
+  writeDB(db);
+  return res.json({ success:true, message:msg, motivation_score:db.chats[cid].motivation_score });
+});
+
+app.get('/api/chat/:with_user/poll', requireAuth, (req, res) => {
+  const db    = readDB();
+  const w     = req.params.with_user.toLowerCase();
+  const since = req.query.since || '1970-01-01T00:00:00Z';
+  const cid   = chatId(req.username, w);
+  if (!db.chats[cid]) return res.json({ new_messages:[], motivation_score:70 });
+  const newMsgs = db.chats[cid].messages.filter(m => m.timestamp > since);
+  return res.json({ new_messages:newMsgs, motivation_score:db.chats[cid].motivation_score });
+});
+
+/* ── AI ENGINE ROUTES ── */
+
+app.get('/api/ai/daily-plan', requireAuth, (req, res) => {
+  const db   = readDB();
+  const user = db.users[req.username];
+  const steps = [
+    { step:1, ar:'اختر مكاناً هادئاً', en:'Choose a quiet place' },
+    { step:2, ar:'خذ ثلاثة أنفاس عميقة', en:'Take 3 deep breaths' },
+    { step:3, ar:`هدفك اليوم: ${user.plan.current_daily_pages} صفحة`, en:`Today target: ${user.plan.current_daily_pages} page(s)` },
+    { step:4, ar:'راجع حفظ أمس أولاً', en:"Review yesterday's memorization first" },
+    { step:5, ar:'سجّل جلستك بصدق', en:'Log your session honestly' },
+  ];
+  return res.json({
+    date:today(), target_pages:user.plan.current_daily_pages,
+    main_alert:  selectAlert(user, 'generic_daily'),
+    steps,
+    streak:      user.progress.current_streak_days || 0,
+    intervention: (user.progress.consecutive_absences||0) >= 3 ? {
+      type:'absence_intervention', absent_days: user.progress.consecutive_absences,
+      message_ar:`غبت ${user.progress.consecutive_absences} أيام. ابدأ بآية واحدة الآن.`,
+    } : null,
+  });
+});
+
+app.get('/api/ai/alert', requireAuth, (req, res) => {
+  const user = readDB().users[req.username];
+  return res.json({ alert: selectAlert(user, req.query.trigger||'generic_daily') });
+});
+
+app.get('/api/surah-map', (_req, res) => res.json({ surahs:surahMap }));
+
+/* ── LEADERBOARD ── */
+
+app.get('/api/leaderboard', requireAuth, (req, res) => {
+  const board = Object.values(readDB().users)
+    .map(u => ({ username:u.username, display_name:u.display_name, avatar_color:u.avatar_color,
+                 pages:u.progress?.total_pages_memorized||0, streak:u.progress?.current_streak_days||0,
+                 juz_done:(u.progress?.juz_completed||[]).length }))
+    .sort((a, b) => b.pages - a.pages).slice(0, 20);
+  return res.json({ leaderboard:board });
+});
+
+/* ── ADMIN ── */
+
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (!password || sha256(password) !== sha256(ADMIN_PASSWORD))
+    return res.status(403).json({ error:'Invalid password' });
+  return res.json({ success:true, token:'adm_' + sha256(ADMIN_PASSWORD).slice(0, 20) });
+});
+
+app.get('/api/admin/stats', requireAdmin, (_req, res) => {
+  const db    = readDB();
+  const users = Object.values(db.users);
+  const t     = today();
+  return res.json({
+    stats: {
+      total_users:           users.length,
+      active_today:          users.filter(u => u.progress?.last_session_date === t).length,
+      total_sessions_alltime: users.reduce((a, u) => a + (u.progress?.total_sessions_completed||0), 0),
+      total_pages_alltime:   +users.reduce((a, u) => a + (u.progress?.total_pages_memorized||0), 0).toFixed(2),
+      avg_streak:            +(users.reduce((a, u) => a + (u.progress?.current_streak_days||0), 0) / Math.max(1, users.length)).toFixed(1),
+      users_with_juz:        users.filter(u => (u.progress?.juz_completed||[]).length > 0).length,
+      top_users:             users.sort((a, b) => (b.progress?.total_pages_memorized||0)-(a.progress?.total_pages_memorized||0))
+                               .slice(0, 5).map(u => ({ username:u.username, display_name:u.display_name,
+                                                         pages:u.progress?.total_pages_memorized||0,
+                                                         streak:u.progress?.current_streak_days||0 })),
+    },
+    algorithm_weights: db.admin.algorithm_weights,
+  });
+});
+
+app.get('/api/admin/users', requireAdmin, (_req, res) => {
+  const users = Object.values(readDB().users).map(u => ({
+    username:u.username, display_name:u.display_name, created_at:u.created_at,
+    last_active:u.last_active, pages:u.progress?.total_pages_memorized||0,
+    streak:u.progress?.current_streak_days||0, plan_type:u.plan?.type,
+    daily_pages:u.plan?.current_daily_pages, phase:u.plan?.phase, onboarding:u.onboarding?.completed,
+  }));
+  return res.json({ users });
+});
+
+app.post('/api/admin/broadcast', requireAdmin, (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error:'Missing message' });
+  const db = readDB();
+  const b  = { id:uid(), message:message.trim(), sent_at:new Date().toISOString(), sent_by:'admin', active:true };
+  db.admin.broadcast_messages.push(b);
+  if (db.admin.broadcast_messages.length > 20) db.admin.broadcast_messages = db.admin.broadcast_messages.slice(-20);
+  for (const k of Object.keys(db.users))
+    db.users[k].notifications.push({ id:uid(), type:'admin_broadcast', message:message.trim(), timestamp:new Date().toISOString(), read:false });
+  writeDB(db);
+  return res.json({ success:true, broadcast:b });
+});
+
+app.delete('/api/admin/broadcast/:id', requireAdmin, (req, res) => {
+  const db = readDB();
+  const b  = (db.admin.broadcast_messages||[]).find(m => m.id === req.params.id);
+  if (!b)  return res.status(404).json({ error:'Not found' });
+  b.active = false;
+  writeDB(db);
+  return res.json({ success:true });
+});
+
+app.post('/api/admin/quotes', requireAdmin, (req, res) => {
+  const { text_ar, text_en, source, category } = req.body;
+  if (!text_ar) return res.status(400).json({ error:'text_ar required' });
+  const db = readDB();
+  const q  = { id:uid(), text_ar, text_en:text_en||'', source:source||'Admin',
+                category:category||'motivation', added_at:new Date().toISOString(), active:true };
+  db.admin.quotes.push(q);
+  writeDB(db);
+  return res.json({ success:true, quote:q });
+});
+
+app.get('/api/admin/quotes', requireAdmin, (_req, res) => res.json({ quotes: readDB().admin.quotes }));
+
+app.patch('/api/admin/weights', requireAdmin, (req, res) => {
+  const db      = readDB();
+  const w       = db.admin.algorithm_weights;
+  const allowed = ['hesitation_penalty_per_second','erratic_penalty_per_count','focus_bonus_per_minute',
+                   'afi_skip_penalty','afi_complete_bonus','absence_intervention_days','energy_ema_weight'];
+  for (const k of allowed)
+    if (req.body[k] !== undefined && typeof req.body[k] === 'number') w[k] = req.body[k];
+  writeDB(db);
+  return res.json({ success:true, algorithm_weights:w });
+});
+
+/* ── HEALTH ── */
+
+app.get('/api/health', (_req, res) => {
+  const db = readDB();
+  return res.json({ status:'ok', version:'2.0.0', ai_core_loaded: !!aiCore,
+                    timestamp:new Date().toISOString(), total_users:Object.keys(db.users).length });
+});
+
+/* ── CATCH-ALL: serve index.html ── */
+app.get('*', (_req, res) => {
+  const idx = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(idx)) return res.sendFile(idx);
+  return res.json({ message:'Quantum Quran Coach API is running.' });
+});
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+
+function init() {
+  const dataDir = path.join(__dirname, 'data');
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive:true });
+
+  if (!fs.existsSync(DB_PATH)) {
+    DEFAULT_DB.admin.password_hash = sha256(ADMIN_PASSWORD);
+    writeDB(DEFAULT_DB);
+    console.log('[DB] Fresh quran_database.json created.');
+  } else {
+    const db = readDB();
+    if (!db.admin) { db.admin = DEFAULT_DB.admin; db.admin.password_hash = sha256(ADMIN_PASSWORD); writeDB(db); }
+    console.log(`[DB] Loaded — ${Object.keys(db.users).length} user(s).`);
+  }
+}
+
+init();
+
+app.listen(PORT, () => {
+  console.log(`
+╔══════════════════════════════════════════════════════╗
+║        THE QUANTUM QURAN COACH — server.js v2.0      ║
+╠══════════════════════════════════════════════════════╣
+║  API   → http://localhost:${PORT}/api                   ║
+║  AI    → ai_core.js ${aiCore ? '✅ loaded' : '⚠️  fallback mode   '} ║
+║  Admin → password: hranin                            ║
+║  DB    → quran_database.json                         ║
+╚══════════════════════════════════════════════════════╝`);
+});
+
+module.exports = app;
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0f1e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>المدرب الكمي | Quantum Quran Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ANIMATED BACKGROUND -->
+  <div class="quantum-bg" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- LOADING -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-ring"></div>
+    <p class="loader-text">جاري تحميل المحرك الكمي...</p>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="app-shell hidden">
+
+    <!-- ══ VIEW: AUTH ══ -->
+    <section id="view-auth" class="view active">
+      <div class="auth-container">
+        <div class="auth-logo">
+          <div class="logo-orb"></div>
+          <h1 class="logo-title">المدرب الكمي</h1>
+          <p class="logo-subtitle">Quantum Quran Coach</p>
+        </div>
+        <div class="auth-tabs glass-card">
+          <button class="tab-btn active" data-tab="login">دخول</button>
+          <button class="tab-btn" data-tab="register">حساب جديد</button>
+        </div>
+        <div id="tab-login" class="auth-form glass-card">
+          <div class="field-group">
+            <label class="field-label">اسم المستخدم</label>
+            <input id="login-username" class="field-input" type="text" placeholder="أدخل اسم المستخدم" autocomplete="username">
+          </div>
+          <div class="field-group">
+            <label class="field-label">كلمة المرور</label>
+            <input id="login-password" class="field-input" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+          </div>
+          <button id="btn-login" class="btn btn-primary btn-full">دخول ←</button>
+        </div>
+        <div id="tab-register" class="auth-form glass-card hidden">
+          <div class="field-group">
+            <label class="field-label">الاسم المعروض</label>
+            <input id="reg-display" class="field-input" type="text" placeholder="اسمك كما تريد أن يظهر">
+          </div>
+          <div class="field-group">
+            <label class="field-label">اسم المستخدم <span class="field-hint">(إنجليزي وأرقام فقط)</span></label>
+            <input id="reg-username" class="field-input" type="text" placeholder="مثال: ahmad123">
+          </div>
+          <div class="field-group">
+            <label class="field-label">كلمة المرور</label>
+            <input id="reg-password" class="field-input" type="password" placeholder="6 أحرف على الأقل">
+          </div>
+          <button id="btn-register" class="btn btn-primary btn-full">إنشاء الحساب ✦</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: ONBOARDING ══ -->
+    <section id="view-onboarding" class="view">
+      <div class="onboarding-container">
+        <div class="onboarding-header">
+          <h2 class="view-title">نُخصص لك خطتك 🎯</h2>
+          <p class="view-subtitle">أجب على بضعة أسئلة لنبني لك خطة حفظ مثالية</p>
+        </div>
+        <div class="glass-card onboarding-card">
+          <label class="field-label">كم دقيقة يومياً تستطيع تخصيصها؟</label>
+          <div class="option-grid">
+            <button class="option-btn" data-field="daily_minutes" data-value="15">15 دقيقة</button>
+            <button class="option-btn active" data-field="daily_minutes" data-value="30">30 دقيقة</button>
+            <button class="option-btn" data-field="daily_minutes" data-value="45">45 دقيقة</button>
+            <button class="option-btn" data-field="daily_minutes" data-value="60">ساعة+</button>
+          </div>
+        </div>
+        <div class="glass-card onboarding-card">
+          <label class="field-label">متى تكون في أفضل حالاتك؟</label>
+          <div class="option-grid">
+            <button class="option-btn active" data-field="preferred_time" data-value="after_fajr">بعد الفجر ☀️</button>
+            <button class="option-btn" data-field="preferred_time" data-value="noon">الظهيرة 🌤️</button>
+            <button class="option-btn" data-field="preferred_time" data-value="evening">المساء 🌆</button>
+            <button class="option-btn" data-field="preferred_time" data-value="night">الليل 🌙</button>
+          </div>
+        </div>
+        <div class="glass-card onboarding-card">
+          <label class="field-label">كيف تتعلم أفضل؟</label>
+          <div class="option-grid">
+            <button class="option-btn active" data-field="learning_style" data-value="visual">بصري 👁️</button>
+            <button class="option-btn" data-field="learning_style" data-value="auditory">سمعي 👂</button>
+            <button class="option-btn" data-field="learning_style" data-value="kinesthetic">حركي ✋</button>
+          </div>
+        </div>
+        <div class="glass-card onboarding-card">
+          <label class="field-label">نوع الخطة</label>
+          <div class="option-grid">
+            <button class="option-btn active" data-field="plan_type" data-value="quantum_auto">ذكي تلقائي 🤖</button>
+            <button class="option-btn" data-field="plan_type" data-value="custom">مخصص ⚙️</button>
+          </div>
+        </div>
+        <button id="btn-onboarding-done" class="btn btn-primary btn-full">ابدأ رحلتك 🚀</button>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: DASHBOARD ══ -->
+    <section id="view-dashboard" class="view">
+      <header class="top-bar glass-card">
+        <div class="user-pill">
+          <div id="dash-avatar" class="avatar-dot"></div>
+          <span id="dash-username" class="user-pill-name">مرحباً</span>
+        </div>
+        <div class="top-bar-actions">
+          <button id="btn-notifications" class="icon-btn" aria-label="الإشعارات">
+            🔔<span id="notif-badge" class="badge hidden">0</span>
+          </button>
+          <button id="btn-logout" class="icon-btn" aria-label="خروج">⏻</button>
+        </div>
+      </header>
+
+      <div id="broadcast-banner" class="broadcast-banner glass-card hidden"></div>
+
+      <!-- Energy Island -->
+      <div class="island-section">
+        <div id="island" class="island island-normal">
+          <div id="island-orbit" class="island-orbit"></div>
+          <div class="island-core">
+            <span id="island-mode-label" class="island-mode">الوضع العادي</span>
+            <span id="island-energy" class="island-energy-value">75</span>
+            <span class="island-energy-unit">طاقة</span>
+          </div>
+        </div>
+        <p id="island-state-text" class="island-state-text">الحالة النفسية: مستقرة</p>
+        <div class="sensor-row">
+          <div class="sensor-item"><div class="sensor-dot" id="s-focus"></div><span class="sensor-label">تركيز</span></div>
+          <div class="sensor-item"><div class="sensor-dot" id="s-intent"></div><span class="sensor-label">نية</span></div>
+          <div class="sensor-item"><div class="sensor-dot" id="s-kinetic"></div><span class="sensor-label">حركة</span></div>
+          <div class="sensor-item"><div class="sensor-dot" id="s-rhythm"></div><span class="sensor-label">إيقاع</span></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card glass-card">
+          <span id="stat-streak" class="stat-value">0</span>
+          <span class="stat-label">🔥 يوم</span>
+        </div>
+        <div class="stat-card glass-card">
+          <span id="stat-pages" class="stat-value">0</span>
+          <span class="stat-label">📖 صفحة</span>
+        </div>
+        <div class="stat-card glass-card">
+          <span id="stat-juz" class="stat-value">0</span>
+          <span class="stat-label">✅ جزء</span>
+        </div>
+      </div>
+
+      <!-- Goal Card -->
+      <div class="glass-card goal-card">
+        <div class="goal-header">
+          <span class="goal-badge">هدف اليوم 🎯</span>
+          <span id="goal-surah" class="goal-surah"></span>
+        </div>
+        <div class="goal-body">
+          <span id="goal-pages" class="goal-pages">0.25</span>
+          <span class="goal-unit">صفحة</span>
+        </div>
+        <div class="goal-progress-track">
+          <div id="goal-progress-fill" class="goal-progress-fill" style="width:0%"></div>
+        </div>
+        <span id="goal-progress-label" class="goal-progress-label">0 / 0.25 صفحة</span>
+      </div>
+
+      <!-- AI Alert -->
+      <div class="glass-card alert-card">
+        <div class="alert-header">
+          <span class="alert-icon">💡</span>
+          <span class="alert-title">همسة المدرب</span>
+        </div>
+        <p id="dash-alert-text" class="alert-text">جاري التحميل...</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <button id="btn-start-session" class="btn btn-primary btn-full btn-lg">ابدأ الجلسة ⚡</button>
+        <button id="btn-review-day" class="btn btn-secondary">مراجعة فقط</button>
+      </div>
+
+      <nav class="bottom-nav glass-card">
+        <button class="nav-btn active" data-view="view-dashboard"><span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span></button>
+        <button class="nav-btn" data-view="view-plan"><span class="nav-icon">📈</span><span class="nav-label">خطتي</span></button>
+        <button class="nav-btn" data-view="view-network"><span class="nav-icon">🤝</span><span class="nav-label">أصدقائي</span></button>
+        <button class="nav-btn" data-view="view-leaderboard"><span class="nav-icon">🏆</span><span class="nav-label">المتصدرون</span></button>
+      </nav>
+    </section>
+
+    <!-- ══ VIEW: SESSION ══ -->
+    <section id="view-session" class="view">
+      <header class="session-header glass-card">
+        <button class="btn btn-ghost btn-sm" onclick="App.showView('view-dashboard')">← رجوع</button>
+        <h2 class="session-title">جلسة الحفظ</h2>
+        <span id="session-timer" class="session-timer">00:00</span>
+      </header>
+
+      <div class="glass-card technique-card">
+        <div class="technique-badge">تقنية اليوم 🧠</div>
+        <p id="session-technique" class="technique-text">جاري التحضير...</p>
+      </div>
+
+      <div class="glass-card target-card">
+        <div class="target-header">
+          <span class="target-label">هدف الجلسة</span>
+          <span id="session-mode-badge" class="mode-badge mode-normal">عادي</span>
+        </div>
+        <div class="target-value-row">
+          <span id="session-target-pages" class="target-pages">0.25</span>
+          <span class="target-unit">صفحة</span>
+        </div>
+        <p id="session-surah-info" class="session-surah-info"></p>
+      </div>
+
+      <div class="glass-card steps-card">
+        <h3 class="steps-title">خطوات الجلسة</h3>
+        <ol class="steps-list">
+          <li>اختر مكاناً هادئاً — يُفضَّل المسجد</li>
+          <li>خذ ثلاثة أنفاس عميقة لتهيئة الدماغ</li>
+          <li>راجع حفظ أمس قبل البدء بالجديد</li>
+          <li>طبّق تقنية اليوم المذكورة أعلاه</li>
+          <li>سجّل صعوبتك بصدق عند الانتهاء</li>
+        </ol>
+      </div>
+
+      <div class="glass-card feedback-card">
+        <h3 class="feedback-title">كيف كان الحفظ اليوم؟</h3>
+        <p class="feedback-hint">تقييمك يُطوّر خطتك الذكية</p>
+        <div class="feedback-buttons">
+          <button class="feedback-btn btn-easy" onclick="Session.complete('easy')">🟢 سهل</button>
+          <button class="feedback-btn btn-medium" onclick="Session.complete('medium')">🟡 متوسط</button>
+          <button class="feedback-btn btn-hard" onclick="Session.complete('hard')">🔴 صعب</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ VIEW: PLAN ══ -->
+    <section id="view-plan" class="view">
+      <header class="page-header">
+        <h2 class="view-title">خطة الحفظ 📈</h2>
+        <p class="view-subtitle">خوارزمية التدرج الكمي</p>
+      </header>
+
+      <div class="glass-card plan-summary-card">
+        <div class="plan-row">
+          <span class="plan-label">المرحلة الحالية</span>
+          <span id="plan-phase" class="plan-value mono">—</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">الهدف اليومي</span>
+          <span id="plan-daily-pages" class="plan-value plan-highlight">—</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">تاريخ الختم المتوقع</span>
+          <span id="plan-projection" class="plan-value mono">—</span>
+        </div>
+        <div class="plan-row">
+          <span class="plan-label">الأجزاء المكتملة</span>
+          <span id="plan-juz-done" class="plan-value">—</span>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <h3 class="section-title">مسار التدرج الكمي</h3>
+        <div id="phase-timeline" class="phase-timeline"></div>
+      </div>
+
+      <div id="review-system-card" class="glass-card hidden">
+        <h3 class="section-title">نظام المراجعة 🔄</h3>
+        <div id="review-system-info" class="review-info"></div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+      <nav class="bottom-nav glass-card">
+        <button class="nav-btn" data-view="view-dashboard"><span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span></button>
+        <button class="nav-btn active" data-view="view-plan"><span class="nav-icon">📈</span><span class="nav-label">خطتي</span></button>
+        <button class="nav-btn" data-view="view-network"><span class="nav-icon">🤝</span><span class="nav-label">أصدقائي</span></button>
+        <button class="nav-btn" data-view="view-leaderboard"><span class="nav-icon">🏆</span><span class="nav-label">المتصدرون</span></button>
+      </nav>
+    </section>
+
+    <!-- ══ VIEW: NETWORK ══ -->
+    <section id="view-network" class="view">
+      <header class="page-header">
+        <h2 class="view-title">مجتمع الحفّاظ 🤝</h2>
+      </header>
+
+      <div class="glass-card search-card">
+        <div class="search-row">
+          <input id="friend-search-input" class="field-input" type="text" placeholder="ابحث عن صديق...">
+          <button id="btn-friend-search" class="btn btn-primary btn-sm">بحث</button>
+        </div>
+        <div id="search-results" class="search-results hidden"></div>
+      </div>
+
+      <div id="pending-section" class="hidden">
+        <h3 class="section-title">طلبات الصداقة</h3>
+        <div id="pending-list" class="friends-list"></div>
+      </div>
+
+      <h3 class="section-title">أصدقائي</h3>
+      <div id="friends-list" class="friends-list">
+        <div class="empty-state">لم تضف أصدقاء بعد</div>
+      </div>
+
+      <div id="chat-panel" class="chat-panel glass-card hidden">
+        <div class="chat-header">
+          <span id="chat-with-name" class="chat-with-name"></span>
+          <button onclick="Network.closeChat()" class="btn btn-ghost btn-sm">✕</button>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chat-input" class="field-input chat-input" type="text" placeholder="اكتب رسالة...">
+          <button id="btn-chat-send" class="btn btn-primary btn-sm">إرسال</button>
+        </div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+      <nav class="bottom-nav glass-card">
+        <button class="nav-btn" data-view="view-dashboard"><span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span></button>
+        <button class="nav-btn" data-view="view-plan"><span class="nav-icon">📈</span><span class="nav-label">خطتي</span></button>
+        <button class="nav-btn active" data-view="view-network"><span class="nav-icon">🤝</span><span class="nav-label">أصدقائي</span></button>
+        <button class="nav-btn" data-view="view-leaderboard"><span class="nav-icon">🏆</span><span class="nav-label">المتصدرون</span></button>
+      </nav>
+    </section>
+
+    <!-- ══ VIEW: LEADERBOARD ══ -->
+    <section id="view-leaderboard" class="view">
+      <header class="page-header">
+        <h2 class="view-title">المتصدرون 🏆</h2>
+        <p class="view-subtitle">أبطال الحفظ</p>
+      </header>
+
+      <div id="leaderboard-list" class="leaderboard-list">
+        <div class="empty-state">جاري التحميل...</div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+      <nav class="bottom-nav glass-card">
+        <button class="nav-btn" data-view="view-dashboard"><span class="nav-icon">🏠</span><span class="nav-label">الرئيسية</span></button>
+        <button class="nav-btn" data-view="view-plan"><span class="nav-icon">📈</span><span class="nav-label">خطتي</span></button>
+        <button class="nav-btn" data-view="view-network"><span class="nav-icon">🤝</span><span class="nav-label">أصدقائي</span></button>
+        <button class="nav-btn active" data-view="view-leaderboard"><span class="nav-icon">🏆</span><span class="nav-label">المتصدرون</span></button>
+      </nav>
+    </section>
+
+  </div><!-- /#app -->
+
+  <script src="js/app.js"></script>
+</body>
+</html>
+
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "Quantum Quran Coach — JSON Database Schema",
+    "engine": "fs-module, zero-compilation, Termux-compatible"
+  },
+
+  "schema": {
+    "users": {
+      "_description": "Keyed by username (lowercase)",
+      "example_user": {
+        "username": "string — unique identifier",
+        "password_hash": "string — simple SHA-256 hex (no bcrypt, zero deps)",
+        "display_name": "string",
+        "created_at": "ISO timestamp",
+        "last_active": "ISO timestamp",
+        "avatar_color": "string — hex color auto-assigned",
+
+        "onboarding": {
+          "completed": "boolean",
+          "daily_minutes": "number — available time per day",
+          "goal_months": "number — target completion in months",
+          "preferred_time": "string — 'fajr' | 'after_fajr' | 'noon' | 'evening' | 'night'",
+          "learning_style": "string — 'visual' | 'auditory' | 'kinesthetic'",
+          "current_level": "string — 'beginner' | 'intermediate' | 'advanced'",
+          "plan_type": "string — 'quantum_auto' | 'custom'"
+        },
+
+        "plan": {
+          "type": "string — 'quantum_auto' | 'custom'",
+          "start_date": "ISO date",
+          "current_daily_pages": "number — e.g. 0.25, 0.5, 1, 2",
+          "phase": "string — current phase label e.g. 'ramp_to_1' | 'plateau_1'",
+          "phase_start_date": "ISO date",
+          "phase_days_elapsed": "number",
+          "manual_override": "boolean",
+          "override_target": "number — target pages if manual override",
+          "weekly_off_days": "array of numbers — 0=Sun ... 6=Sat"
+        },
+
+        "progress": {
+          "total_pages_memorized": "number",
+          "total_sessions_completed": "number",
+          "current_streak_days": "number",
+          "longest_streak_days": "number",
+          "last_session_date": "ISO date | null",
+          "juz_completed": "array of numbers — e.g. [1, 2]",
+          "current_juz": "number — 1 to 30",
+          "current_page_in_juz": "number",
+          "total_absences": "number",
+          "consecutive_absences": "number",
+          "last_absence_intervention": "ISO date | null"
+        },
+
+        "sessions": {
+          "_description": "Array of session log objects — last 90 kept",
+          "_array_item": {
+            "date": "ISO date",
+            "pages_done": "number",
+            "difficulty": "string — 'easy' | 'medium' | 'hard'",
+            "duration_minutes": "number",
+            "technique_used": "string — from techniques.json",
+            "ai_alert_shown": "string — alert ID",
+            "mood_score": "number — 1-10 self-reported"
+          }
+        },
+
+        "review_system": {
+          "active": "boolean",
+          "type": "string — 'dedicated_days' | 'full_stop' | 'daily_mix'",
+          "assigned_at": "ISO date",
+          "trigger_juz": "number",
+          "dedicated_days_per_week": "number | null",
+          "solidified_juz": "array of numbers"
+        },
+
+        "energy": {
+          "score": "number 0-100",
+          "friction": "number 0-10",
+          "afi": "number 0-100",
+          "history": "array — last 10 scores"
+        },
+
+        "friends": "array of usernames",
+        "friend_requests_sent": "array of usernames",
+        "friend_requests_received": "array of usernames",
+
+        "notifications": {
+          "_array_item": {
+            "id": "string",
+            "type": "string — 'ai_nudge' | 'friend_activity' | 'admin_broadcast' | 'milestone'",
+            "message": "string",
+            "timestamp": "ISO timestamp",
+            "read": "boolean"
+          }
+        }
+      }
+    },
+
+    "chats": {
+      "_description": "Keyed by chat_id = sorted usernames joined with '_'",
+      "example_chat_id": {
+        "participants": "array of 2 usernames",
+        "messages": {
+          "_array_item": {
+            "id": "string — uuid-like",
+            "from": "string — username",
+            "text": "string",
+            "timestamp": "ISO timestamp",
+            "read": "boolean"
+          }
+        },
+        "last_message_at": "ISO timestamp",
+        "motivation_score": "number 0-100 — derived by AI from activity"
+      }
+    },
+
+    "groups": {
+      "_description": "Group chats / accountability circles",
+      "example_group_id": {
+        "id": "string",
+        "name": "string",
+        "created_by": "string — username",
+        "created_at": "ISO timestamp",
+        "members": "array of usernames",
+        "messages": "array — same structure as chats.messages",
+        "last_message_at": "ISO timestamp"
+      }
+    },
+
+    "admin": {
+      "password_hash": "string",
+      "quotes": {
+        "_array_item": {
+          "id": "string",
+          "text_ar": "string — Arabic",
+          "text_en": "string — English",
+          "source": "string",
+          "category": "string — 'motivation' | 'technique' | 'wisdom'",
+          "added_at": "ISO timestamp",
+          "active": "boolean"
+        }
+      },
+      "algorithm_weights": {
+        "hesitation_penalty_per_second": 8,
+        "erratic_penalty_per_count": 2,
+        "focus_bonus_per_minute": 4,
+        "afi_skip_penalty": 5,
+        "afi_complete_bonus": 3,
+        "absence_intervention_days": 3,
+        "energy_ema_weight": 0.65
+      },
+      "broadcast_messages": {
+        "_array_item": {
+          "id": "string",
+          "message": "string",
+          "sent_at": "ISO timestamp",
+          "sent_by": "admin",
+          "active": "boolean"
+        }
+      },
+      "stats": {
+        "total_users": "number",
+        "total_sessions_today": "number",
+        "total_pages_memorized_alltime": "number"
+      }
+    }
+  },
+
+  "seed": {
+    "admin": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "quotes": [
+        {
+          "id": "q001",
+          "text_ar": "إن الذي يحفظ القرآن لا يفتقر أبداً",
+          "text_en": "Whoever memorizes the Quran will never be in need",
+          "source": "classical scholars",
+          "category": "motivation",
+          "added_at": "2025-01-01T00:00:00.000Z",
+          "active": true
+        },
+        {
+          "id": "q002",
+          "text_ar": "الاستمرار ولو بالقليل خير من الانقطاع",
+          "text_en": "Consistency, even in small amounts, is better than abandonment",
+          "source": "Al-Ghawthani Method",
+          "category": "technique",
+          "added_at": "2025-01-01T00:00:00.000Z",
+          "active": true
+        }
+      ],
+      "algorithm_weights": {
+        "hesitation_penalty_per_second": 8,
+        "erratic_penalty_per_count": 2,
+        "focus_bonus_per_minute": 4,
+        "afi_skip_penalty": 5,
+        "afi_complete_bonus": 3,
+        "absence_intervention_days": 3,
+        "energy_ema_weight": 0.65
+      },
+      "broadcast_messages": [],
+      "stats": {
+        "total_users": 0,
+        "total_sessions_today": 0,
+        "total_pages_memorized_alltime": 0
+      }
+    },
+    "users": {},
+    "chats": {},
+    "groups": {}
+  }
+}
+
+[
+  {
+    "id": "alert_001",
+    "category": "breathing",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "قبل أن تبدأ: خذ نفساً عميقاً لمدة 4 ثوانٍ، احبسه 4 ثوانٍ، ثم أخرجه 6 ثوانٍ. هذا يضاعف قدرة دماغك على الحفظ.",
+    "text_en": "Before you begin: inhale deeply for 4 seconds, hold for 4, exhale for 6. This multiplies your brain's memorization capacity.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_002",
+    "category": "focus",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "ضع المصحف أمامك بارتفاع مناسب وعلى يسارك قليلاً. هذا يُحرِّك مراكز التركيز في النصف الأيسر من دماغك.",
+    "text_en": "Position the Mushaf slightly to your upper left. This activates concentration centers in the left hemisphere of your brain.",
+    "source": "focus_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_003",
+    "category": "motivation",
+    "trigger": "streak_milestone",
+    "difficulty_context": "any",
+    "text_ar": "أنت الآن في حالة تدفق! الدماغ يُفرز مواد التركيز الطبيعية. هذه هي اللحظة المثالية للحفظ.",
+    "text_en": "You are now in a flow state! Your brain is releasing its natural focus compounds. This is the perfect moment to memorize.",
+    "source": "neuroscience",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_004",
+    "category": "technique",
+    "trigger": "difficulty_hard",
+    "difficulty_context": "hard",
+    "text_ar": "الصعوبة دليل على أن دماغك يبني روابط جديدة. قلّل الكمية اليوم إلى النصف، وعوِّض بتعمّق التكرار.",
+    "text_en": "Difficulty signals your brain is building new neural pathways. Halve today's quantity and compensate with deeper repetition.",
+    "source": "spaced_repetition",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_005",
+    "category": "breathing",
+    "trigger": "difficulty_hard",
+    "difficulty_context": "hard",
+    "text_ar": "توقف الآن. أغمض عينيك 30 ثانية وتنفس بعمق. الأوكسجين هو وقود الذاكرة — أمده بما يحتاج.",
+    "text_en": "Stop now. Close your eyes for 30 seconds and breathe deeply. Oxygen is memory's fuel — give it what it needs.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_006",
+    "category": "psychology",
+    "trigger": "negative_self_talk",
+    "difficulty_context": "any",
+    "text_ar": "امحُ عبارة 'ذاكرتي ضعيفة' من قاموسك. استبدلها بـ: 'أنا أتمتع بذاكرة رائعة في طور النمو'. الدماغ يُصدّق ما تقوله له.",
+    "text_en": "Delete 'my memory is weak' from your vocabulary. Replace it with: 'I have a remarkable memory that grows stronger daily.' Your brain believes what you tell it.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_007",
+    "category": "spaced_repetition",
+    "trigger": "juz_complete",
+    "difficulty_context": "any",
+    "text_ar": "أتممت جزءاً كاملاً! الآن يبدأ الاختبار الحقيقي: راجع هذا الجزء خلال 24 ساعة لتنقله من الذاكرة قصيرة المدى إلى الذاكرة الذهبية.",
+    "text_en": "You've completed a full Juz! The real test begins now: review within 24 hours to transfer it from short-term to golden long-term memory.",
+    "source": "spaced_repetition",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_008",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "easy",
+    "text_ar": "طريقة الربط الخيالي: بعد حفظ كل آية، أغمض عينيك وابنِ لوحاً خيالياً تترتب عليه الكلمات كصور مضيئة.",
+    "text_en": "The Imagination Link: After memorizing each verse, close your eyes and build a mental board where words appear as vivid images.",
+    "source": "visualization_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_009",
+    "category": "timing",
+    "trigger": "schedule_reminder",
+    "difficulty_context": "any",
+    "text_ar": "الساعة قبيل الفجر هي ذروة إفراز هرمونات التركيز والتثبيت في جسمك. حاول أن تجعل جزءاً من حفظك في هذا الوقت المبارك.",
+    "text_en": "The pre-dawn hour is the peak of your body's focus and consolidation hormones. Try to make part of your memorization in this blessed time.",
+    "source": "circadian_rhythm",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_010",
+    "category": "motivation",
+    "trigger": "absence_day_1",
+    "difficulty_context": "any",
+    "text_ar": "لاحظنا أنك لم تُكمل جلستك أمس. الدماغ يفضل الاستمرار حتى ولو بخمس دقائق. هل يمكنك الآن خمس دقائق فقط؟",
+    "text_en": "We noticed you missed yesterday. The brain prefers continuity, even for five minutes. Can you give just five minutes right now?",
+    "source": "habit_science",
+    "intensity": "gentle"
+  },
+  {
+    "id": "alert_011",
+    "category": "motivation",
+    "trigger": "absence_day_2",
+    "difficulty_context": "any",
+    "text_ar": "يومان من الغياب. الذاكرة الزئبقية تبدأ في التلاشي في اليوم الثالث. قاوِم الآن قبل أن تخسر ما بنيته.",
+    "text_en": "Two days absence. Volatile memory begins fading on day three. Resist now before losing what you've built.",
+    "source": "memory_science",
+    "intensity": "urgent"
+  },
+  {
+    "id": "alert_012",
+    "category": "intervention",
+    "trigger": "absence_day_3",
+    "difficulty_context": "any",
+    "text_ar": "تدخل النظام: ثلاثة أيام من الغياب. خطتك تُعاد حسابها. لكن تذكر — البداية من جديد أسهل مما تتوقع. آية واحدة الآن تكسر السلسلة.",
+    "text_en": "System intervention: 3 days absent. Your plan is being recalculated. But remember — restarting is easier than you think. One verse now breaks the chain.",
+    "source": "ai_engine",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_013",
+    "category": "technique",
+    "trigger": "session_mid",
+    "difficulty_context": "medium",
+    "text_ar": "جرّب الآن أسلوب التنغيم: اقرأ ما حفظته بنغمة مختلفة عن المعتادة. الدماغ يُخزِّن المعلومة المصاحبة للإيقاع أعمق بكثير.",
+    "text_en": "Try melodic variation now: recite what you've memorized in a different tone. The brain stores rhythm-linked information far deeper.",
+    "source": "rhythmic_memory",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_014",
+    "category": "psychology",
+    "trigger": "plateau_detected",
+    "difficulty_context": "any",
+    "text_ar": "أنت في مرحلة الهضم الذهني — وهي مرحلة صحية جداً. الدماغ يُعيد ترتيب ما حفظته. استمر بالمراجعة ولا تتوقف عن الجديد.",
+    "text_en": "You're in the mental digestion phase — a very healthy stage. Your brain is reorganizing what you've memorized. Keep reviewing while continuing new material.",
+    "source": "cognitive_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_015",
+    "category": "social",
+    "trigger": "friend_milestone",
+    "difficulty_context": "any",
+    "text_ar": "صديقك أكمل جلسة اليوم! التنافس الإيجابي يرفع أداء الدماغ إلى 40%. ما رأيك أن تُحقق أنت الآن ما حققه؟",
+    "text_en": "Your friend just completed their session! Positive competition raises brain performance by 40%. How about matching what they achieved right now?",
+    "source": "social_psychology",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_016",
+    "category": "focus",
+    "trigger": "distraction_detected",
+    "difficulty_context": "any",
+    "text_ar": "التشتت عدو الحفظ. أغلق كل شيء واحتفظ فقط بهاتفك لهذه الجلسة. خمس عشرة دقيقة من التركيز الحقيقي تساوي ساعة من التشتت.",
+    "text_en": "Distraction is memorization's enemy. Close everything. Fifteen minutes of real focus equals an hour of scattered effort.",
+    "source": "focus_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_017",
+    "category": "breathing",
+    "trigger": "session_end",
+    "difficulty_context": "any",
+    "text_ar": "قبل النوم: كرِّر ما حفظته اليوم ثلاث مرات بصوت هادئ. النوم يُثبِّت المعلومات في الذاكرة طويلة المدى خلال الساعات الأولى.",
+    "text_en": "Before sleep: repeat today's memorization three times softly. Sleep consolidates information into long-term memory during the first hours.",
+    "source": "sleep_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_018",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب البطاقات: اكتب الكلمة الأولى من كل آية على بطاقة منفصلة. الكتابة تُضاعف الحفظ لأنها تُشغِّل قناة حسية ثالثة.",
+    "text_en": "The Card Method: write the first word of each verse on a separate card. Writing doubles retention by activating a third sensory channel.",
+    "source": "multi_modal_learning",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_019",
+    "category": "milestone",
+    "trigger": "week_streak",
+    "difficulty_context": "any",
+    "text_ar": "أسبوع كامل من الاستمرار! أنت الآن تبني عادة راسخة في دماغك. العلم يقول: 21 يوماً لبناء العادة، و66 يوماً لتجذيرها.",
+    "text_en": "A full week of consistency! You're now building a firm habit in your brain. Science says: 21 days to form a habit, 66 days to root it deep.",
+    "source": "habit_science",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_020",
+    "category": "psychology",
+    "trigger": "self_doubt",
+    "difficulty_context": "hard",
+    "text_ar": "فرّغ كوبك من الأفكار السلبية. كل عقبة في الحفظ ليست دليلاً على عجزك — بل هي دليل على أن الطريق يستحق.",
+    "text_en": "Empty your cup of negative thoughts. Every obstacle in memorization isn't proof of your inability — it's proof the journey is worth it.",
+    "source": "growth_mindset",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_021",
+    "category": "technique",
+    "trigger": "new_juz_start",
+    "difficulty_context": "any",
+    "text_ar": "بدأت جزءاً جديداً! استخدم أسلوب التخصيص والتكرار: كرِّر كل آية جديدة لا تقل عن سبع مرات قبل الانتقال للتالية.",
+    "text_en": "New Juz started! Use the Specification & Repetition method: repeat each new verse at least seven times before moving to the next.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_022",
+    "category": "timing",
+    "trigger": "off_schedule",
+    "difficulty_context": "any",
+    "text_ar": "غيِّر وقت حفظك اليوم. الدماغ يُقدِّر المفاجأة — تغيير الوقت يُحفِّز مناطق جديدة في الدماغ ويكسر روتين النسيان.",
+    "text_en": "Change your memorization time today. The brain values surprise — shifting your schedule activates new regions and breaks the forgetting routine.",
+    "source": "pattern_interrupt",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_023",
+    "category": "motivation",
+    "trigger": "difficulty_easy",
+    "difficulty_context": "easy",
+    "text_ar": "الجلسة كانت سهلة — هذا يعني أنك في حالة تدفق. النظام سيزيد هدفك قليلاً الأسبوع القادم. استعد للتحدي القادم!",
+    "text_en": "Session was easy — you're in flow state. The system will slightly raise your target next week. Prepare for the coming challenge!",
+    "source": "quantum_progression",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_024",
+    "category": "focus",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "تمرين الإبهام: ضع إبهامك في منتصف الصفحة وحرِّكه ببطء بين الأسطر. هذا يُجبر عينيك على التركيز البؤري ويقطع التشتت.",
+    "text_en": "Thumb technique: place your thumb in the middle of the page and move it slowly between lines. This forces focal concentration and cuts distraction.",
+    "source": "focus_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_025",
+    "category": "spaced_repetition",
+    "trigger": "review_due",
+    "difficulty_context": "any",
+    "text_ar": "موعد المراجعة الدورية! تذكر: المراجعة قبل أن تبدأ الذاكرة في التراجع تُثبِّت المعلومة بمعدل أربعة أضعاف.",
+    "text_en": "Scheduled review due! Remember: reviewing before memory starts declining solidifies information four times more effectively.",
+    "source": "spaced_repetition",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_026",
+    "category": "milestone",
+    "trigger": "month_streak",
+    "difficulty_context": "any",
+    "text_ar": "شهر كامل من الاستمرار! أنت الآن ضمن الـ 5% الذين يصمدون. الذاكرة الريموت — التي لا تُنسى — بدأت تتشكل.",
+    "text_en": "A full month of consistency! You're now in the top 5% who persevere. The 'remote memory' — which never forgets — has begun forming.",
+    "source": "memory_science",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_027",
+    "category": "psychology",
+    "trigger": "afi_low",
+    "difficulty_context": "any",
+    "text_ar": "النظام يلاحظ أنك تتجنب التحدي. الدماغ لا ينمو في منطقة الراحة. اختر صعوبة أكبر اليوم ولو لعشر دقائق فقط.",
+    "text_en": "The system notices you're avoiding challenge. The brain doesn't grow in the comfort zone. Choose higher difficulty today, even for just ten minutes.",
+    "source": "growth_mindset",
+    "intensity": "direct"
+  },
+  {
+    "id": "alert_028",
+    "category": "technique",
+    "trigger": "session_mid",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب الأخ القرآني: إن أمكنك، تبادل مراجعة ما حفظت مع شخص آخر. الاستماع النشط يُضاعف التثبيت.",
+    "text_en": "The Quran Partner method: if possible, exchange review with someone else. Active listening doubles consolidation.",
+    "source": "social_learning",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_029",
+    "category": "breathing",
+    "trigger": "anxiety_detected",
+    "difficulty_context": "hard",
+    "text_ar": "شعرت بالضغط؟ التنفس البطني علاج فوري: ضع يدك على بطنك وتأكد أنه يرتفع عند الشهيق. أربع جولات وستلاحظ الفرق.",
+    "text_en": "Feeling pressure? Diaphragmatic breathing is immediate relief: place your hand on your belly and ensure it rises on inhale. Four rounds and you'll notice the difference.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_030",
+    "category": "motivation",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "كل صفحة تحفظها اليوم هي طابق جديد في قصرك في الجنة. البناء لا يتوقف إلا حين تتوقف أنت.",
+    "text_en": "Every page you memorize today is a new floor in your palace. The construction stops only when you stop.",
+    "source": "spiritual_motivation",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_031",
+    "category": "technique",
+    "trigger": "revision_system_a",
+    "difficulty_context": "any",
+    "text_ar": "نظام التسبيع: قسِّم القرآن على سبعة أيام — ابدأ الجزء بيوم الأحد وأتمَّ الختمة بيوم السبت. هذا ما كان يفعله السلف.",
+    "text_en": "The Seventh System: divide the Quran across seven days — start with Sunday and complete the Khatmah by Saturday. This is what the Salaf practiced.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_032",
+    "category": "focus",
+    "trigger": "location_suggestion",
+    "difficulty_context": "any",
+    "text_ar": "المسجد هو أفضل مكان للحفظ: عيناك لا ترى محرماً، أذناك لا تسمعان ما يُشغل القلب، ولسانك لا ينطق إلا بخير.",
+    "text_en": "The mosque is the optimal memorization location: your eyes see nothing forbidden, your ears hear nothing distracting, your tongue speaks only good.",
+    "source": "pdf_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_033",
+    "category": "psychology",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "العبقرية ليست أكثر من تركيز الذهن. أنت لا تحتاج موهبة خارقة — أنت تحتاج لحظات تركيز متراكمة كل يوم.",
+    "text_en": "Genius is nothing more than concentrated attention. You don't need extraordinary talent — you need accumulated moments of focus, every day.",
+    "source": "focus_wisdom",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_034",
+    "category": "spaced_repetition",
+    "trigger": "similarity_warning",
+    "difficulty_context": "medium",
+    "text_ar": "انتبه للمتشابهات! الآيات المتقاربة في اللفظ تحتاج عناية خاصة. ركِّز الآن على الفروق الدقيقة بين الآيات المشابهة.",
+    "text_en": "Watch for similar verses! Near-identical verses need special attention. Focus now on the subtle differences between similar passages.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_035",
+    "category": "motivation",
+    "trigger": "challenge_mode",
+    "difficulty_context": "easy",
+    "text_ar": "أنت في وضع التحدي! النظام ضاعف هدفك. تذكر: الطالبة السورية حفظت 35 صفحة جديدة في أقل من 24 ساعة. أنت قادر.",
+    "text_en": "You're in challenge mode! The system has doubled your goal. Remember: one student memorized 35 new pages in under 24 hours. You can do this.",
+    "source": "success_story",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_036",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب الملف المفتوح: لا تُكمل المقطع كاملاً دفعة واحدة. توقف في منتصف التشويق — دماغك سيظل يعالجه حتى تعود.",
+    "text_en": "The Open File method: don't complete a section all at once. Stop at the peak of curiosity — your brain will keep processing it until you return.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_037",
+    "category": "psychology",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "93% من تصرفاتك تقودها المنطقة اللاواعية. برمج هذه المنطقة برسائل إيجابية قبل النوم وبعد الاستيقاظ مباشرة.",
+    "text_en": "93% of your actions are driven by your subconscious. Program this zone with positive messages just before sleep and immediately upon waking.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_038",
+    "category": "milestone",
+    "trigger": "pages_25",
+    "difficulty_context": "any",
+    "text_ar": "25 صفحة محفوظة! ربع جزء كامل في ذاكرتك. تصور كم ستكون عليه بعد عام من الاستمرار على هذا المسار.",
+    "text_en": "25 pages memorized! A quarter of a Juz lives in your memory. Imagine where you'll be after a year on this path.",
+    "source": "milestone",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_039",
+    "category": "breathing",
+    "trigger": "pre_session",
+    "difficulty_context": "any",
+    "text_ar": "تقنية الاستيقاظ الطبيعي: برمج عقلك الليلة أن تستيقظ في ساعة الفجر. كرِّر ذلك ثلاث مرات وأنت تغفو. يعمل مع 80% من الناس.",
+    "text_en": "Natural wake programming: tell your mind tonight to wake at Fajr time. Repeat this three times as you fall asleep. Works for 80% of people.",
+    "source": "subconscious_programming",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_040",
+    "category": "social",
+    "trigger": "group_inactive",
+    "difficulty_context": "any",
+    "text_ar": "مجموعتك هادئة اليوم. كُن أنت المُحرِّك — أرسِل كلمة تشجيع لأصدقائك. الطاقة الجماعية تبني ما لا تبنيه الطاقة الفردية.",
+    "text_en": "Your group is quiet today. Be the catalyst — send your friends an encouraging word. Group energy builds what individual energy cannot.",
+    "source": "social_psychology",
+    "intensity": "gentle"
+  },
+  {
+    "id": "alert_041",
+    "category": "technique",
+    "trigger": "review_system_b",
+    "difficulty_context": "any",
+    "text_ar": "وقفة المراجعة الكاملة: توقف عن الحفظ الجديد اليوم وراجع كل ما مضى. التثبيت أهم من التوسع — الجذور قبل الفروع.",
+    "text_en": "Full review pause: stop new memorization today and review everything past. Consolidation is more important than expansion — roots before branches.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_042",
+    "category": "motivation",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "تذكر الشيخ الذي بلغ 73 عاماً وبدأ الحفظ من الصفر وأتمَّه. الإرادة لا تعرف سناً. ما عذرك أنت؟",
+    "text_en": "Remember the sheikh who began memorizing at age 73 from scratch and completed it. Willpower knows no age. What is your excuse?",
+    "source": "success_story",
+    "intensity": "direct"
+  },
+  {
+    "id": "alert_043",
+    "category": "focus",
+    "trigger": "session_mid",
+    "difficulty_context": "medium",
+    "text_ar": "ابتسم الآن — وإن لم تكن سعيداً. العلم يُثبت أن البسمة تُطلق مواد كيميائية في الدماغ تُحسِّن الذاكرة والتركيز فوراً.",
+    "text_en": "Smile now — even if you don't feel like it. Science confirms that smiling releases brain chemicals that immediately improve memory and concentration.",
+    "source": "neuroscience",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_044",
+    "category": "psychology",
+    "trigger": "goal_reminder",
+    "difficulty_context": "any",
+    "text_ar": "أرسِل رسالة لعقلك اللاواعي الآن: 'أنا أحفظ كلام الله، وأنا قادر، وأنا مستمر'. اجعلها حاضرة في الوقت الحالي لا في المستقبل.",
+    "text_en": "Send your subconscious a message now: 'I am memorizing the words of God, I am capable, I am consistent.' Keep it in present tense, not future.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_045",
+    "category": "spaced_repetition",
+    "trigger": "forgetting_detected",
+    "difficulty_context": "hard",
+    "text_ar": "النسيان ليس فشلاً — هو جزء طبيعي من عملية التثبيت. كل مرة تسترجع ما نسيته تُقوِّي الرابط العصبي بشكل دائم.",
+    "text_en": "Forgetting is not failure — it's a natural part of the consolidation process. Every time you retrieve what you forgot, you permanently strengthen that neural link.",
+    "source": "memory_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_046",
+    "category": "motivation",
+    "trigger": "streak_end",
+    "difficulty_context": "any",
+    "text_ar": "انكسرت السلسلة — هذا يحدث. لكن انكسار السلسلة لا يعني انكسار الحلم. ابدأ سلسلة جديدة اليوم. الآن. في هذه اللحظة.",
+    "text_en": "The streak broke — it happens. But a broken streak doesn't mean a broken dream. Start a new chain today. Now. This moment.",
+    "source": "resilience",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_047",
+    "category": "technique",
+    "trigger": "visual_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم بصري: استخدم خريطة ذهنية لربط آيات كل صفحة. الألوان والأشكال ترسخ في الذاكرة البصرية أعمق من الكلمات.",
+    "text_en": "You're a visual learner: use a mind map to connect each page's verses. Colors and shapes embed deeper in visual memory than words alone.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_048",
+    "category": "technique",
+    "trigger": "auditory_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم سمعي: اسمع تلاوة القارئ المفضل لديك أولاً ثم احفظ. الذاكرة السمعية الإيقاعية هي أقوى أنواع الذاكرة لديك.",
+    "text_en": "You're an auditory learner: listen to your preferred reciter first, then memorize. Auditory rhythmic memory is your strongest memory channel.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_049",
+    "category": "technique",
+    "trigger": "kinesthetic_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم حركي: تحرك أثناء الحفظ — امشِ ببطء أو حرِّك يدك بإيقاع الآية. الحركة تُفعِّل مراكز الذاكرة الحسية.",
+    "text_en": "You're a kinesthetic learner: move while memorizing — walk slowly or move your hand to the verse's rhythm. Movement activates sensory memory centers.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_050",
+    "category": "motivation",
+    "trigger": "plan_complete",
+    "difficulty_context": "any",
+    "text_ar": "أكملت خطتك لهذه المرحلة! تذكر قول العلماء: الحفظ في الصغر كالنقش في الحجر. كل ما حفظته اليوم سيظل راسخاً في ذاكرتك الذهبية.",
+    "text_en": "You've completed this phase of your plan! Recall the scholars' saying: memorization in youth is like engraving in stone. What you memorize today will remain in your golden memory.",
+    "source": "wisdom",
+    "intensity": "high"
+  }
+]
+[
+  { "number": 1,  "name_ar": "الفاتحة",       "name_en": "Al-Fatihah",       "juz": 1,  "page_start": 1,   "page_end": 1,   "ayah_count": 7  },
+  { "number": 2,  "name_ar": "البقرة",         "name_en": "Al-Baqarah",       "juz": 1,  "page_start": 2,   "page_end": 49,  "ayah_count": 286 },
+  { "number": 3,  "name_ar": "آل عمران",       "name_en": "Ali 'Imran",       "juz": 3,  "page_start": 50,  "page_end": 76,  "ayah_count": 200 },
+  { "number": 4,  "name_ar": "النساء",         "name_en": "An-Nisa",          "juz": 4,  "page_start": 77,  "page_end": 106, "ayah_count": 176 },
+  { "number": 5,  "name_ar": "المائدة",        "name_en": "Al-Ma'idah",       "juz": 6,  "page_start": 106, "page_end": 127, "ayah_count": 120 },
+  { "number": 6,  "name_ar": "الأنعام",        "name_en": "Al-An'am",         "juz": 7,  "page_start": 128, "page_end": 150, "ayah_count": 165 },
+  { "number": 7,  "name_ar": "الأعراف",        "name_en": "Al-A'raf",         "juz": 8,  "page_start": 151, "page_end": 176, "ayah_count": 206 },
+  { "number": 8,  "name_ar": "الأنفال",        "name_en": "Al-Anfal",         "juz": 9,  "page_start": 177, "page_end": 186, "ayah_count": 75  },
+  { "number": 9,  "name_ar": "التوبة",         "name_en": "At-Tawbah",        "juz": 10, "page_start": 187, "page_end": 207, "ayah_count": 129 },
+  { "number": 10, "name_ar": "يونس",           "name_en": "Yunus",            "juz": 11, "page_start": 208, "page_end": 221, "ayah_count": 109 },
+  { "number": 11, "name_ar": "هود",            "name_en": "Hud",              "juz": 11, "page_start": 221, "page_end": 235, "ayah_count": 123 },
+  { "number": 12, "name_ar": "يوسف",           "name_en": "Yusuf",            "juz": 12, "page_start": 235, "page_end": 248, "ayah_count": 111 },
+  { "number": 13, "name_ar": "الرعد",          "name_en": "Ar-Ra'd",          "juz": 13, "page_start": 249, "page_end": 255, "ayah_count": 43  },
+  { "number": 14, "name_ar": "إبراهيم",        "name_en": "Ibrahim",          "juz": 13, "page_start": 255, "page_end": 261, "ayah_count": 52  },
+  { "number": 15, "name_ar": "الحجر",          "name_en": "Al-Hijr",          "juz": 14, "page_start": 262, "page_end": 267, "ayah_count": 99  },
+  { "number": 16, "name_ar": "النحل",          "name_en": "An-Nahl",          "juz": 14, "page_start": 267, "page_end": 281, "ayah_count": 128 },
+  { "number": 17, "name_ar": "الإسراء",        "name_en": "Al-Isra",          "juz": 15, "page_start": 282, "page_end": 293, "ayah_count": 111 },
+  { "number": 18, "name_ar": "الكهف",          "name_en": "Al-Kahf",          "juz": 15, "page_start": 293, "page_end": 304, "ayah_count": 110 },
+  { "number": 19, "name_ar": "مريم",           "name_en": "Maryam",           "juz": 16, "page_start": 305, "page_end": 312, "ayah_count": 98  },
+  { "number": 20, "name_ar": "طه",             "name_en": "Ta-Ha",            "juz": 16, "page_start": 312, "page_end": 321, "ayah_count": 135 },
+  { "number": 21, "name_ar": "الأنبياء",       "name_en": "Al-Anbiya",        "juz": 17, "page_start": 322, "page_end": 331, "ayah_count": 112 },
+  { "number": 22, "name_ar": "الحج",           "name_en": "Al-Hajj",          "juz": 17, "page_start": 332, "page_end": 341, "ayah_count": 78  },
+  { "number": 23, "name_ar": "المؤمنون",       "name_en": "Al-Mu'minun",      "juz": 18, "page_start": 342, "page_end": 349, "ayah_count": 118 },
+  { "number": 24, "name_ar": "النور",          "name_en": "An-Nur",           "juz": 18, "page_start": 350, "page_end": 359, "ayah_count": 64  },
+  { "number": 25, "name_ar": "الفرقان",        "name_en": "Al-Furqan",        "juz": 18, "page_start": 359, "page_end": 366, "ayah_count": 77  },
+  { "number": 26, "name_ar": "الشعراء",        "name_en": "Ash-Shu'ara",      "juz": 19, "page_start": 367, "page_end": 376, "ayah_count": 227 },
+  { "number": 27, "name_ar": "النمل",          "name_en": "An-Naml",          "juz": 19, "page_start": 377, "page_end": 385, "ayah_count": 93  },
+  { "number": 28, "name_ar": "القصص",          "name_en": "Al-Qasas",         "juz": 20, "page_start": 385, "page_end": 396, "ayah_count": 88  },
+  { "number": 29, "name_ar": "العنكبوت",       "name_en": "Al-'Ankabut",      "juz": 20, "page_start": 396, "page_end": 404, "ayah_count": 69  },
+  { "number": 30, "name_ar": "الروم",          "name_en": "Ar-Rum",           "juz": 21, "page_start": 404, "page_end": 410, "ayah_count": 60  },
+  { "number": 31, "name_ar": "لقمان",          "name_en": "Luqman",           "juz": 21, "page_start": 411, "page_end": 414, "ayah_count": 34  },
+  { "number": 32, "name_ar": "السجدة",         "name_en": "As-Sajdah",        "juz": 21, "page_start": 415, "page_end": 417, "ayah_count": 30  },
+  { "number": 33, "name_ar": "الأحزاب",        "name_en": "Al-Ahzab",         "juz": 21, "page_start": 418, "page_end": 427, "ayah_count": 73  },
+  { "number": 34, "name_ar": "سبأ",            "name_en": "Saba",             "juz": 22, "page_start": 428, "page_end": 434, "ayah_count": 54  },
+  { "number": 35, "name_ar": "فاطر",           "name_en": "Fatir",            "juz": 22, "page_start": 434, "page_end": 440, "ayah_count": 45  },
+  { "number": 36, "name_ar": "يس",             "name_en": "Ya-Sin",           "juz": 22, "page_start": 440, "page_end": 445, "ayah_count": 83  },
+  { "number": 37, "name_ar": "الصافات",        "name_en": "As-Saffat",        "juz": 23, "page_start": 446, "page_end": 452, "ayah_count": 182 },
+  { "number": 38, "name_ar": "ص",              "name_en": "Sad",              "juz": 23, "page_start": 453, "page_end": 458, "ayah_count": 88  },
+  { "number": 39, "name_ar": "الزمر",          "name_en": "Az-Zumar",         "juz": 23, "page_start": 458, "page_end": 467, "ayah_count": 75  },
+  { "number": 40, "name_ar": "غافر",           "name_en": "Ghafir",           "juz": 24, "page_start": 467, "page_end": 476, "ayah_count": 85  },
+  { "number": 41, "name_ar": "فصلت",           "name_en": "Fussilat",         "juz": 24, "page_start": 477, "page_end": 482, "ayah_count": 54  },
+  { "number": 42, "name_ar": "الشورى",         "name_en": "Ash-Shura",        "juz": 25, "page_start": 483, "page_end": 489, "ayah_count": 53  },
+  { "number": 43, "name_ar": "الزخرف",         "name_en": "Az-Zukhruf",       "juz": 25, "page_start": 489, "page_end": 495, "ayah_count": 89  },
+  { "number": 44, "name_ar": "الدخان",         "name_en": "Ad-Dukhan",        "juz": 25, "page_start": 496, "page_end": 498, "ayah_count": 59  },
+  { "number": 45, "name_ar": "الجاثية",        "name_en": "Al-Jathiyah",      "juz": 25, "page_start": 499, "page_end": 502, "ayah_count": 37  },
+  { "number": 46, "name_ar": "الأحقاف",        "name_en": "Al-Ahqaf",         "juz": 26, "page_start": 502, "page_end": 506, "ayah_count": 35  },
+  { "number": 47, "name_ar": "محمد",           "name_en": "Muhammad",         "juz": 26, "page_start": 507, "page_end": 510, "ayah_count": 38  },
+  { "number": 48, "name_ar": "الفتح",          "name_en": "Al-Fath",          "juz": 26, "page_start": 511, "page_end": 515, "ayah_count": 29  },
+  { "number": 49, "name_ar": "الحجرات",        "name_en": "Al-Hujurat",       "juz": 26, "page_start": 515, "page_end": 517, "ayah_count": 18  },
+  { "number": 50, "name_ar": "ق",              "name_en": "Qaf",              "juz": 26, "page_start": 518, "page_end": 520, "ayah_count": 45  },
+  { "number": 51, "name_ar": "الذاريات",       "name_en": "Adh-Dhariyat",     "juz": 26, "page_start": 520, "page_end": 523, "ayah_count": 60  },
+  { "number": 52, "name_ar": "الطور",          "name_en": "At-Tur",           "juz": 27, "page_start": 523, "page_end": 525, "ayah_count": 49  },
+  { "number": 53, "name_ar": "النجم",          "name_en": "An-Najm",          "juz": 27, "page_start": 526, "page_end": 528, "ayah_count": 62  },
+  { "number": 54, "name_ar": "القمر",          "name_en": "Al-Qamar",         "juz": 27, "page_start": 528, "page_end": 531, "ayah_count": 55  },
+  { "number": 55, "name_ar": "الرحمن",         "name_en": "Ar-Rahman",        "juz": 27, "page_start": 531, "page_end": 534, "ayah_count": 78  },
+  { "number": 56, "name_ar": "الواقعة",        "name_en": "Al-Waqi'ah",       "juz": 27, "page_start": 534, "page_end": 537, "ayah_count": 96  },
+  { "number": 57, "name_ar": "الحديد",         "name_en": "Al-Hadid",         "juz": 27, "page_start": 537, "page_end": 541, "ayah_count": 29  },
+  { "number": 58, "name_ar": "المجادلة",       "name_en": "Al-Mujadila",      "juz": 28, "page_start": 542, "page_end": 545, "ayah_count": 22  },
+  { "number": 59, "name_ar": "الحشر",          "name_en": "Al-Hashr",         "juz": 28, "page_start": 545, "page_end": 548, "ayah_count": 24  },
+  { "number": 60, "name_ar": "الممتحنة",       "name_en": "Al-Mumtahanah",    "juz": 28, "page_start": 549, "page_end": 551, "ayah_count": 13  },
+  { "number": 61, "name_ar": "الصف",           "name_en": "As-Saf",           "juz": 28, "page_start": 551, "page_end": 552, "ayah_count": 14  },
+  { "number": 62, "name_ar": "الجمعة",         "name_en": "Al-Jumu'ah",       "juz": 28, "page_start": 553, "page_end": 554, "ayah_count": 11  },
+  { "number": 63, "name_ar": "المنافقون",      "name_en": "Al-Munafiqun",     "juz": 28, "page_start": 554, "page_end": 555, "ayah_count": 11  },
+  { "number": 64, "name_ar": "التغابن",        "name_en": "At-Taghabun",      "juz": 28, "page_start": 556, "page_end": 557, "ayah_count": 18  },
+  { "number": 65, "name_ar": "الطلاق",         "name_en": "At-Talaq",         "juz": 28, "page_start": 558, "page_end": 559, "ayah_count": 12  },
+  { "number": 66, "name_ar": "التحريم",        "name_en": "At-Tahrim",        "juz": 28, "page_start": 560, "page_end": 561, "ayah_count": 12  },
+  { "number": 67, "name_ar": "الملك",          "name_en": "Al-Mulk",          "juz": 29, "page_start": 562, "page_end": 564, "ayah_count": 30  },
+  { "number": 68, "name_ar": "القلم",          "name_en": "Al-Qalam",         "juz": 29, "page_start": 564, "page_end": 566, "ayah_count": 52  },
+  { "number": 69, "name_ar": "الحاقة",         "name_en": "Al-Haqqah",        "juz": 29, "page_start": 566, "page_end": 568, "ayah_count": 52  },
+  { "number": 70, "name_ar": "المعارج",        "name_en": "Al-Ma'arij",       "juz": 29, "page_start": 568, "page_end": 570, "ayah_count": 44  },
+  { "number": 71, "name_ar": "نوح",            "name_en": "Nuh",              "juz": 29, "page_start": 570, "page_end": 571, "ayah_count": 28  },
+  { "number": 72, "name_ar": "الجن",           "name_en": "Al-Jinn",          "juz": 29, "page_start": 572, "page_end": 573, "ayah_count": 28  },
+  { "number": 73, "name_ar": "المزمل",         "name_en": "Al-Muzzammil",     "juz": 29, "page_start": 574, "page_end": 575, "ayah_count": 20  },
+  { "number": 74, "name_ar": "المدثر",         "name_en": "Al-Muddaththir",   "juz": 29, "page_start": 575, "page_end": 577, "ayah_count": 56  },
+  { "number": 75, "name_ar": "القيامة",        "name_en": "Al-Qiyamah",       "juz": 29, "page_start": 577, "page_end": 578, "ayah_count": 40  },
+  { "number": 76, "name_ar": "الإنسان",        "name_en": "Al-Insan",         "juz": 29, "page_start": 578, "page_end": 580, "ayah_count": 31  },
+  { "number": 77, "name_ar": "المرسلات",       "name_en": "Al-Mursalat",      "juz": 29, "page_start": 580, "page_end": 581, "ayah_count": 50  },
+  { "number": 78, "name_ar": "النبأ",          "name_en": "An-Naba",          "juz": 30, "page_start": 582, "page_end": 583, "ayah_count": 40  },
+  { "number": 79, "name_ar": "النازعات",       "name_en": "An-Nazi'at",       "juz": 30, "page_start": 583, "page_end": 584, "ayah_count": 46  },
+  { "number": 80, "name_ar": "عبس",            "name_en": "'Abasa",           "juz": 30, "page_start": 585, "page_end": 585, "ayah_count": 42  },
+  { "number": 81, "name_ar": "التكوير",        "name_en": "At-Takwir",        "juz": 30, "page_start": 586, "page_end": 586, "ayah_count": 29  },
+  { "number": 82, "name_ar": "الانفطار",       "name_en": "Al-Infitar",       "juz": 30, "page_start": 587, "page_end": 587, "ayah_count": 19  },
+  { "number": 83, "name_ar": "المطففين",       "name_en": "Al-Mutaffifin",    "juz": 30, "page_start": 587, "page_end": 589, "ayah_count": 36  },
+  { "number": 84, "name_ar": "الانشقاق",       "name_en": "Al-Inshiqaq",      "juz": 30, "page_start": 589, "page_end": 589, "ayah_count": 25  },
+  { "number": 85, "name_ar": "البروج",         "name_en": "Al-Buruj",         "juz": 30, "page_start": 590, "page_end": 590, "ayah_count": 22  },
+  { "number": 86, "name_ar": "الطارق",         "name_en": "At-Tariq",         "juz": 30, "page_start": 591, "page_end": 591, "ayah_count": 17  },
+  { "number": 87, "name_ar": "الأعلى",         "name_en": "Al-A'la",          "juz": 30, "page_start": 591, "page_end": 592, "ayah_count": 19  },
+  { "number": 88, "name_ar": "الغاشية",        "name_en": "Al-Ghashiyah",     "juz": 30, "page_start": 592, "page_end": 592, "ayah_count": 26  },
+  { "number": 89, "name_ar": "الفجر",          "name_en": "Al-Fajr",          "juz": 30, "page_start": 593, "page_end": 594, "ayah_count": 30  },
+  { "number": 90, "name_ar": "البلد",          "name_en": "Al-Balad",         "juz": 30, "page_start": 594, "page_end": 594, "ayah_count": 20  },
+  { "number": 91, "name_ar": "الشمس",          "name_en": "Ash-Shams",        "juz": 30, "page_start": 595, "page_end": 595, "ayah_count": 15  },
+  { "number": 92, "name_ar": "الليل",          "name_en": "Al-Layl",          "juz": 30, "page_start": 595, "page_end": 596, "ayah_count": 21  },
+  { "number": 93, "name_ar": "الضحى",          "name_en": "Ad-Duha",          "juz": 30, "page_start": 596, "page_end": 596, "ayah_count": 11  },
+  { "number": 94, "name_ar": "الشرح",          "name_en": "Ash-Sharh",        "juz": 30, "page_start": 596, "page_end": 596, "ayah_count": 8   },
+  { "number": 95, "name_ar": "التين",          "name_en": "At-Tin",           "juz": 30, "page_start": 597, "page_end": 597, "ayah_count": 8   },
+  { "number": 96, "name_ar": "العلق",          "name_en": "Al-'Alaq",         "juz": 30, "page_start": 597, "page_end": 598, "ayah_count": 19  },
+  { "number": 97, "name_ar": "القدر",          "name_en": "Al-Qadr",          "juz": 30, "page_start": 598, "page_end": 598, "ayah_count": 5   },
+  { "number": 98, "name_ar": "البينة",         "name_en": "Al-Bayyinah",      "juz": 30, "page_start": 598, "page_end": 599, "ayah_count": 8   },
+  { "number": 99, "name_ar": "الزلزلة",        "name_en": "Az-Zalzalah",      "juz": 30, "page_start": 599, "page_end": 599, "ayah_count": 8   },
+  { "number": 100, "name_ar": "العاديات",      "name_en": "Al-'Adiyat",       "juz": 30, "page_start": 599, "page_end": 600, "ayah_count": 11  },
+  { "number": 101, "name_ar": "القارعة",       "name_en": "Al-Qari'ah",       "juz": 30, "page_start": 600, "page_end": 600, "ayah_count": 11  },
+  { "number": 102, "name_ar": "التكاثر",       "name_en": "At-Takathur",      "juz": 30, "page_start": 600, "page_end": 600, "ayah_count": 8   },
+  { "number": 103, "name_ar": "العصر",         "name_en": "Al-'Asr",          "juz": 30, "page_start": 601, "page_end": 601, "ayah_count": 3   },
+  { "number": 104, "name_ar": "الهمزة",        "name_en": "Al-Humazah",       "juz": 30, "page_start": 601, "page_end": 601, "ayah_count": 9   },
+  { "number": 105, "name_ar": "الفيل",         "name_en": "Al-Fil",           "juz": 30, "page_start": 601, "page_end": 601, "ayah_count": 5   },
+  { "number": 106, "name_ar": "قريش",          "name_en": "Quraysh",          "juz": 30, "page_start": 602, "page_end": 602, "ayah_count": 4   },
+  { "number": 107, "name_ar": "الماعون",       "name_en": "Al-Ma'un",         "juz": 30, "page_start": 602, "page_end": 602, "ayah_count": 7   },
+  { "number": 108, "name_ar": "الكوثر",        "name_en": "Al-Kawthar",       "juz": 30, "page_start": 602, "page_end": 602, "ayah_count": 3   },
+  { "number": 109, "name_ar": "الكافرون",      "name_en": "Al-Kafirun",       "juz": 30, "page_start": 603, "page_end": 603, "ayah_count": 6   },
+  { "number": 110, "name_ar": "النصر",         "name_en": "An-Nasr",          "juz": 30, "page_start": 603, "page_end": 603, "ayah_count": 3   },
+  { "number": 111, "name_ar": "المسد",         "name_en": "Al-Masad",         "juz": 30, "page_start": 603, "page_end": 603, "ayah_count": 5   },
+  { "number": 112, "name_ar": "الإخلاص",       "name_en": "Al-Ikhlas",        "juz": 30, "page_start": 604, "page_end": 604, "ayah_count": 4   },
+  { "number": 113, "name_ar": "الفلق",         "name_en": "Al-Falaq",         "juz": 30, "page_start": 604, "page_end": 604, "ayah_count": 5   },
+  { "number": 114, "name_ar": "الناس",         "name_en": "An-Nas",           "juz": 30, "page_start": 604, "page_end": 604, "ayah_count": 6   }
+]

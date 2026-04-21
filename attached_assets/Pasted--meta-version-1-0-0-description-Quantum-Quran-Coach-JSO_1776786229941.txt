@@ -1,0 +1,213 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "Quantum Quran Coach — JSON Database Schema",
+    "engine": "fs-module, zero-compilation, Termux-compatible"
+  },
+
+  "schema": {
+    "users": {
+      "_description": "Keyed by username (lowercase)",
+      "example_user": {
+        "username": "string — unique identifier",
+        "password_hash": "string — simple SHA-256 hex (no bcrypt, zero deps)",
+        "display_name": "string",
+        "created_at": "ISO timestamp",
+        "last_active": "ISO timestamp",
+        "avatar_color": "string — hex color auto-assigned",
+
+        "onboarding": {
+          "completed": "boolean",
+          "daily_minutes": "number — available time per day",
+          "goal_months": "number — target completion in months",
+          "preferred_time": "string — 'fajr' | 'after_fajr' | 'noon' | 'evening' | 'night'",
+          "learning_style": "string — 'visual' | 'auditory' | 'kinesthetic'",
+          "current_level": "string — 'beginner' | 'intermediate' | 'advanced'",
+          "plan_type": "string — 'quantum_auto' | 'custom'"
+        },
+
+        "plan": {
+          "type": "string — 'quantum_auto' | 'custom'",
+          "start_date": "ISO date",
+          "current_daily_pages": "number — e.g. 0.25, 0.5, 1, 2",
+          "phase": "string — current phase label e.g. 'ramp_to_1' | 'plateau_1'",
+          "phase_start_date": "ISO date",
+          "phase_days_elapsed": "number",
+          "manual_override": "boolean",
+          "override_target": "number — target pages if manual override",
+          "weekly_off_days": "array of numbers — 0=Sun ... 6=Sat"
+        },
+
+        "progress": {
+          "total_pages_memorized": "number",
+          "total_sessions_completed": "number",
+          "current_streak_days": "number",
+          "longest_streak_days": "number",
+          "last_session_date": "ISO date | null",
+          "juz_completed": "array of numbers — e.g. [1, 2]",
+          "current_juz": "number — 1 to 30",
+          "current_page_in_juz": "number",
+          "total_absences": "number",
+          "consecutive_absences": "number",
+          "last_absence_intervention": "ISO date | null"
+        },
+
+        "sessions": {
+          "_description": "Array of session log objects — last 90 kept",
+          "_array_item": {
+            "date": "ISO date",
+            "pages_done": "number",
+            "difficulty": "string — 'easy' | 'medium' | 'hard'",
+            "duration_minutes": "number",
+            "technique_used": "string — from techniques.json",
+            "ai_alert_shown": "string — alert ID",
+            "mood_score": "number — 1-10 self-reported"
+          }
+        },
+
+        "review_system": {
+          "active": "boolean",
+          "type": "string — 'dedicated_days' | 'full_stop' | 'daily_mix'",
+          "assigned_at": "ISO date",
+          "trigger_juz": "number",
+          "dedicated_days_per_week": "number | null",
+          "solidified_juz": "array of numbers"
+        },
+
+        "energy": {
+          "score": "number 0-100",
+          "friction": "number 0-10",
+          "afi": "number 0-100",
+          "history": "array — last 10 scores"
+        },
+
+        "friends": "array of usernames",
+        "friend_requests_sent": "array of usernames",
+        "friend_requests_received": "array of usernames",
+
+        "notifications": {
+          "_array_item": {
+            "id": "string",
+            "type": "string — 'ai_nudge' | 'friend_activity' | 'admin_broadcast' | 'milestone'",
+            "message": "string",
+            "timestamp": "ISO timestamp",
+            "read": "boolean"
+          }
+        }
+      }
+    },
+
+    "chats": {
+      "_description": "Keyed by chat_id = sorted usernames joined with '_'",
+      "example_chat_id": {
+        "participants": "array of 2 usernames",
+        "messages": {
+          "_array_item": {
+            "id": "string — uuid-like",
+            "from": "string — username",
+            "text": "string",
+            "timestamp": "ISO timestamp",
+            "read": "boolean"
+          }
+        },
+        "last_message_at": "ISO timestamp",
+        "motivation_score": "number 0-100 — derived by AI from activity"
+      }
+    },
+
+    "groups": {
+      "_description": "Group chats / accountability circles",
+      "example_group_id": {
+        "id": "string",
+        "name": "string",
+        "created_by": "string — username",
+        "created_at": "ISO timestamp",
+        "members": "array of usernames",
+        "messages": "array — same structure as chats.messages",
+        "last_message_at": "ISO timestamp"
+      }
+    },
+
+    "admin": {
+      "password_hash": "string",
+      "quotes": {
+        "_array_item": {
+          "id": "string",
+          "text_ar": "string — Arabic",
+          "text_en": "string — English",
+          "source": "string",
+          "category": "string — 'motivation' | 'technique' | 'wisdom'",
+          "added_at": "ISO timestamp",
+          "active": "boolean"
+        }
+      },
+      "algorithm_weights": {
+        "hesitation_penalty_per_second": 8,
+        "erratic_penalty_per_count": 2,
+        "focus_bonus_per_minute": 4,
+        "afi_skip_penalty": 5,
+        "afi_complete_bonus": 3,
+        "absence_intervention_days": 3,
+        "energy_ema_weight": 0.65
+      },
+      "broadcast_messages": {
+        "_array_item": {
+          "id": "string",
+          "message": "string",
+          "sent_at": "ISO timestamp",
+          "sent_by": "admin",
+          "active": "boolean"
+        }
+      },
+      "stats": {
+        "total_users": "number",
+        "total_sessions_today": "number",
+        "total_pages_memorized_alltime": "number"
+      }
+    }
+  },
+
+  "seed": {
+    "admin": {
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "quotes": [
+        {
+          "id": "q001",
+          "text_ar": "إن الذي يحفظ القرآن لا يفتقر أبداً",
+          "text_en": "Whoever memorizes the Quran will never be in need",
+          "source": "classical scholars",
+          "category": "motivation",
+          "added_at": "2025-01-01T00:00:00.000Z",
+          "active": true
+        },
+        {
+          "id": "q002",
+          "text_ar": "الاستمرار ولو بالقليل خير من الانقطاع",
+          "text_en": "Consistency, even in small amounts, is better than abandonment",
+          "source": "Al-Ghawthani Method",
+          "category": "technique",
+          "added_at": "2025-01-01T00:00:00.000Z",
+          "active": true
+        }
+      ],
+      "algorithm_weights": {
+        "hesitation_penalty_per_second": 8,
+        "erratic_penalty_per_count": 2,
+        "focus_bonus_per_minute": 4,
+        "afi_skip_penalty": 5,
+        "afi_complete_bonus": 3,
+        "absence_intervention_days": 3,
+        "energy_ema_weight": 0.65
+      },
+      "broadcast_messages": [],
+      "stats": {
+        "total_users": 0,
+        "total_sessions_today": 0,
+        "total_pages_memorized_alltime": 0
+      }
+    },
+    "users": {},
+    "chats": {},
+    "groups": {}
+  }
+}

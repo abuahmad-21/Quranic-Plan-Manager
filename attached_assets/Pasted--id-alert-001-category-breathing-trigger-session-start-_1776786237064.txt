@@ -1,0 +1,502 @@
+[
+  {
+    "id": "alert_001",
+    "category": "breathing",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "قبل أن تبدأ: خذ نفساً عميقاً لمدة 4 ثوانٍ، احبسه 4 ثوانٍ، ثم أخرجه 6 ثوانٍ. هذا يضاعف قدرة دماغك على الحفظ.",
+    "text_en": "Before you begin: inhale deeply for 4 seconds, hold for 4, exhale for 6. This multiplies your brain's memorization capacity.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_002",
+    "category": "focus",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "ضع المصحف أمامك بارتفاع مناسب وعلى يسارك قليلاً. هذا يُحرِّك مراكز التركيز في النصف الأيسر من دماغك.",
+    "text_en": "Position the Mushaf slightly to your upper left. This activates concentration centers in the left hemisphere of your brain.",
+    "source": "focus_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_003",
+    "category": "motivation",
+    "trigger": "streak_milestone",
+    "difficulty_context": "any",
+    "text_ar": "أنت الآن في حالة تدفق! الدماغ يُفرز مواد التركيز الطبيعية. هذه هي اللحظة المثالية للحفظ.",
+    "text_en": "You are now in a flow state! Your brain is releasing its natural focus compounds. This is the perfect moment to memorize.",
+    "source": "neuroscience",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_004",
+    "category": "technique",
+    "trigger": "difficulty_hard",
+    "difficulty_context": "hard",
+    "text_ar": "الصعوبة دليل على أن دماغك يبني روابط جديدة. قلّل الكمية اليوم إلى النصف، وعوِّض بتعمّق التكرار.",
+    "text_en": "Difficulty signals your brain is building new neural pathways. Halve today's quantity and compensate with deeper repetition.",
+    "source": "spaced_repetition",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_005",
+    "category": "breathing",
+    "trigger": "difficulty_hard",
+    "difficulty_context": "hard",
+    "text_ar": "توقف الآن. أغمض عينيك 30 ثانية وتنفس بعمق. الأوكسجين هو وقود الذاكرة — أمده بما يحتاج.",
+    "text_en": "Stop now. Close your eyes for 30 seconds and breathe deeply. Oxygen is memory's fuel — give it what it needs.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_006",
+    "category": "psychology",
+    "trigger": "negative_self_talk",
+    "difficulty_context": "any",
+    "text_ar": "امحُ عبارة 'ذاكرتي ضعيفة' من قاموسك. استبدلها بـ: 'أنا أتمتع بذاكرة رائعة في طور النمو'. الدماغ يُصدّق ما تقوله له.",
+    "text_en": "Delete 'my memory is weak' from your vocabulary. Replace it with: 'I have a remarkable memory that grows stronger daily.' Your brain believes what you tell it.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_007",
+    "category": "spaced_repetition",
+    "trigger": "juz_complete",
+    "difficulty_context": "any",
+    "text_ar": "أتممت جزءاً كاملاً! الآن يبدأ الاختبار الحقيقي: راجع هذا الجزء خلال 24 ساعة لتنقله من الذاكرة قصيرة المدى إلى الذاكرة الذهبية.",
+    "text_en": "You've completed a full Juz! The real test begins now: review within 24 hours to transfer it from short-term to golden long-term memory.",
+    "source": "spaced_repetition",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_008",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "easy",
+    "text_ar": "طريقة الربط الخيالي: بعد حفظ كل آية، أغمض عينيك وابنِ لوحاً خيالياً تترتب عليه الكلمات كصور مضيئة.",
+    "text_en": "The Imagination Link: After memorizing each verse, close your eyes and build a mental board where words appear as vivid images.",
+    "source": "visualization_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_009",
+    "category": "timing",
+    "trigger": "schedule_reminder",
+    "difficulty_context": "any",
+    "text_ar": "الساعة قبيل الفجر هي ذروة إفراز هرمونات التركيز والتثبيت في جسمك. حاول أن تجعل جزءاً من حفظك في هذا الوقت المبارك.",
+    "text_en": "The pre-dawn hour is the peak of your body's focus and consolidation hormones. Try to make part of your memorization in this blessed time.",
+    "source": "circadian_rhythm",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_010",
+    "category": "motivation",
+    "trigger": "absence_day_1",
+    "difficulty_context": "any",
+    "text_ar": "لاحظنا أنك لم تُكمل جلستك أمس. الدماغ يفضل الاستمرار حتى ولو بخمس دقائق. هل يمكنك الآن خمس دقائق فقط؟",
+    "text_en": "We noticed you missed yesterday. The brain prefers continuity, even for five minutes. Can you give just five minutes right now?",
+    "source": "habit_science",
+    "intensity": "gentle"
+  },
+  {
+    "id": "alert_011",
+    "category": "motivation",
+    "trigger": "absence_day_2",
+    "difficulty_context": "any",
+    "text_ar": "يومان من الغياب. الذاكرة الزئبقية تبدأ في التلاشي في اليوم الثالث. قاوِم الآن قبل أن تخسر ما بنيته.",
+    "text_en": "Two days absence. Volatile memory begins fading on day three. Resist now before losing what you've built.",
+    "source": "memory_science",
+    "intensity": "urgent"
+  },
+  {
+    "id": "alert_012",
+    "category": "intervention",
+    "trigger": "absence_day_3",
+    "difficulty_context": "any",
+    "text_ar": "تدخل النظام: ثلاثة أيام من الغياب. خطتك تُعاد حسابها. لكن تذكر — البداية من جديد أسهل مما تتوقع. آية واحدة الآن تكسر السلسلة.",
+    "text_en": "System intervention: 3 days absent. Your plan is being recalculated. But remember — restarting is easier than you think. One verse now breaks the chain.",
+    "source": "ai_engine",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_013",
+    "category": "technique",
+    "trigger": "session_mid",
+    "difficulty_context": "medium",
+    "text_ar": "جرّب الآن أسلوب التنغيم: اقرأ ما حفظته بنغمة مختلفة عن المعتادة. الدماغ يُخزِّن المعلومة المصاحبة للإيقاع أعمق بكثير.",
+    "text_en": "Try melodic variation now: recite what you've memorized in a different tone. The brain stores rhythm-linked information far deeper.",
+    "source": "rhythmic_memory",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_014",
+    "category": "psychology",
+    "trigger": "plateau_detected",
+    "difficulty_context": "any",
+    "text_ar": "أنت في مرحلة الهضم الذهني — وهي مرحلة صحية جداً. الدماغ يُعيد ترتيب ما حفظته. استمر بالمراجعة ولا تتوقف عن الجديد.",
+    "text_en": "You're in the mental digestion phase — a very healthy stage. Your brain is reorganizing what you've memorized. Keep reviewing while continuing new material.",
+    "source": "cognitive_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_015",
+    "category": "social",
+    "trigger": "friend_milestone",
+    "difficulty_context": "any",
+    "text_ar": "صديقك أكمل جلسة اليوم! التنافس الإيجابي يرفع أداء الدماغ إلى 40%. ما رأيك أن تُحقق أنت الآن ما حققه؟",
+    "text_en": "Your friend just completed their session! Positive competition raises brain performance by 40%. How about matching what they achieved right now?",
+    "source": "social_psychology",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_016",
+    "category": "focus",
+    "trigger": "distraction_detected",
+    "difficulty_context": "any",
+    "text_ar": "التشتت عدو الحفظ. أغلق كل شيء واحتفظ فقط بهاتفك لهذه الجلسة. خمس عشرة دقيقة من التركيز الحقيقي تساوي ساعة من التشتت.",
+    "text_en": "Distraction is memorization's enemy. Close everything. Fifteen minutes of real focus equals an hour of scattered effort.",
+    "source": "focus_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_017",
+    "category": "breathing",
+    "trigger": "session_end",
+    "difficulty_context": "any",
+    "text_ar": "قبل النوم: كرِّر ما حفظته اليوم ثلاث مرات بصوت هادئ. النوم يُثبِّت المعلومات في الذاكرة طويلة المدى خلال الساعات الأولى.",
+    "text_en": "Before sleep: repeat today's memorization three times softly. Sleep consolidates information into long-term memory during the first hours.",
+    "source": "sleep_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_018",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب البطاقات: اكتب الكلمة الأولى من كل آية على بطاقة منفصلة. الكتابة تُضاعف الحفظ لأنها تُشغِّل قناة حسية ثالثة.",
+    "text_en": "The Card Method: write the first word of each verse on a separate card. Writing doubles retention by activating a third sensory channel.",
+    "source": "multi_modal_learning",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_019",
+    "category": "milestone",
+    "trigger": "week_streak",
+    "difficulty_context": "any",
+    "text_ar": "أسبوع كامل من الاستمرار! أنت الآن تبني عادة راسخة في دماغك. العلم يقول: 21 يوماً لبناء العادة، و66 يوماً لتجذيرها.",
+    "text_en": "A full week of consistency! You're now building a firm habit in your brain. Science says: 21 days to form a habit, 66 days to root it deep.",
+    "source": "habit_science",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_020",
+    "category": "psychology",
+    "trigger": "self_doubt",
+    "difficulty_context": "hard",
+    "text_ar": "فرّغ كوبك من الأفكار السلبية. كل عقبة في الحفظ ليست دليلاً على عجزك — بل هي دليل على أن الطريق يستحق.",
+    "text_en": "Empty your cup of negative thoughts. Every obstacle in memorization isn't proof of your inability — it's proof the journey is worth it.",
+    "source": "growth_mindset",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_021",
+    "category": "technique",
+    "trigger": "new_juz_start",
+    "difficulty_context": "any",
+    "text_ar": "بدأت جزءاً جديداً! استخدم أسلوب التخصيص والتكرار: كرِّر كل آية جديدة لا تقل عن سبع مرات قبل الانتقال للتالية.",
+    "text_en": "New Juz started! Use the Specification & Repetition method: repeat each new verse at least seven times before moving to the next.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_022",
+    "category": "timing",
+    "trigger": "off_schedule",
+    "difficulty_context": "any",
+    "text_ar": "غيِّر وقت حفظك اليوم. الدماغ يُقدِّر المفاجأة — تغيير الوقت يُحفِّز مناطق جديدة في الدماغ ويكسر روتين النسيان.",
+    "text_en": "Change your memorization time today. The brain values surprise — shifting your schedule activates new regions and breaks the forgetting routine.",
+    "source": "pattern_interrupt",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_023",
+    "category": "motivation",
+    "trigger": "difficulty_easy",
+    "difficulty_context": "easy",
+    "text_ar": "الجلسة كانت سهلة — هذا يعني أنك في حالة تدفق. النظام سيزيد هدفك قليلاً الأسبوع القادم. استعد للتحدي القادم!",
+    "text_en": "Session was easy — you're in flow state. The system will slightly raise your target next week. Prepare for the coming challenge!",
+    "source": "quantum_progression",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_024",
+    "category": "focus",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "تمرين الإبهام: ضع إبهامك في منتصف الصفحة وحرِّكه ببطء بين الأسطر. هذا يُجبر عينيك على التركيز البؤري ويقطع التشتت.",
+    "text_en": "Thumb technique: place your thumb in the middle of the page and move it slowly between lines. This forces focal concentration and cuts distraction.",
+    "source": "focus_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_025",
+    "category": "spaced_repetition",
+    "trigger": "review_due",
+    "difficulty_context": "any",
+    "text_ar": "موعد المراجعة الدورية! تذكر: المراجعة قبل أن تبدأ الذاكرة في التراجع تُثبِّت المعلومة بمعدل أربعة أضعاف.",
+    "text_en": "Scheduled review due! Remember: reviewing before memory starts declining solidifies information four times more effectively.",
+    "source": "spaced_repetition",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_026",
+    "category": "milestone",
+    "trigger": "month_streak",
+    "difficulty_context": "any",
+    "text_ar": "شهر كامل من الاستمرار! أنت الآن ضمن الـ 5% الذين يصمدون. الذاكرة الريموت — التي لا تُنسى — بدأت تتشكل.",
+    "text_en": "A full month of consistency! You're now in the top 5% who persevere. The 'remote memory' — which never forgets — has begun forming.",
+    "source": "memory_science",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_027",
+    "category": "psychology",
+    "trigger": "afi_low",
+    "difficulty_context": "any",
+    "text_ar": "النظام يلاحظ أنك تتجنب التحدي. الدماغ لا ينمو في منطقة الراحة. اختر صعوبة أكبر اليوم ولو لعشر دقائق فقط.",
+    "text_en": "The system notices you're avoiding challenge. The brain doesn't grow in the comfort zone. Choose higher difficulty today, even for just ten minutes.",
+    "source": "growth_mindset",
+    "intensity": "direct"
+  },
+  {
+    "id": "alert_028",
+    "category": "technique",
+    "trigger": "session_mid",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب الأخ القرآني: إن أمكنك، تبادل مراجعة ما حفظت مع شخص آخر. الاستماع النشط يُضاعف التثبيت.",
+    "text_en": "The Quran Partner method: if possible, exchange review with someone else. Active listening doubles consolidation.",
+    "source": "social_learning",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_029",
+    "category": "breathing",
+    "trigger": "anxiety_detected",
+    "difficulty_context": "hard",
+    "text_ar": "شعرت بالضغط؟ التنفس البطني علاج فوري: ضع يدك على بطنك وتأكد أنه يرتفع عند الشهيق. أربع جولات وستلاحظ الفرق.",
+    "text_en": "Feeling pressure? Diaphragmatic breathing is immediate relief: place your hand on your belly and ensure it rises on inhale. Four rounds and you'll notice the difference.",
+    "source": "breathing_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_030",
+    "category": "motivation",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "كل صفحة تحفظها اليوم هي طابق جديد في قصرك في الجنة. البناء لا يتوقف إلا حين تتوقف أنت.",
+    "text_en": "Every page you memorize today is a new floor in your palace. The construction stops only when you stop.",
+    "source": "spiritual_motivation",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_031",
+    "category": "technique",
+    "trigger": "revision_system_a",
+    "difficulty_context": "any",
+    "text_ar": "نظام التسبيع: قسِّم القرآن على سبعة أيام — ابدأ الجزء بيوم الأحد وأتمَّ الختمة بيوم السبت. هذا ما كان يفعله السلف.",
+    "text_en": "The Seventh System: divide the Quran across seven days — start with Sunday and complete the Khatmah by Saturday. This is what the Salaf practiced.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_032",
+    "category": "focus",
+    "trigger": "location_suggestion",
+    "difficulty_context": "any",
+    "text_ar": "المسجد هو أفضل مكان للحفظ: عيناك لا ترى محرماً، أذناك لا تسمعان ما يُشغل القلب، ولسانك لا ينطق إلا بخير.",
+    "text_en": "The mosque is the optimal memorization location: your eyes see nothing forbidden, your ears hear nothing distracting, your tongue speaks only good.",
+    "source": "pdf_technique",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_033",
+    "category": "psychology",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "العبقرية ليست أكثر من تركيز الذهن. أنت لا تحتاج موهبة خارقة — أنت تحتاج لحظات تركيز متراكمة كل يوم.",
+    "text_en": "Genius is nothing more than concentrated attention. You don't need extraordinary talent — you need accumulated moments of focus, every day.",
+    "source": "focus_wisdom",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_034",
+    "category": "spaced_repetition",
+    "trigger": "similarity_warning",
+    "difficulty_context": "medium",
+    "text_ar": "انتبه للمتشابهات! الآيات المتقاربة في اللفظ تحتاج عناية خاصة. ركِّز الآن على الفروق الدقيقة بين الآيات المشابهة.",
+    "text_en": "Watch for similar verses! Near-identical verses need special attention. Focus now on the subtle differences between similar passages.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_035",
+    "category": "motivation",
+    "trigger": "challenge_mode",
+    "difficulty_context": "easy",
+    "text_ar": "أنت في وضع التحدي! النظام ضاعف هدفك. تذكر: الطالبة السورية حفظت 35 صفحة جديدة في أقل من 24 ساعة. أنت قادر.",
+    "text_en": "You're in challenge mode! The system has doubled your goal. Remember: one student memorized 35 new pages in under 24 hours. You can do this.",
+    "source": "success_story",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_036",
+    "category": "technique",
+    "trigger": "session_start",
+    "difficulty_context": "any",
+    "text_ar": "أسلوب الملف المفتوح: لا تُكمل المقطع كاملاً دفعة واحدة. توقف في منتصف التشويق — دماغك سيظل يعالجه حتى تعود.",
+    "text_en": "The Open File method: don't complete a section all at once. Stop at the peak of curiosity — your brain will keep processing it until you return.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_037",
+    "category": "psychology",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "93% من تصرفاتك تقودها المنطقة اللاواعية. برمج هذه المنطقة برسائل إيجابية قبل النوم وبعد الاستيقاظ مباشرة.",
+    "text_en": "93% of your actions are driven by your subconscious. Program this zone with positive messages just before sleep and immediately upon waking.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_038",
+    "category": "milestone",
+    "trigger": "pages_25",
+    "difficulty_context": "any",
+    "text_ar": "25 صفحة محفوظة! ربع جزء كامل في ذاكرتك. تصور كم ستكون عليه بعد عام من الاستمرار على هذا المسار.",
+    "text_en": "25 pages memorized! A quarter of a Juz lives in your memory. Imagine where you'll be after a year on this path.",
+    "source": "milestone",
+    "intensity": "high"
+  },
+  {
+    "id": "alert_039",
+    "category": "breathing",
+    "trigger": "pre_session",
+    "difficulty_context": "any",
+    "text_ar": "تقنية الاستيقاظ الطبيعي: برمج عقلك الليلة أن تستيقظ في ساعة الفجر. كرِّر ذلك ثلاث مرات وأنت تغفو. يعمل مع 80% من الناس.",
+    "text_en": "Natural wake programming: tell your mind tonight to wake at Fajr time. Repeat this three times as you fall asleep. Works for 80% of people.",
+    "source": "subconscious_programming",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_040",
+    "category": "social",
+    "trigger": "group_inactive",
+    "difficulty_context": "any",
+    "text_ar": "مجموعتك هادئة اليوم. كُن أنت المُحرِّك — أرسِل كلمة تشجيع لأصدقائك. الطاقة الجماعية تبني ما لا تبنيه الطاقة الفردية.",
+    "text_en": "Your group is quiet today. Be the catalyst — send your friends an encouraging word. Group energy builds what individual energy cannot.",
+    "source": "social_psychology",
+    "intensity": "gentle"
+  },
+  {
+    "id": "alert_041",
+    "category": "technique",
+    "trigger": "review_system_b",
+    "difficulty_context": "any",
+    "text_ar": "وقفة المراجعة الكاملة: توقف عن الحفظ الجديد اليوم وراجع كل ما مضى. التثبيت أهم من التوسع — الجذور قبل الفروع.",
+    "text_en": "Full review pause: stop new memorization today and review everything past. Consolidation is more important than expansion — roots before branches.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_042",
+    "category": "motivation",
+    "trigger": "generic_daily",
+    "difficulty_context": "any",
+    "text_ar": "تذكر الشيخ الذي بلغ 73 عاماً وبدأ الحفظ من الصفر وأتمَّه. الإرادة لا تعرف سناً. ما عذرك أنت؟",
+    "text_en": "Remember the sheikh who began memorizing at age 73 from scratch and completed it. Willpower knows no age. What is your excuse?",
+    "source": "success_story",
+    "intensity": "direct"
+  },
+  {
+    "id": "alert_043",
+    "category": "focus",
+    "trigger": "session_mid",
+    "difficulty_context": "medium",
+    "text_ar": "ابتسم الآن — وإن لم تكن سعيداً. العلم يُثبت أن البسمة تُطلق مواد كيميائية في الدماغ تُحسِّن الذاكرة والتركيز فوراً.",
+    "text_en": "Smile now — even if you don't feel like it. Science confirms that smiling releases brain chemicals that immediately improve memory and concentration.",
+    "source": "neuroscience",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_044",
+    "category": "psychology",
+    "trigger": "goal_reminder",
+    "difficulty_context": "any",
+    "text_ar": "أرسِل رسالة لعقلك اللاواعي الآن: 'أنا أحفظ كلام الله، وأنا قادر، وأنا مستمر'. اجعلها حاضرة في الوقت الحالي لا في المستقبل.",
+    "text_en": "Send your subconscious a message now: 'I am memorizing the words of God, I am capable, I am consistent.' Keep it in present tense, not future.",
+    "source": "nlp_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_045",
+    "category": "spaced_repetition",
+    "trigger": "forgetting_detected",
+    "difficulty_context": "hard",
+    "text_ar": "النسيان ليس فشلاً — هو جزء طبيعي من عملية التثبيت. كل مرة تسترجع ما نسيته تُقوِّي الرابط العصبي بشكل دائم.",
+    "text_en": "Forgetting is not failure — it's a natural part of the consolidation process. Every time you retrieve what you forgot, you permanently strengthen that neural link.",
+    "source": "memory_science",
+    "intensity": "calm"
+  },
+  {
+    "id": "alert_046",
+    "category": "motivation",
+    "trigger": "streak_end",
+    "difficulty_context": "any",
+    "text_ar": "انكسرت السلسلة — هذا يحدث. لكن انكسار السلسلة لا يعني انكسار الحلم. ابدأ سلسلة جديدة اليوم. الآن. في هذه اللحظة.",
+    "text_en": "The streak broke — it happens. But a broken streak doesn't mean a broken dream. Start a new chain today. Now. This moment.",
+    "source": "resilience",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_047",
+    "category": "technique",
+    "trigger": "visual_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم بصري: استخدم خريطة ذهنية لربط آيات كل صفحة. الألوان والأشكال ترسخ في الذاكرة البصرية أعمق من الكلمات.",
+    "text_en": "You're a visual learner: use a mind map to connect each page's verses. Colors and shapes embed deeper in visual memory than words alone.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_048",
+    "category": "technique",
+    "trigger": "auditory_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم سمعي: اسمع تلاوة القارئ المفضل لديك أولاً ثم احفظ. الذاكرة السمعية الإيقاعية هي أقوى أنواع الذاكرة لديك.",
+    "text_en": "You're an auditory learner: listen to your preferred reciter first, then memorize. Auditory rhythmic memory is your strongest memory channel.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_049",
+    "category": "technique",
+    "trigger": "kinesthetic_learner",
+    "difficulty_context": "any",
+    "text_ar": "أنت متعلم حركي: تحرك أثناء الحفظ — امشِ ببطء أو حرِّك يدك بإيقاع الآية. الحركة تُفعِّل مراكز الذاكرة الحسية.",
+    "text_en": "You're a kinesthetic learner: move while memorizing — walk slowly or move your hand to the verse's rhythm. Movement activates sensory memory centers.",
+    "source": "pdf_technique",
+    "intensity": "medium"
+  },
+  {
+    "id": "alert_050",
+    "category": "motivation",
+    "trigger": "plan_complete",
+    "difficulty_context": "any",
+    "text_ar": "أكملت خطتك لهذه المرحلة! تذكر قول العلماء: الحفظ في الصغر كالنقش في الحجر. كل ما حفظته اليوم سيظل راسخاً في ذاكرتك الذهبية.",
+    "text_en": "You've completed this phase of your plan! Recall the scholars' saying: memorization in youth is like engraving in stone. What you memorize today will remain in your golden memory.",
+    "source": "wisdom",
+    "intensity": "high"
+  }
+]

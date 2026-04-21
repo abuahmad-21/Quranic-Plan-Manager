@@ -1,0 +1,870 @@
+/* ═══════════════════════════════════════════════════════════════
+   QUANTUM QURAN COACH — app.js
+   Complete SPA: Auth · Onboarding · Dashboard · Sensors
+   Session · Plan · Network · Leaderboard · Admin
+   ═══════════════════════════════════════════════════════════════ */
+'use strict';
+
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const API = 'http://localhost:3000/api';
+
+const S = { // AppState
+  token:    localStorage.getItem('qqc_token') || null,
+  username: localStorage.getItem('qqc_user')  || null,
+  mode:     'NORMAL_MODE',
+  chatWith: null,
+  chatPoll: null,
+  chatLast: null,
+};
+
+/* ══════════════════════════════════════════════
+   SENSOR STATE  (L1 — frontend)
+══════════════════════════════════════════════ */
+const SX = {
+  focusSeconds:0, hiddenSeconds:0, hesitationMs:0,
+  mouseErratics:0, touchErratics:0, exitAttempts:0,
+  scrollSpeed:0, scrolledToBottom:false,
+  isVisible:true, hiddenAt:0,
+  lastClickTime:0, lastMouseX:0, lastMouseY:0, lastMouseT:Date.now(),
+  lastScrollY:0, lastScrollT:Date.now(),
+  mouseHist:[], scrollBuf:[], entryHist:[],
+  focusTick:null, syncTick:null,
+};
+
+/* ══════════════════════════════════════════════
+   SENSORS
+══════════════════════════════════════════════ */
+const Sensors = {
+  init() {
+    // Load entry history
+    try { SX.entryHist = JSON.parse(sessionStorage.getItem('qqc_eh') || '[]'); } catch(_){}
+    SX.entryHist.push(Date.now());
+    if (SX.entryHist.length > 10) SX.entryHist.shift();
+    sessionStorage.setItem('qqc_eh', JSON.stringify(SX.entryHist));
+
+    // Page Visibility — focus sensor
+    document.addEventListener('visibilitychange', () => {
+      SX.isVisible = document.visibilityState === 'visible';
+      if (!SX.isVisible) { SX.hiddenAt = Date.now(); dot('s-focus', false); }
+      else { SX.hiddenSeconds += (Date.now() - SX.hiddenAt) / 1000; dot('s-focus', true); }
+    });
+
+    // Focus counter
+    SX.focusTick = setInterval(() => { if (SX.isVisible) SX.focusSeconds++; }, 1000);
+
+    // Hesitation radar
+    document.addEventListener('mouseenter', e => {
+      if (e.target?.matches?.('.btn,.feedback-btn,.nav-btn'))
+        SX.lastClickTime = Date.now();
+    }, true);
+
+    document.addEventListener('click', () => {
+      const now = Date.now();
+      if (SX.lastClickTime > 0) {
+        const d = now - SX.lastClickTime;
+        if (d > 400 && d < 9000) {
+          SX.hesitationMs = Math.max(SX.hesitationMs, d);
+          dot('s-intent', true);
+          setTimeout(() => dot('s-intent', false), 800);
+        }
+      }
+      SX.lastClickTime = Date.now();
+    });
+
+    // Exit intent → Red Alert Override
+    document.addEventListener('mouseleave', e => {
+      if (e.clientY <= 5) {
+        SX.exitAttempts++;
+        if (SX.exitAttempts >= 2) Sensors.sync('exit_intent');
+      }
+    });
+
+    // Kinetic mood scanner
+    document.addEventListener('mousemove', e => {
+      const now = Date.now();
+      const dx = e.clientX - SX.lastMouseX, dy = e.clientY - SX.lastMouseY;
+      const dt = now - SX.lastMouseT;
+      if (dt > 0 && dt < 200) {
+        const sp = Math.sqrt(dx*dx + dy*dy) / dt;
+        SX.mouseHist.push({dx, dy, sp});
+        if (SX.mouseHist.length > 20) SX.mouseHist.shift();
+        if (SX.mouseHist.length >= 2) {
+          const p = SX.mouseHist[SX.mouseHist.length - 2];
+          if ((Math.sign(dx) !== Math.sign(p.dx) || Math.sign(dy) !== Math.sign(p.dy)) && sp > 1.5) {
+            SX.mouseErratics++;
+            dot('s-kinetic', true);
+            setTimeout(() => dot('s-kinetic', false), 400);
+          }
+        }
+      }
+      SX.lastMouseX = e.clientX; SX.lastMouseY = e.clientY; SX.lastMouseT = now;
+    });
+
+    // Touch erratic
+    let lx=0, ly=0, lt=0;
+    document.addEventListener('touchmove', e => {
+      const t=e.touches[0], now=Date.now();
+      const dx=t.clientX-lx, dy=t.clientY-ly, dt=now-lt;
+      if (dt > 0 && dt < 150 && Math.sqrt(dx*dx+dy*dy)/dt > 3) SX.touchErratics++;
+      lx=t.clientX; ly=t.clientY; lt=now;
+    }, {passive:true});
+
+    // Scroll speed + bottom detector
+    document.addEventListener('scroll', () => {
+      const now=Date.now(), dy=Math.abs(window.scrollY-SX.lastScrollY), dt=now-SX.lastScrollT;
+      if (dt > 0) {
+        const sp = dy / dt;
+        SX.scrollBuf.push(sp);
+        if (SX.scrollBuf.length > 10) SX.scrollBuf.shift();
+        SX.scrollSpeed = SX.scrollBuf.reduce((a,b)=>a+b,0) / SX.scrollBuf.length;
+      }
+      SX.lastScrollY = window.scrollY; SX.lastScrollT = now;
+      if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 80)
+        SX.scrolledToBottom = true;
+      dot('s-kinetic', true);
+      setTimeout(() => dot('s-kinetic', false), 500);
+    }, {passive:true});
+
+    // Auto-sync every 20s
+    SX.syncTick = setInterval(() => Sensors.sync('auto'), 20000);
+    dot('s-rhythm', SX.entryHist.length > 1);
+  },
+
+  chaos() {
+    if (SX.entryHist.length < 2) return 0;
+    const gaps = SX.entryHist.slice(1).map((v,i) => v - SX.entryHist[i]);
+    const avg  = gaps.reduce((a,b)=>a+b,0) / gaps.length;
+    const std  = Math.sqrt(gaps.reduce((a,g)=>a+Math.pow(g-avg,2),0) / gaps.length);
+    return Math.min(100, (std / (24*3600*1000)) * 100);
+  },
+
+  payload(trigger='auto') {
+    return {
+      trigger, timestamp:Date.now(),
+      focusSeconds:   SX.focusSeconds,
+      hiddenSeconds:  SX.hiddenSeconds,
+      hesitationMs:   SX.hesitationMs,
+      mouseErratics:  SX.mouseErratics,
+      touchErratics:  SX.touchErratics,
+      exitAttempts:   SX.exitAttempts,
+      scrollSpeed:    +SX.scrollSpeed.toFixed(4),
+      scrolledToBottom: SX.scrolledToBottom,
+      chaosRhythm:    +Sensors.chaos().toFixed(2),
+      lastMode:       S.mode,
+    };
+  },
+
+  async sync(trigger='auto') {
+    if (!S.token) return;
+    try {
+      const r = await Api.post('/process-state', Sensors.payload(trigger));
+      if (r && !r.error) UI.applyDecision(r);
+    } catch(_){}
+  },
+
+  reset() {
+    SX.hesitationMs  = 0;
+    SX.exitAttempts  = 0;
+    SX.mouseErratics = Math.max(0, SX.mouseErratics - 5);
+  },
+
+  stop() {
+    clearInterval(SX.focusTick);
+    clearInterval(SX.syncTick);
+  },
+};
+
+function dot(id, on) {
+  const el = document.getElementById(id);
+  if (el) on ? el.classList.add('active') : el.classList.remove('active');
+}
+
+/* ══════════════════════════════════════════════
+   API HELPERS
+══════════════════════════════════════════════ */
+const Api = {
+  h() {
+    const h = {'Content-Type':'application/json'};
+    if (S.token)    h['x-token']    = S.token;
+    if (S.username) h['x-username'] = S.username;
+    return h;
+  },
+  get(p)         { return fetch(API+p, {headers:this.h()}).then(r=>r.json()); },
+  post(p, b={})  { return fetch(API+p, {method:'POST',  headers:this.h(), body:JSON.stringify(b)}).then(r=>r.json()); },
+  patch(p, b={}) { return fetch(API+p, {method:'PATCH', headers:this.h(), body:JSON.stringify(b)}).then(r=>r.json()); },
+  adminH(pw)     { return {'Content-Type':'application/json','x-admin-password':pw}; },
+};
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+function toast(msg, type='info', dur=3200) {
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+/* ══════════════════════════════════════════════
+   ROUTER
+══════════════════════════════════════════════ */
+const App = {
+  showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-btn[data-view]').forEach(b =>
+      b.classList.toggle('active', b.dataset.view === id));
+    if (id === 'view-dashboard')   Dashboard.load();
+    if (id === 'view-plan')        Plan.load();
+    if (id === 'view-network')     Network.load();
+    if (id === 'view-leaderboard') Leaderboard.load();
+  },
+};
+window.App = App;
+
+/* ══════════════════════════════════════════════
+   UI EFFECTORS  (L4 — apply AI decision to DOM)
+══════════════════════════════════════════════ */
+const UI = {
+  applyDecision(data) {
+    if (!data?.mode) return;
+    const mode = data.mode, energy = +(data.energy ?? 75);
+    S.mode = mode;
+
+    // Body mode class
+    document.body.className = document.body.className
+      .replace(/\bmode-\S+/g, '').trim();
+    const mc = {
+      NORMAL_MODE:'normal', CHALLENGE_MODE:'challenge',
+      RELOAD_MODE:'reload', PATTERN_INTERRUPT:'interrupt'
+    }[mode] || 'normal';
+    document.body.classList.add('mode-' + mc);
+
+    // Island class
+    const island = document.getElementById('island');
+    if (island) {
+      island.className = 'island';
+      island.classList.add({
+        NORMAL_MODE:'island-normal', CHALLENGE_MODE:'island-challenge',
+        RELOAD_MODE:'island-reload', PATTERN_INTERRUPT:'island-interrupt',
+      }[mode] || 'island-normal');
+    }
+
+    // Energy counter
+    UI.animNum('island-energy', energy);
+
+    // Labels
+    const labels = {
+      NORMAL_MODE:'الوضع العادي', CHALLENGE_MODE:'وضع التحدي',
+      RELOAD_MODE:'وضع الإنعاش', PATTERN_INTERRUPT:'قاطع النمط',
+    };
+    const states = {
+      NORMAL_MODE:'الحالة النفسية: مستقرة', CHALLENGE_MODE:'الحالة: تدفق كامل ⚡',
+      RELOAD_MODE:'الحالة: استعادة الطاقة 🌿', PATTERN_INTERRUPT:'الحالة: تدخل طارئ ⚠️',
+    };
+    const ml = document.getElementById('island-mode-label');
+    const st = document.getElementById('island-state-text');
+    if (ml) ml.textContent = labels[mode] || '';
+    if (st) st.textContent = states[mode] || '';
+
+    // Session mode badge
+    const badge = document.getElementById('session-mode-badge');
+    if (badge) {
+      badge.className = 'mode-badge mode-' + mc;
+      badge.textContent = labels[mode] || '';
+    }
+
+    // Session target pages
+    if (data.target_pages) {
+      const tp = document.getElementById('session-target-pages');
+      if (tp) tp.textContent = data.target_pages;
+    }
+
+    // AI alert
+    if (data.alert) {
+      const ae = document.getElementById('dash-alert-text');
+      if (ae) {
+        ae.style.opacity = '0';
+        setTimeout(() => {
+          ae.textContent = data.alert.text_ar || data.alert.text_en || '';
+          ae.style.transition = 'opacity .5s ease';
+          ae.style.opacity    = '1';
+        }, 200);
+      }
+    }
+
+    // Intervention
+    if (data.intervention) toast(data.intervention.message_ar, 'error', 6000);
+  },
+
+  animNum(id, target) {
+    const el = document.getElementById(id); if (!el) return;
+    const start = parseInt(el.textContent) || 0;
+    const diff = target - start, steps = 18; let step = 0;
+    const t = setInterval(() => {
+      step++;
+      el.textContent = Math.round(start + diff * (step / steps));
+      if (step >= steps) clearInterval(t);
+    }, 28);
+  },
+
+  setLoading(show) {
+    const l = document.getElementById('loading-screen');
+    if (l) l.style.display = show ? 'flex' : 'none';
+  },
+
+  showApp() {
+    document.getElementById('app').classList.remove('hidden');
+  },
+};
+
+/* ══════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════ */
+const Auth = {
+  init() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('tab-login').classList.toggle('hidden', tab !== 'login');
+        document.getElementById('tab-register').classList.toggle('hidden', tab !== 'register');
+      });
+    });
+    document.getElementById('btn-login')?.addEventListener('click', () => Auth.login());
+    document.getElementById('btn-register')?.addEventListener('click', () => Auth.register());
+    document.getElementById('btn-logout')?.addEventListener('click', () => Auth.logout());
+    ['login-username','login-password'].forEach(id =>
+      document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') Auth.login(); }));
+    ['reg-display','reg-username','reg-password'].forEach(id =>
+      document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') Auth.register(); }));
+  },
+
+  async login() {
+    const u = document.getElementById('login-username').value.trim();
+    const p = document.getElementById('login-password').value;
+    if (!u || !p) { toast('أدخل اسم المستخدم وكلمة المرور', 'error'); return; }
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true; btn.textContent = 'جاري الدخول...';
+    try {
+      const d = await Api.post('/auth/login', {username:u, password:p});
+      if (d.error) { toast(d.error, 'error'); return; }
+      Auth._save(d);
+      if (d.intervention) toast(d.intervention.message_ar, 'error', 6000);
+      if (!d.onboarding_done) { App.showView('view-onboarding'); }
+      else { App.showView('view-dashboard'); Sensors.init(); }
+    } catch(e) { toast('تعذر الاتصال بالخادم', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'دخول ←'; }
+  },
+
+  async register() {
+    const disp = document.getElementById('reg-display').value.trim();
+    const u    = document.getElementById('reg-username').value.trim();
+    const p    = document.getElementById('reg-password').value;
+    if (!u || !p) { toast('أدخل جميع البيانات', 'error'); return; }
+    if (p.length < 6) { toast('كلمة المرور 6 أحرف على الأقل', 'error'); return; }
+    const btn = document.getElementById('btn-register');
+    btn.disabled = true; btn.textContent = 'جاري الإنشاء...';
+    try {
+      const d = await Api.post('/auth/register', {username:u, password:p, display_name:disp||u});
+      if (d.error) { toast(d.error, 'error'); return; }
+      Auth._save(d); toast('مرحباً! أكمل إعداد حسابك', 'success');
+      App.showView('view-onboarding');
+    } catch(e) { toast('تعذر الاتصال', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'إنشاء الحساب ✦'; }
+  },
+
+  async logout() {
+    try { await Api.post('/auth/logout'); } catch(_){}
+    Auth._clear(); Sensors.stop();
+    App.showView('view-auth'); toast('تم تسجيل الخروج', 'info');
+  },
+
+  _save(d) {
+    S.token = d.token; S.username = d.username;
+    localStorage.setItem('qqc_token', d.token);
+    localStorage.setItem('qqc_user',  d.username);
+  },
+  _clear() {
+    S.token = null; S.username = null;
+    localStorage.removeItem('qqc_token'); localStorage.removeItem('qqc_user');
+  },
+};
+
+/* ══════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════ */
+const Onboarding = {
+  data: {daily_minutes:30, preferred_time:'after_fajr', learning_style:'visual', plan_type:'quantum_auto'},
+  init() {
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(`.option-btn[data-field="${btn.dataset.field}"]`)
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const v = btn.dataset.value;
+        Onboarding.data[btn.dataset.field] = isNaN(v) ? v : parseInt(v);
+      });
+    });
+    document.getElementById('btn-onboarding-done')?.addEventListener('click', () => Onboarding.submit());
+  },
+  async submit() {
+    const btn = document.getElementById('btn-onboarding-done');
+    btn.disabled = true; btn.textContent = 'جاري الحفظ...';
+    try {
+      const d = await Api.post('/onboarding', Onboarding.data);
+      if (d.error) { toast(d.error, 'error'); return; }
+      toast('تم إعداد خطتك! لنبدأ 🚀', 'success');
+      App.showView('view-dashboard'); Sensors.init();
+    } catch(e) { toast('تعذر الحفظ', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'ابدأ رحلتك 🚀'; }
+  },
+};
+
+/* ══════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════ */
+const Dashboard = {
+  async load() {
+    try {
+      const [me, today] = await Promise.all([Api.get('/me'), Api.get('/session/today')]);
+      if (me.error) { Auth.logout(); return; }
+      Dashboard.render(me, today);
+      Sensors.sync('init');
+    } catch(e) { console.error('[Dashboard]', e); }
+  },
+
+  render(me, today) {
+    const u = me.user;
+    const av = document.getElementById('dash-avatar');
+    if (av) {
+      av.style.background = u.avatar_color || 'linear-gradient(135deg,#3b82f6,#8b5cf6)';
+      av.textContent = (u.display_name || u.username || '?')[0].toUpperCase();
+    }
+    const nm = document.getElementById('dash-username');
+    if (nm) nm.textContent = 'مرحباً، ' + (u.display_name || u.username);
+
+    UI.animNum('stat-streak', u.progress?.current_streak_days || 0);
+    UI.animNum('stat-pages',  Math.floor(u.progress?.total_pages_memorized || 0));
+    UI.animNum('stat-juz',    (u.progress?.juz_completed || []).length);
+
+    const goal   = me.today_goal;
+    const target = goal?.pages || u.plan?.current_daily_pages || 0.25;
+    const gp = document.getElementById('goal-pages'); if (gp) gp.textContent = target;
+    const gs = document.getElementById('goal-surah'); if (gs && me.current_surah) gs.textContent = me.current_surah.name_ar || '';
+
+    const done = today?.pages_done_today || 0;
+    const pct  = Math.min(100, (done / Math.max(0.01, target)) * 100);
+    const fill = document.getElementById('goal-progress-fill'); if (fill) fill.style.width = pct + '%';
+    const pl   = document.getElementById('goal-progress-label'); if (pl) pl.textContent = `${done} / ${target} صفحة`;
+
+    if (me.daily_alert) {
+      const ae = document.getElementById('dash-alert-text');
+      if (ae) ae.textContent = me.daily_alert.text_ar || me.daily_alert.text_en || '';
+    }
+
+    if (me.broadcasts?.length) {
+      const bb = document.getElementById('broadcast-banner');
+      if (bb) { bb.textContent = me.broadcasts[me.broadcasts.length-1].message; bb.classList.remove('hidden'); }
+    }
+
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      if (me.unread_notifications > 0) {
+        badge.textContent = me.unread_notifications; badge.classList.remove('hidden');
+      } else badge.classList.add('hidden');
+    }
+
+    if (me.absence_warning)
+      setTimeout(() => toast(me.absence_warning.text_ar || '', 'error', 5000), 800);
+  },
+};
+
+/* ══════════════════════════════════════════════
+   SESSION
+══════════════════════════════════════════════ */
+const Session = {
+  startTime: null, timer: null,
+
+  async start(reviewOnly = false) {
+    try {
+      const [plan, me] = await Promise.all([Api.get('/ai/daily-plan'), Api.get('/me')]);
+      if (plan.technique) {
+        const te = document.getElementById('session-technique');
+        if (te) te.textContent = plan.technique.text_ar || plan.technique.text_en || '';
+      }
+      if (me.user) {
+        const pages = reviewOnly ? 0 : (me.today_goal?.pages || me.user.plan?.current_daily_pages || 0.25);
+        const tp = document.getElementById('session-target-pages'); if (tp) tp.textContent = pages;
+        const si = document.getElementById('session-surah-info');
+        if (si && me.current_surah) si.textContent = 'السورة الحالية: ' + (me.current_surah.name_ar || '');
+      }
+    } catch(e) {}
+
+    App.showView('view-session');
+    Session.startTime = Date.now();
+    Session.startTimer();
+    Sensors.reset();
+    Sensors.sync('session_start');
+  },
+
+  startTimer() {
+    clearInterval(Session.timer);
+    Session.timer = setInterval(() => {
+      const e = Math.floor((Date.now() - Session.startTime) / 1000);
+      const m = String(Math.floor(e/60)).padStart(2,'0');
+      const s = String(e % 60).padStart(2,'0');
+      const el = document.getElementById('session-timer');
+      if (el) el.textContent = m + ':' + s;
+    }, 1000);
+  },
+
+  async complete(diff) {
+    clearInterval(Session.timer);
+    const dur = Math.floor((Date.now() - (Session.startTime || Date.now())) / 60000);
+    const tp  = document.getElementById('session-target-pages');
+    const pages = parseFloat(tp?.textContent || '0.25') || 0.25;
+    const btn = document.querySelector('.btn-' + diff);
+    if (btn) { btn.disabled = true; btn.textContent = 'جاري الحفظ...'; }
+    try {
+      const r = await Api.post('/session/complete', {
+        pages_done:pages, difficulty:diff, duration_minutes:dur,
+        mood_score: diff==='easy'?8 : diff==='medium'?5 : 2,
+      });
+      if (r.error) { toast(r.error, 'error'); return; }
+      if (r.post_alert) toast(r.post_alert.text_ar || '', 'success', 5000);
+      if (r.review_assigned) toast(r.review_assigned.message_ar, 'info', 6000);
+      if (r.energy) UI.applyDecision({mode:S.mode, energy:r.energy.score, target_pages:null, alert:null});
+      toast(`✅ تم تسجيل ${pages} صفحة!`, 'success');
+      App.showView('view-dashboard');
+      setTimeout(() => Dashboard.load(), 400);
+    } catch(e) { toast('تعذر حفظ الجلسة', 'error'); }
+    finally { if (btn) btn.disabled = false; }
+  },
+};
+window.Session = Session;
+
+/* ══════════════════════════════════════════════
+   PLAN
+══════════════════════════════════════════════ */
+const Plan = {
+  PHASES: [
+    {phase:'ramp_to_0.25',label:'البداية',pages:0.25,dur:7},
+    {phase:'ramp_to_0.5',label:'تصاعد',pages:0.5,dur:7},
+    {phase:'ramp_to_0.75',label:'تصاعد',pages:0.75,dur:7},
+    {phase:'ramp_to_1.0',label:'صفحة كاملة',pages:1.0,dur:7},
+    {phase:'plateau_1',label:'ثبات ①',pages:1.0,dur:14},
+    {phase:'ramp_to_1.25',label:'تصاعد',pages:1.25,dur:7},
+    {phase:'ramp_to_1.5',label:'تصاعد',pages:1.5,dur:7},
+    {phase:'ramp_to_1.75',label:'تصاعد',pages:1.75,dur:7},
+    {phase:'ramp_to_2.0',label:'صفحتان',pages:2.0,dur:7},
+    {phase:'plateau_2',label:'ثبات ②',pages:2.0,dur:21},
+    {phase:'ramp_to_2.25',label:'تصاعد',pages:2.25,dur:7},
+    {phase:'ramp_to_2.5',label:'تصاعد',pages:2.5,dur:7},
+    {phase:'ramp_to_2.75',label:'تصاعد',pages:2.75,dur:7},
+    {phase:'ramp_to_3.0',label:'ثلاث صفحات',pages:3.0,dur:7},
+    {phase:'plateau_3',label:'ثبات ③',pages:3.0,dur:30},
+    {phase:'ramp_to_3.25',label:'تصاعد',pages:3.25,dur:7},
+    {phase:'ramp_to_3.5',label:'تصاعد',pages:3.5,dur:7},
+    {phase:'ramp_to_3.75',label:'تصاعد',pages:3.75,dur:7},
+    {phase:'ramp_to_4.0',label:'أربع صفحات',pages:4.0,dur:7},
+    {phase:'plateau_4',label:'ثبات ④',pages:4.0,dur:30},
+    {phase:'stable',label:'مستقر',pages:4.0,dur:Infinity},
+  ],
+
+  async load() {
+    try {
+      const [me, fc] = await Promise.all([Api.get('/me'), Api.get('/ai/forecast').catch(()=>({forecast:null}))]);
+      if (me.error) return;
+      const u = me.user, plan = u.plan;
+
+      const pe = document.getElementById('plan-phase'); if (pe) pe.textContent = plan.phase || '—';
+      const de = document.getElementById('plan-daily-pages'); if (de) de.textContent = (plan.current_daily_pages || 0) + ' صفحة/يوم';
+      const pj = document.getElementById('plan-projection'); if (pj) pj.textContent = fc?.forecast?.completion_date || me.projection || '—';
+      const jz = document.getElementById('plan-juz-done'); if (jz) jz.textContent = (u.progress?.juz_completed||[]).length + ' / 30 جزء';
+
+      Plan.renderTimeline(plan.phase);
+
+      const rs = u.review_system;
+      const rc = document.getElementById('review-system-card');
+      if (rc && rs?.active) {
+        rc.classList.remove('hidden');
+        const ri = document.getElementById('review-system-info');
+        if (ri) {
+          const tl = {
+            full_stop:     'إيقاف الحفظ الجديد مؤقتاً للتثبيت',
+            dedicated_days: (rs.dedicated_days_per_week||2) + ' أيام أسبوعياً للمراجعة',
+            daily_mix:     'مزيج يومي من الحفظ والمراجعة',
+          };
+          ri.textContent = tl[rs.type] || rs.type;
+        }
+      }
+    } catch(e) { console.error('[Plan]', e); }
+  },
+
+  renderTimeline(cur) {
+    const c = document.getElementById('phase-timeline'); if (!c) return;
+    c.innerHTML = '';
+    let found = false;
+    Plan.PHASES.forEach(p => {
+      const isDone = !found && p.phase !== cur;
+      const isCur  = p.phase === cur;
+      if (isCur) found = true;
+
+      const item = document.createElement('div');
+      item.className = 'phase-item' + (isDone?' done':isCur?' current':'');
+
+      const dot  = document.createElement('div'); dot.className = 'phase-dot';
+      dot.textContent = isDone ? '✓' : isCur ? '●' : '';
+
+      const info = document.createElement('div'); info.className = 'phase-info';
+      info.innerHTML = `<div class="phase-name">${p.label}</div><div class="phase-detail">${p.dur===Infinity?'مستمر':p.dur+' يوم'}</div>`;
+
+      const pg = document.createElement('div'); pg.className = 'phase-pages';
+      pg.textContent = p.pages + ' ص';
+
+      item.appendChild(dot); item.appendChild(info); item.appendChild(pg);
+      c.appendChild(item);
+    });
+  },
+};
+
+/* ══════════════════════════════════════════════
+   NETWORK
+══════════════════════════════════════════════ */
+const Network = {
+  async load() {
+    try {
+      const d = await Api.get('/friends');
+      Network.renderFriends(d.friends || []);
+      Network.renderPending(d.pending_requests || []);
+    } catch(e) { console.error('[Network]', e); }
+  },
+
+  renderFriends(friends) {
+    const l = document.getElementById('friends-list'); if (!l) return;
+    if (!friends.length) { l.innerHTML = '<div class="empty-state">لم تضف أصدقاء بعد</div>'; return; }
+    l.innerHTML = friends.map(f => `
+      <div class="friend-card" onclick="Network.openChat('${f.username}')">
+        <div class="friend-avatar" style="background:${f.avatar_color||'#3b82f6'}">${(f.display_name||f.username)[0].toUpperCase()}</div>
+        <div class="friend-info">
+          <div class="friend-name">${f.display_name||f.username}</div>
+          <div class="friend-stats">🔥 ${f.streak} يوم · 📖 ${(f.pages||0).toFixed(1)} ص</div>
+        </div>
+        <div class="friend-status ${f.is_online?'online':''}"></div>
+      </div>`).join('');
+  },
+
+  renderPending(reqs) {
+    const sec = document.getElementById('pending-section');
+    const l   = document.getElementById('pending-list');
+    if (!sec || !l) return;
+    if (!reqs.length) { sec.classList.add('hidden'); return; }
+    sec.classList.remove('hidden');
+    l.innerHTML = reqs.map(r => `
+      <div class="friend-card">
+        <div class="friend-avatar" style="background:${r.avatar_color||'#8b5cf6'}">${(r.display_name||r.username)[0].toUpperCase()}</div>
+        <div class="friend-info">
+          <div class="friend-name">${r.display_name||r.username}</div>
+          <div class="friend-stats">@${r.username}</div>
+        </div>
+        <div class="friend-action-btns">
+          <button class="btn btn-primary btn-sm" onclick="Network.accept('${r.username}')">قبول</button>
+        </div>
+      </div>`).join('');
+  },
+
+  async search() {
+    const q = document.getElementById('friend-search-input')?.value.trim();
+    if (!q || q.length < 2) { toast('أدخل حرفين على الأقل', 'info'); return; }
+    try {
+      const d = await Api.get('/friends/search?q=' + encodeURIComponent(q));
+      const c = document.getElementById('search-results'); if (!c) return;
+      c.classList.remove('hidden');
+      if (!d.results?.length) { c.innerHTML = '<div class="empty-state">لا نتائج</div>'; return; }
+      c.innerHTML = d.results.map(u => `
+        <div class="friend-card">
+          <div class="friend-avatar" style="background:${u.avatar_color||'#3b82f6'}">${(u.display_name||u.username)[0].toUpperCase()}</div>
+          <div class="friend-info"><div class="friend-name">${u.display_name||u.username}</div><div class="friend-stats">@${u.username}</div></div>
+          <button class="btn btn-secondary btn-sm" onclick="Network.sendRequest('${u.username}')">إضافة</button>
+        </div>`).join('');
+    } catch(e) { toast('خطأ في البحث', 'error'); }
+  },
+
+  async sendRequest(u) {
+    try {
+      const d = await Api.post('/friends/request', {target_username:u});
+      if (d.error) { toast(d.error, 'error'); return; }
+      toast('تم إرسال طلب الصداقة', 'success');
+    } catch(e) { toast('تعذر الإرسال', 'error'); }
+  },
+
+  async accept(u) {
+    try {
+      const d = await Api.post('/friends/accept', {from_username:u});
+      if (d.error) { toast(d.error, 'error'); return; }
+      toast('تم قبول الطلب ✓', 'success'); Network.load();
+    } catch(e) { toast('تعذر القبول', 'error'); }
+  },
+
+  async openChat(username) {
+    S.chatWith = username;
+    S.chatLast = new Date().toISOString();
+    const panel = document.getElementById('chat-panel'); if (panel) panel.classList.remove('hidden');
+    const nm    = document.getElementById('chat-with-name'); if (nm) nm.textContent = username;
+    try {
+      const d = await Api.get('/chat/' + encodeURIComponent(username));
+      Network.renderMsgs(d.messages || []);
+      if (d.messages?.length) S.chatLast = d.messages[d.messages.length-1].timestamp;
+    } catch(_){}
+    clearInterval(S.chatPoll);
+    S.chatPoll = setInterval(() => Network.poll(), 4000);
+    document.getElementById('chat-input')?.focus();
+  },
+
+  async poll() {
+    if (!S.chatWith || !S.token) return;
+    try {
+      const since = encodeURIComponent(S.chatLast || '1970-01-01T00:00:00Z');
+      const d = await Api.get(`/chat/${encodeURIComponent(S.chatWith)}/poll?since=${since}`);
+      if (d.new_messages?.length) {
+        d.new_messages.forEach(m => Network.appendMsg(m));
+        S.chatLast = d.new_messages[d.new_messages.length-1].timestamp;
+      }
+    } catch(_){}
+  },
+
+  renderMsgs(msgs) {
+    const c = document.getElementById('chat-messages'); if (!c) return;
+    c.innerHTML = ''; msgs.forEach(m => Network.appendMsg(m, false));
+    c.scrollTop = c.scrollHeight;
+  },
+
+  appendMsg(msg, scroll=true) {
+    const c = document.getElementById('chat-messages'); if (!c) return;
+    const mine = msg.from === S.username;
+    const d = document.createElement('div');
+    d.className = 'chat-msg ' + (mine ? 'chat-msg-mine' : 'chat-msg-theirs');
+    const t = new Date(msg.timestamp).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+    d.innerHTML = msg.text + `<div class="chat-msg-time">${t}</div>`;
+    c.appendChild(d); if (scroll) c.scrollTop = c.scrollHeight;
+  },
+
+  async sendMessage() {
+    const i    = document.getElementById('chat-input');
+    const text = i?.value.trim();
+    if (!text || !S.chatWith) return;
+    i.value = '';
+    try {
+      const d = await Api.post('/chat/' + encodeURIComponent(S.chatWith), {text});
+      if (d.message) { Network.appendMsg(d.message); S.chatLast = d.message.timestamp; }
+    } catch(e) { toast('تعذر الإرسال', 'error'); }
+  },
+
+  closeChat() {
+    clearInterval(S.chatPoll);
+    const p = document.getElementById('chat-panel'); if (p) p.classList.add('hidden');
+    S.chatWith = null;
+  },
+};
+window.Network = Network;
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════════════ */
+const Leaderboard = {
+  async load() {
+    const c = document.getElementById('leaderboard-list'); if (!c) return;
+    try {
+      const d = await Api.get('/leaderboard');
+      const b = d.leaderboard || [];
+      if (!b.length) { c.innerHTML = '<div class="empty-state">لا يوجد مستخدمون بعد</div>'; return; }
+      const ri = ['🥇','🥈','🥉'];
+      c.innerHTML = b.map((u,i) => `
+        <div class="lb-item ${u.username===S.username?'lb-item-me':''}" style="animation-delay:${i*0.05}s">
+          <div class="lb-rank ${i===0?'lb-rank-1':i===1?'lb-rank-2':i===2?'lb-rank-3':''}">${i<3?ri[i]:'#'+(i+1)}</div>
+          <div class="lb-avatar" style="background:${u.avatar_color||'#3b82f6'}">${(u.display_name||u.username)[0].toUpperCase()}</div>
+          <div class="lb-info">
+            <div class="lb-name">${u.display_name||u.username}${u.username===S.username?' (أنت)':''}</div>
+            <div class="lb-sub">🔥 ${u.streak} يوم · ✅ ${u.juz_done} جزء</div>
+          </div>
+          <div class="lb-pages">${(u.pages||0).toFixed(1)} ص</div>
+        </div>`).join('');
+    } catch(e) { c.innerHTML = '<div class="empty-state">تعذر التحميل</div>'; }
+  },
+};
+
+/* ══════════════════════════════════════════════
+   NOTIFICATIONS BUTTON
+══════════════════════════════════════════════ */
+document.getElementById('btn-notifications')?.addEventListener('click', async () => {
+  try {
+    const d = await Api.get('/notifications');
+    const n = (d.notifications || []).slice(0, 5);
+    if (!n.length) { toast('لا إشعارات جديدة', 'info'); return; }
+    n.forEach((nt, i) => {
+      const tp = nt.type==='milestone'?'success':nt.type==='ai_nudge'?'error':'info';
+      setTimeout(() => toast(nt.message, tp, 4000), i * 350);
+    });
+    Api.patch('/notifications/read-all');
+    const b = document.getElementById('notif-badge'); if (b) b.classList.add('hidden');
+  } catch(_){}
+});
+
+/* ══════════════════════════════════════════════
+   WIRE EVENTS
+══════════════════════════════════════════════ */
+function wire() {
+  document.querySelectorAll('.nav-btn[data-view]').forEach(b =>
+    b.addEventListener('click', () => App.showView(b.dataset.view)));
+
+  document.getElementById('btn-start-session')?.addEventListener('click', () => Session.start(false));
+  document.getElementById('btn-review-day')?.addEventListener('click',   () => Session.start(true));
+  document.getElementById('btn-friend-search')?.addEventListener('click', () => Network.search());
+  document.getElementById('friend-search-input')?.addEventListener('keydown', e => { if (e.key==='Enter') Network.search(); });
+  document.getElementById('btn-chat-send')?.addEventListener('click', () => Network.sendMessage());
+  document.getElementById('chat-input')?.addEventListener('keydown', e => { if (e.key==='Enter') Network.sendMessage(); });
+}
+
+/* ══════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════ */
+async function boot() {
+  UI.setLoading(true);
+  Auth.init(); Onboarding.init(); wire();
+
+  if (window.location.pathname === '/admin-dashboard' || window.location.hash === '#admin') {
+    UI.setLoading(false); UI.showApp();
+    const pw = prompt('Admin password:');
+    if (pw) {
+      const r = await fetch(API + '/admin/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}).then(r=>r.json()).catch(()=>({}));
+      if (r.success) toast('Admin access granted', 'success');
+      else toast('Wrong password', 'error');
+    }
+    return;
+  }
+
+  if (S.token && S.username) {
+    try {
+      const d = await Api.get('/me');
+      if (d.user) {
+        UI.setLoading(false); UI.showApp();
+        if (!d.user.onboarding?.completed) App.showView('view-onboarding');
+        else { App.showView('view-dashboard'); Sensors.init(); }
+        return;
+      }
+    } catch(_){}
+    Auth._clear();
+  }
+
+  UI.setLoading(false); UI.showApp();
+  App.showView('view-auth');
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();

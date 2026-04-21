@@ -1,0 +1,1092 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   QUANTUM QURAN COACH — ai_core.js
+   The Autonomous AI Engine
+   ───────────────────────────────────────────────────────────────────────
+   Architecture:
+     L1  Sensor Fusion        — Kalman filter over raw frontend signals
+     L2  Psychological State  — Energy, Friction, AFI, Decay, Circadian
+     L3  Wave Function        — Bayesian mode selection
+     L4  Local ML Loop        — Online gradient descent on weight vector
+     L5  Predictive Models    — EWMA, Holt-Winters, Spaced Repetition curve
+     L6  Alert Intelligence   — Context-ranked motivational injection
+   ───────────────────────────────────────────────────────────────────────
+   Zero external dependencies. Runs on Node.js built-ins only.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 0  CONSTANTS & CONFIGURATION
+   ══════════════════════════════════════════════════════════════════════ */
+
+const CFG = {
+  // Energy score bounds
+  ENERGY_MIN: 0,
+  ENERGY_MAX: 100,
+  ENERGY_DEFAULT: 75,
+
+  // Mode thresholds (tunable by admin weight overrides)
+  CHALLENGE_THRESHOLD: 80,   // energy > this → CHALLENGE_MODE
+  RELOAD_THRESHOLD:    38,   // energy < this → RELOAD_MODE
+  INTERRUPT_AFI:       22,   // AFI < this    → PATTERN_INTERRUPT
+
+  // Kalman filter process/measurement noise
+  KALMAN_Q: 1e-3,   // process noise covariance
+  KALMAN_R: 1e-1,   // measurement noise covariance
+
+  // Exponential smoothing
+  EWMA_ALPHA:       0.30,   // fast signal (energy)
+  EWMA_ALPHA_SLOW:  0.10,   // slow signal (friction baseline)
+
+  // Local ML
+  ML_LEARNING_RATE:    0.01,
+  ML_REGULARISATION:   0.001,
+  ML_MIN_SAMPLES:      5,    // minimum sessions before ML kicks in
+  ML_HISTORY_WINDOW:   30,   // sessions kept for training
+
+  // Spaced repetition
+  SR_EASY_FACTOR:    2.5,
+  SR_HARD_PENALTY:   0.15,
+  SR_MIN_EF:         1.3,
+
+  // Circadian rhythm weights (hour → multiplier)
+  CIRCADIAN: {
+    0: 0.70, 1: 0.60, 2: 0.55, 3: 0.55, 4: 0.65,
+    5: 1.05, 6: 1.10, 7: 1.00, 8: 0.95, 9: 0.90,
+    10:0.85, 11:0.80, 12:0.70, 13:0.65, 14:0.70,
+    15:0.80, 16:0.85, 17:0.90, 18:0.88, 19:0.95,
+    20:1.00, 21:0.95, 22:0.85, 23:0.75,
+  },
+
+  // Sensor signal weights (initial — overwritten by ML)
+  SENSOR_WEIGHTS: {
+    focus_seconds:       +0.08,   // per minute of focus → energy bonus
+    hidden_seconds:      -0.12,   // per 30s hidden → energy penalty
+    hesitation_ms:       -0.009,  // per 100ms → energy penalty
+    mouse_erratics:      -0.25,
+    touch_erratics:      -0.18,
+    exit_attempts:       -8.00,
+    scroll_speed_excess: -2.50,   // speed above threshold
+    scrolled_to_bottom:  +3.00,
+    chaos_rhythm:        -0.12,   // per chaos point
+  },
+
+  // Decay
+  DECAY_BASE:     0.020,   // pages/hour natural forgetting rate
+  DECAY_CHAOS:    0.030,   // extra decay per chaos unit
+  DECAY_STREAK:   0.001,   // streak reduces decay
+
+  // AFI bounds
+  AFI_MAX: 100,
+  AFI_MIN: 0,
+
+  // Absence intervention
+  ABSENCE_DAYS_TRIGGER: 3,
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 1  KALMAN FILTER  — 1-D scalar implementation
+   Fuses noisy sensor readings into smoothed state estimates.
+   State: { x: estimate, p: error covariance }
+   ══════════════════════════════════════════════════════════════════════ */
+
+class KalmanFilter {
+  constructor(initialEstimate = 75, Q = CFG.KALMAN_Q, R = CFG.KALMAN_R) {
+    this.x = initialEstimate;
+    this.p = 1.0;
+    this.Q = Q;   // process noise
+    this.R = R;   // measurement noise
+  }
+
+  /**
+   * Update the filter with a new measurement.
+   * @param {number} z — raw measurement
+   * @returns {number} — filtered estimate
+   */
+  update(z) {
+    // Predict
+    const xPred = this.x;
+    const pPred = this.p + this.Q;
+
+    // Kalman gain
+    const K = pPred / (pPred + this.R);
+
+    // Update
+    this.x = xPred + K * (z - xPred);
+    this.p = (1 - K) * pPred;
+
+    return this.x;
+  }
+
+  reset(value = 75) {
+    this.x = value;
+    this.p = 1.0;
+  }
+
+  get estimate() { return this.x; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 2  EXPONENTIAL WEIGHTED MOVING AVERAGE  (EWMA)
+   ══════════════════════════════════════════════════════════════════════ */
+
+class EWMA {
+  constructor(alpha = CFG.EWMA_ALPHA, initial = null) {
+    this.alpha = alpha;
+    this.value = initial;
+  }
+
+  update(x) {
+    if (this.value === null) { this.value = x; return x; }
+    this.value = this.alpha * x + (1 - this.alpha) * this.value;
+    return this.value;
+  }
+
+  get() { return this.value ?? 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 3  HOLT-WINTERS DOUBLE EXPONENTIAL SMOOTHING
+   Models level + trend in energy time series.
+   Useful for 7-day ahead energy forecasting.
+   ══════════════════════════════════════════════════════════════════════ */
+
+class HoltWinters {
+  constructor(alpha = 0.3, beta = 0.1) {
+    this.alpha = alpha;  // level smoothing
+    this.beta  = beta;   // trend smoothing
+    this.level = null;
+    this.trend = 0;
+  }
+
+  update(y) {
+    if (this.level === null) {
+      this.level = y;
+      return y;
+    }
+    const prevLevel = this.level;
+    this.level = this.alpha * y + (1 - this.alpha) * (this.level + this.trend);
+    this.trend = this.beta * (this.level - prevLevel) + (1 - this.beta) * this.trend;
+    return this.level;
+  }
+
+  /**
+   * Forecast h steps ahead.
+   */
+  forecast(h = 1) {
+    if (this.level === null) return 75;
+    return this.level + h * this.trend;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 4  ONLINE GRADIENT DESCENT — Local ML Weight Learner
+   Learns optimal sensor→energy weight vector from session outcomes.
+
+   Feature vector x (per session):
+     [focus_norm, hidden_norm, hesitation_norm, erratics_norm,
+      exits_norm, scroll_norm, scrolled_bottom, chaos_norm,
+      streak_norm, time_of_day_norm, day_of_week_sin, day_of_week_cos]
+
+   Label y: session_quality  0-1  (derived from difficulty + mood)
+   Loss: MSE with L2 regularisation
+   ══════════════════════════════════════════════════════════════════════ */
+
+const FEATURE_DIM = 12;
+
+class LocalMLEngine {
+  constructor(weights = null) {
+    // Weight vector W maps features → energy contribution
+    this.W = weights || Array(FEATURE_DIM).fill(0).map((_, i) => {
+      // Sensible initial values aligned with CFG.SENSOR_WEIGHTS
+      const defaults = [0.08, -0.12, -0.009, -0.25, -0.18, -8.0, -2.5, 3.0, -0.12, 0.05, 0.02, 0.02];
+      return defaults[i] ?? 0;
+    });
+    this.lr    = CFG.ML_LEARNING_RATE;
+    this.reg   = CFG.ML_REGULARISATION;
+    this.n     = 0;    // samples seen
+    this.loss  = [];   // training loss history (last 20)
+  }
+
+  /**
+   * Normalize a sensor reading into [-1, 1].
+   */
+  _norm(value, min, max) {
+    if (max === min) return 0;
+    return Math.max(-1, Math.min(1, 2 * (value - min) / (max - min) - 1));
+  }
+
+  /**
+   * Build feature vector from a sensor payload.
+   * @param {object} s — sensor payload
+   * @returns {number[]} — length FEATURE_DIM
+   */
+  buildFeatures(s) {
+    const hour    = new Date().getHours();
+    const dow     = new Date().getDay();     // 0-6
+    const dowSin  = Math.sin(2 * Math.PI * dow / 7);
+    const dowCos  = Math.cos(2 * Math.PI * dow / 7);
+    const todNorm = this._norm(hour, 0, 23);
+
+    return [
+      this._norm(s.focusSeconds   / 60,  0, 120),   // focus minutes
+      this._norm(s.hiddenSeconds  / 30,  0, 20),     // hidden (30s units)
+      this._norm(s.hesitationMs   / 100, 0, 80),     // hesitation (100ms)
+      this._norm(s.mouseErratics || 0,   0, 40),
+      this._norm(s.exitAttempts  || 0,   0, 5),
+      this._norm(s.scrollSpeed   || 0,   0, 10),
+      s.scrolledToBottom ? 1 : -1,
+      this._norm(s.chaosRhythm   || 0,   0, 100),
+      this._norm(s.streak        || 0,   0, 365),
+      todNorm,
+      dowSin,
+      dowCos,
+    ];
+  }
+
+  /**
+   * Predict energy delta from feature vector.
+   * Returns a signed number to add to base energy.
+   */
+  predict(features) {
+    let out = 0;
+    for (let i = 0; i < FEATURE_DIM; i++) {
+      out += this.W[i] * features[i];
+    }
+    return out;
+  }
+
+  /**
+   * Online SGD update step.
+   * @param {number[]} features
+   * @param {number}   label — session quality 0-1 mapped to energy delta
+   */
+  train(features, label) {
+    const yHat = this.predict(features);
+    const err  = yHat - label;
+
+    // Gradient descent with L2 regularisation
+    for (let i = 0; i < FEATURE_DIM; i++) {
+      const grad = err * features[i] + this.reg * this.W[i];
+      this.W[i] -= this.lr * grad;
+    }
+
+    const loss = 0.5 * err * err;
+    this.loss.push(loss);
+    if (this.loss.length > 20) this.loss.shift();
+    this.n++;
+
+    return { loss, yHat };
+  }
+
+  get avgLoss() {
+    if (!this.loss.length) return 0;
+    return this.loss.reduce((a, b) => a + b, 0) / this.loss.length;
+  }
+
+  /**
+   * Serialize weight vector for DB persistence.
+   */
+  serialize() {
+    return { W: this.W.slice(), n: this.n, avgLoss: this.avgLoss };
+  }
+
+  /**
+   * Restore from DB snapshot.
+   */
+  static fromSnapshot(snap) {
+    const ml = new LocalMLEngine(snap?.W || null);
+    ml.n = snap?.n || 0;
+    return ml;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 5  SPACED REPETITION ENGINE (SM-2 variant)
+   Assigns next review interval and ease factor per Juz.
+   ══════════════════════════════════════════════════════════════════════ */
+
+class SpacedRepetitionEngine {
+  /**
+   * Update SR state for a juz after a review session.
+   * @param {object} srState — { ef, interval, reps }
+   * @param {string} difficulty — 'easy' | 'medium' | 'hard'
+   * @returns {object} — updated srState
+   */
+  static update(srState = {}, difficulty) {
+    let { ef = CFG.SR_EASY_FACTOR, interval = 1, reps = 0 } = srState;
+
+    // Quality score: easy=5, medium=3, hard=1 (SM-2 scale 0-5)
+    const q = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 3 : 1;
+
+    if (q >= 3) {
+      // Successful recall
+      if (reps === 0)      interval = 1;
+      else if (reps === 1) interval = 6;
+      else                 interval = Math.round(interval * ef);
+      reps++;
+    } else {
+      // Failed — reset
+      reps     = 0;
+      interval = 1;
+    }
+
+    // Update ease factor
+    ef = ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    ef = Math.max(CFG.SR_MIN_EF, ef);
+
+    return { ef: +ef.toFixed(4), interval, reps };
+  }
+
+  /**
+   * Forecast how many review sessions a juz needs before solidification.
+   */
+  static forecastSessions(srState = {}) {
+    let { ef = 2.5, interval = 1, reps = 0 } = srState;
+    const SOLIDIFY_INTERVAL = 21; // days — considered solid
+    let sessions = 0;
+    let sim = { ef, interval, reps };
+    while (sim.interval < SOLIDIFY_INTERVAL && sessions < 20) {
+      sim = SpacedRepetitionEngine.update(sim, 'medium');
+      sessions++;
+    }
+    return sessions;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 6  CIRCADIAN MULTIPLIER
+   Adjusts energy based on time of day + user's preferred session time.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function circadianMultiplier(preferredTime) {
+  const hour = new Date().getHours();
+  const base = CFG.CIRCADIAN[hour] ?? 0.85;
+
+  // Bonus if current time matches preferred window
+  const prefWindows = {
+    fajr:       [4, 5, 6],
+    after_fajr: [5, 6, 7],
+    noon:       [12, 13],
+    evening:    [17, 18, 19],
+    night:      [20, 21, 22],
+  };
+  const preferred = prefWindows[preferredTime] || [];
+  const bonus = preferred.includes(hour) ? 0.12 : 0;
+
+  return Math.min(1.3, base + bonus);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 7  FRICTION SCORE EQUATION
+   ──────────────────────────────────────────────────────────────────────
+   Friction Coefficient (FC) captures psychological resistance.
+
+   FC = Σ weighted_sensor_inputs
+      × circadian_multiplier
+      × (1 + absence_amplifier)
+      × afi_modifier
+
+   Bounded [0, 10].
+   ══════════════════════════════════════════════════════════════════════ */
+
+function computeFriction(sensors, weights, absence, afi) {
+  const w = weights || CFG.SENSOR_WEIGHTS;
+
+  // Raw components
+  const hesitationPart   = Math.min(4.0, (sensors.hesitationMs / 1000) * Math.abs(w.hesitation_ms || 0.9));
+  const erraticsPart     = Math.min(3.0, ((sensors.mouseErratics || 0) + (sensors.touchErratics || 0) * 0.7) * 0.15);
+  const hiddenPart       = Math.min(2.0, (sensors.hiddenSeconds  / 30) * 0.5);
+  const exitPart         = Math.min(2.5, (sensors.exitAttempts   || 0) * 0.8);
+  const scrollPart       = Math.min(1.0,  Math.max(0, (sensors.scrollSpeed || 0) - 3) * 0.3);
+  const chaosPart        = Math.min(1.5, (sensors.chaosRhythm   || 0) / 100 * 1.5);
+  const bottomBonus      =  sensors.scrolledToBottom ? -0.5 : 0;
+  const focusBonus       = -Math.min(1.5, (sensors.focusSeconds / 60) * 0.25);
+
+  const rawFC = hesitationPart + erraticsPart + hiddenPart + exitPart
+              + scrollPart + chaosPart + bottomBonus + focusBonus;
+
+  // Absence amplifier: each day absent raises friction by 15%
+  const absenceAmp = 1 + (absence || 0) * 0.15;
+
+  // AFI modifier: low AFI means user is fatigued by algorithm → extra friction
+  const afiMod = 1 + Math.max(0, (50 - (afi || 100)) / 100) * 0.4;
+
+  const fc = Math.max(0, Math.min(10, rawFC * absenceAmp * afiMod));
+  return +fc.toFixed(3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 8  ENERGY SCORE COMPUTATION
+   ──────────────────────────────────────────────────────────────────────
+   Energy = f(sensors, history, ML_prediction, circadian)
+   Uses Kalman-filtered base + ML delta + circadian scaling.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function computeEnergy(sensors, userEnergyState, mlEngine, weights, onboarding) {
+  const history  = userEnergyState.history || [];
+  const baseScore = history.length
+    ? history.slice(-5).reduce((a, b) => a + b, 0) / Math.min(5, history.length)
+    : CFG.ENERGY_DEFAULT;
+
+  const w = weights || CFG.SENSOR_WEIGHTS;
+
+  // Sensor contributions
+  const focusBonus       = +Math.min(20, (sensors.focusSeconds / 60) * (Math.abs(w.focus_seconds) * 60));
+  const hiddenPenalty    = -Math.min(25, (sensors.hiddenSeconds / 30) * 5);
+  const hesitationPenalty= -Math.min(40, (sensors.hesitationMs / 1000) * 8);
+  const erraticPenalty   = -Math.min(20, ((sensors.mouseErratics||0)*2 + (sensors.touchErratics||0)*1.5));
+  const exitPenalty      = -Math.min(30, (sensors.exitAttempts ||0) * 10);
+  const chaosPenalty     = -Math.min(15, (sensors.chaosRhythm  ||0) / 100 * 15);
+  const scrollBonus      =  sensors.scrolledToBottom ? 5 : 0;
+
+  const sensorDelta = focusBonus + hiddenPenalty + hesitationPenalty
+                    + erraticPenalty + exitPenalty + chaosPenalty + scrollBonus;
+
+  // ML prediction delta (if trained)
+  let mlDelta = 0;
+  if (mlEngine && mlEngine.n >= CFG.ML_MIN_SAMPLES) {
+    const features = mlEngine.buildFeatures({
+      ...sensors,
+      streak: (userEnergyState.streak || 0),
+    });
+    mlDelta = mlEngine.predict(features) * 10; // scale to energy range
+  }
+
+  // Circadian
+  const circ = circadianMultiplier(onboarding?.preferred_time || 'after_fajr');
+
+  // EMA blend with history
+  const rawEnergy = baseScore + sensorDelta * 0.65 + mlDelta * 0.35;
+  const scaled    = rawEnergy * circ;
+
+  // Reverse sensitivity: low energy + high friction → forgive, give back some energy
+  const friction  = computeFriction(sensors, w, sensors.absence || 0, userEnergyState.afi || 100);
+  const reversed  = (scaled < 40 && friction > 5) ? Math.min(CFG.ENERGY_MAX, scaled + 8) : scaled;
+
+  return {
+    energy:   Math.round(Math.max(CFG.ENERGY_MIN, Math.min(CFG.ENERGY_MAX, reversed))),
+    friction,
+    circadian: +circ.toFixed(3),
+    sensorDelta: +sensorDelta.toFixed(2),
+    mlDelta:     +mlDelta.toFixed(2),
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 9  DYNAMIC DECAY RATE
+   Memory fading rate per hour, adjusted for chaos and streak.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function computeDecayRate(chaosRhythm, streak) {
+  const chaosContrib  = (chaosRhythm || 0) / 100 * CFG.DECAY_CHAOS;
+  const streakReducer = Math.min(0.015, (streak || 0) * CFG.DECAY_STREAK);
+  return +Math.max(0.005, CFG.DECAY_BASE + chaosContrib - streakReducer).toFixed(4);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 10  ALGORITHM FATIGUE INDEX (AFI)
+   Tracks whether user games the system with easy modes.
+   Self-recovering Bayesian posterior over [0, 100].
+   ══════════════════════════════════════════════════════════════════════ */
+
+class AFITracker {
+  constructor(initial = 100) {
+    this.value = initial;
+  }
+
+  update(action, difficulty) {
+    if (action === 'skip')                      this.value -= 5;
+    if (action === 'harder')                    this.value += 2;
+    if (action === 'complete') {
+      if (difficulty === 'easy')   this.value -= 2;   // too easy → gaming?
+      if (difficulty === 'medium') this.value += 3;
+      if (difficulty === 'hard')   this.value += 6;   // struggled → genuine effort
+    }
+    // Natural session decay
+    this.value -= 0.3;
+    this.value = +Math.max(CFG.AFI_MIN, Math.min(CFG.AFI_MAX, this.value)).toFixed(1);
+    return this.value;
+  }
+
+  get() { return this.value; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 11  BAYESIAN MODE SELECTOR  (Wave Function Collapse)
+   ──────────────────────────────────────────────────────────────────────
+   Maintains prior probabilities over 4 modes.
+   Updates via likelihood given (energy, friction, AFI, trigger).
+   Collapses to argmax(posterior).
+   ══════════════════════════════════════════════════════════════════════ */
+
+const MODES = ['NORMAL_MODE', 'CHALLENGE_MODE', 'RELOAD_MODE', 'PATTERN_INTERRUPT'];
+
+class BayesianModeSelector {
+  constructor() {
+    // Uninformative prior
+    this.prior = { NORMAL_MODE:0.55, CHALLENGE_MODE:0.20, RELOAD_MODE:0.15, PATTERN_INTERRUPT:0.10 };
+  }
+
+  /**
+   * Gaussian likelihood P(observation | mode).
+   * Each mode has an ideal (energy, friction) centre; likelihood falls off with distance.
+   */
+  _likelihood(energy, friction, afi, trigger) {
+    // Mode centres: [energy_mean, energy_sigma, friction_mean, friction_sigma]
+    const centres = {
+      NORMAL_MODE:      [65, 15, 3.0, 2.0],
+      CHALLENGE_MODE:   [88, 10, 1.5, 1.5],
+      RELOAD_MODE:      [30, 12, 6.0, 2.0],
+      PATTERN_INTERRUPT:[55, 20, 5.0, 2.5],
+    };
+
+    const likelihoods = {};
+    for (const mode of MODES) {
+      const [em, es, fm, fs] = centres[mode];
+      const eL = Math.exp(-0.5 * ((energy - em) / es) ** 2) / (es * Math.sqrt(2 * Math.PI));
+      const fL = Math.exp(-0.5 * ((friction - fm) / fs) ** 2) / (fs * Math.sqrt(2 * Math.PI));
+      likelihoods[mode] = eL * fL;
+    }
+
+    // Hard overrides (deterministic evidence swamps prior)
+    if (trigger === 'exit_intent')             likelihoods['PATTERN_INTERRUPT'] *= 15;
+    if (afi < CFG.INTERRUPT_AFI)               likelihoods['PATTERN_INTERRUPT'] *= 10;
+    if (energy < CFG.RELOAD_THRESHOLD)         likelihoods['RELOAD_MODE']       *= 8;
+    if (energy > CFG.CHALLENGE_THRESHOLD && friction < 3) likelihoods['CHALLENGE_MODE'] *= 6;
+
+    return likelihoods;
+  }
+
+  /**
+   * Compute posterior and collapse to single mode.
+   */
+  select(energy, friction, afi, trigger) {
+    const L = this._likelihood(energy, friction, afi, trigger);
+
+    // Unnormalised posterior
+    const posterior = {};
+    let total = 0;
+    for (const mode of MODES) {
+      posterior[mode] = this.prior[mode] * L[mode];
+      total += posterior[mode];
+    }
+
+    // Normalise
+    for (const mode of MODES) posterior[mode] /= (total || 1);
+
+    // Argmax
+    let bestMode = 'NORMAL_MODE';
+    let bestP    = 0;
+    for (const mode of MODES) {
+      if (posterior[mode] > bestP) { bestP = posterior[mode]; bestMode = mode; }
+    }
+
+    // Soft prior update (momentum — avoid flickering)
+    for (const mode of MODES) {
+      this.prior[mode] = 0.85 * this.prior[mode] + 0.15 * posterior[mode];
+    }
+
+    return { mode: bestMode, posterior, confidence: +bestP.toFixed(4) };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 12  STANDARD DEVIATION + STATISTICAL HELPERS
+   ══════════════════════════════════════════════════════════════════════ */
+
+const Stats = {
+  mean(arr) {
+    if (!arr.length) return 0;
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
+  },
+
+  variance(arr) {
+    if (arr.length < 2) return 0;
+    const m = Stats.mean(arr);
+    return arr.reduce((acc, x) => acc + (x - m) ** 2, 0) / (arr.length - 1);
+  },
+
+  stddev(arr) { return Math.sqrt(Stats.variance(arr)); },
+
+  zscore(value, arr) {
+    const sd = Stats.stddev(arr);
+    if (!sd) return 0;
+    return (value - Stats.mean(arr)) / sd;
+  },
+
+  /** Pearson correlation coefficient */
+  pearson(xs, ys) {
+    if (xs.length !== ys.length || xs.length < 2) return 0;
+    const mx = Stats.mean(xs), my = Stats.mean(ys);
+    let num = 0, dx2 = 0, dy2 = 0;
+    for (let i = 0; i < xs.length; i++) {
+      const dx = xs[i] - mx, dy = ys[i] - my;
+      num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+    }
+    return num / (Math.sqrt(dx2 * dy2) || 1);
+  },
+
+  /** Linear regression: returns {slope, intercept} */
+  linearRegression(xs, ys) {
+    if (xs.length < 2) return { slope:0, intercept: Stats.mean(ys) };
+    const mx = Stats.mean(xs), my = Stats.mean(ys);
+    let num = 0, den = 0;
+    for (let i = 0; i < xs.length; i++) {
+      num += (xs[i] - mx) * (ys[i] - my);
+      den += (xs[i] - mx) ** 2;
+    }
+    const slope = den ? num / den : 0;
+    return { slope, intercept: my - slope * mx };
+  },
+
+  /** Predict y at x using linear regression */
+  predict(xs, ys, x) {
+    const { slope, intercept } = Stats.linearRegression(xs, ys);
+    return slope * x + intercept;
+  },
+
+  /** Moving average over window */
+  movingAverage(arr, window) {
+    if (!arr.length) return [];
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+      const start = Math.max(0, i - window + 1);
+      result.push(Stats.mean(arr.slice(start, i + 1)));
+    }
+    return result;
+  },
+
+  /** Identify outliers beyond 2σ */
+  outliers(arr) {
+    const m = Stats.mean(arr), s = Stats.stddev(arr);
+    return arr.map((v, i) => ({ index:i, value:v, isOutlier: Math.abs(v - m) > 2 * s }));
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 13  PREDICTIVE PROGRESSION MODEL
+   Forecasts when a user will reach each major milestone.
+   ══════════════════════════════════════════════════════════════════════ */
+
+class ProgressionPredictor {
+  /**
+   * @param {number[]} sessionDates — unix timestamps
+   * @param {number[]} sessionPages — pages done each session
+   * @param {number}   currentTotal — total pages memorized
+   * @param {number}   dailyTarget  — current plan daily pages
+   */
+  static forecast(sessionDates, sessionPages, currentTotal, dailyTarget) {
+    const totalPages = 604;
+    const pagesLeft  = Math.max(0, totalPages - currentTotal);
+
+    // Trend from sessions
+    let trendPages = dailyTarget;
+    if (sessionDates.length >= 5) {
+      const xs = sessionDates.slice(-20).map((d, i) => i);
+      const ys = sessionPages.slice(-20);
+      const { slope, intercept } = Stats.linearRegression(xs, ys);
+      const predicted = slope * xs.length + intercept;
+      trendPages = Math.max(0.1, predicted);
+    }
+
+    const daysToCompletion = pagesLeft > 0 ? Math.ceil(pagesLeft / trendPages) : 0;
+
+    // Milestone pages
+    const milestones = [20, 60, 120, 200, 300, 420, 604].map(mp => {
+      const pNeeded = Math.max(0, mp - currentTotal);
+      const days    = pNeeded > 0 ? Math.ceil(pNeeded / trendPages) : 0;
+      const date    = new Date();
+      date.setDate(date.getDate() + days);
+      return { pages: mp, juz: Math.ceil(mp / 20), days, date: date.toISOString().split('T')[0] };
+    });
+
+    const completionDate = new Date();
+    completionDate.setDate(completionDate.getDate() + daysToCompletion);
+
+    // 95% confidence interval (±1 week per month of projection)
+    const ci = Math.ceil(daysToCompletion / 30) * 7;
+
+    return {
+      trend_pages_per_day:  +trendPages.toFixed(3),
+      days_to_completion:   daysToCompletion,
+      completion_date:      completionDate.toISOString().split('T')[0],
+      confidence_interval_days: ci,
+      milestones,
+    };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 14  ABSENCE RISK SCORE
+   Predicts probability that user will be absent tomorrow.
+   Logistic model over: consecutive_absences, streak, energy, time_of_day
+   ══════════════════════════════════════════════════════════════════════ */
+
+function absenceRisk(user) {
+  const absences = user.progress?.consecutive_absences || 0;
+  const streak   = user.progress?.current_streak_days  || 0;
+  const energy   = user.energy?.score || 75;
+  const sessions = user.sessions || [];
+  const lastDate = user.progress?.last_session_date;
+
+  // Days since last session
+  const daysSince = lastDate
+    ? Math.floor((Date.now() - new Date(lastDate)) / 86400000)
+    : 99;
+
+  // Logistic regression: z = b0 + b1*absences + b2*(1/streak) + b3*(1-energy/100) + b4*daysSince
+  const b0 = -1.5, b1 = 0.7, b2 = 0.5, b3 = 1.2, b4 = 0.4;
+  const z = b0
+    + b1 * Math.min(absences, 10)
+    + b2 * (streak > 0 ? 1 / streak : 1)
+    + b3 * (1 - energy / 100)
+    + b4 * Math.min(daysSince, 7);
+
+  const risk = 1 / (1 + Math.exp(-z));  // sigmoid
+
+  // Variance from session history (high variance → unpredictable → higher risk)
+  const recentGaps = sessions.slice(-10).map((s, i, arr) => {
+    if (i === 0) return 0;
+    return daysBetween(arr[i-1].date, s.date);
+  }).filter(Boolean);
+  const gapStd = Stats.stddev(recentGaps);
+
+  const finalRisk = Math.min(0.99, risk + gapStd * 0.02);
+  return +finalRisk.toFixed(4);
+}
+
+function daysBetween(a, b) {
+  return Math.floor(Math.abs(new Date(b) - new Date(a)) / 86400000);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 15  REVIEW SYSTEM ASSIGNMENT ENGINE
+   Enhanced version with SR-aware system selection.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function assignReviewSystem(sessions, dailyMinutes, juzNum, srHistory = {}) {
+  const recent   = sessions.slice(-20);
+  const total    = Math.max(1, recent.length);
+  const hardR    = recent.filter(s => s.difficulty === 'hard').length   / total;
+  const medR     = recent.filter(s => s.difficulty === 'medium').length / total;
+
+  // Energy trend over recent sessions (use linear regression)
+  const energies = recent.map(s => s.mood_score || 5);
+  const xs       = energies.map((_, i) => i);
+  const trend    = Stats.linearRegression(xs, energies);
+  const isDecaying = trend.slope < -0.1;
+
+  // SR forecast
+  const srState = srHistory[juzNum] || {};
+  const sessionsNeeded = SpacedRepetitionEngine.forecastSessions(srState);
+
+  let type, dedicatedDays = null, reason;
+
+  if ((hardR > 0.6 && dailyMinutes < 30) || isDecaying) {
+    type = 'full_stop';
+    reason = 'high_difficulty_or_energy_decay';
+  } else if (hardR > 0.35 || medR > 0.5 || sessionsNeeded > 10) {
+    dedicatedDays = dailyMinutes >= 45 ? 2 : 3;
+    type = 'dedicated_days';
+    reason = 'moderate_difficulty';
+  } else {
+    type = 'daily_mix';
+    reason = 'performing_well';
+  }
+
+  const labelMap = {
+    full_stop:     { ar:`أتممت الجزء ${juzNum}! إيقاف مؤقت للحفظ الجديد لتثبيت ما لديك.`,
+                     en:`Juz ${juzNum} complete! Pausing new memorization to solidify.` },
+    dedicated_days:{ ar:`أتممت الجزء ${juzNum}! ${dedicatedDays} أيام أسبوعياً للمراجعة.`,
+                     en:`Juz ${juzNum} complete! ${dedicatedDays} days/week for review.` },
+    daily_mix:     { ar:`أتممت الجزء ${juzNum}! مزيج يومي من الحفظ والمراجعة.`,
+                     en:`Juz ${juzNum} complete! Daily mix of new memorization and review.` },
+  };
+
+  return { type, dedicated_days_per_week: dedicatedDays, reason,
+           message_ar: labelMap[type].ar, message_en: labelMap[type].en,
+           sr_sessions_needed: sessionsNeeded };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 16  MOTIVATIONAL ALERT SELECTOR  (Context-ranked)
+   ══════════════════════════════════════════════════════════════════════ */
+
+class AlertSelector {
+  constructor(pool) {
+    this.pool = pool || [];
+    this._usedRecently = new Set();
+  }
+
+  /**
+   * Rank alerts by context relevance using a scoring function.
+   * Returns top alert, avoiding recently shown ones.
+   */
+  select(user, trigger) {
+    const style   = user.onboarding?.learning_style || 'visual';
+    const streak  = user.progress?.current_streak_days || 0;
+    const energy  = user.energy?.score || 75;
+    const absent  = user.progress?.consecutive_absences || 0;
+    const afi     = user.energy?.afi || 100;
+
+    const score = (alert) => {
+      let s = 0;
+
+      // Trigger match
+      if (alert.trigger === trigger)          s += 100;
+
+      // Category bonuses
+      if (absent >= 3 && alert.category === 'intervention') s += 80;
+      if (absent >= 1 && alert.category === 'motivation')   s += 30;
+      if (energy < 40 && alert.category === 'breathing')    s += 60;
+      if (energy < 40 && alert.category === 'psychology')   s += 40;
+      if (energy > 80 && alert.intensity  === 'high')       s += 50;
+      if (streak > 30 && alert.trigger    === 'month_streak') s += 70;
+      if (streak > 7  && alert.trigger    === 'week_streak')  s += 60;
+      if (afi < 30    && alert.trigger    === 'afi_low')       s += 80;
+
+      // Learning style match
+      const styleTriggers = { visual:'visual_learner', auditory:'auditory_learner', kinesthetic:'kinesthetic_learner' };
+      if (alert.trigger === styleTriggers[style]) s += 40;
+
+      // Penalise recently shown
+      if (this._usedRecently.has(alert.id)) s -= 200;
+
+      // Small random jitter to avoid determinism
+      s += Math.random() * 5;
+
+      return s;
+    };
+
+    const sorted = [...this.pool].sort((a, b) => score(b) - score(a));
+    const chosen = sorted[0] || this.pool[0];
+
+    // Track recently used (rolling window of 5)
+    this._usedRecently.add(chosen?.id);
+    if (this._usedRecently.size > 5) {
+      const first = this._usedRecently.values().next().value;
+      this._usedRecently.delete(first);
+    }
+
+    return chosen;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 17  PER-USER ENGINE STATE  (in-memory cache, synced to DB)
+   Holds Kalman filters, EWMA, ML engine, Bayesian selector per user.
+   ══════════════════════════════════════════════════════════════════════ */
+
+const userStates = new Map(); // username → UserEngineState
+
+class UserEngineState {
+  constructor(username, snapshot = {}) {
+    this.username = username;
+    this.kalman   = new KalmanFilter(snapshot.kalman_x || 75);
+    this.ewma     = new EWMA(CFG.EWMA_ALPHA, snapshot.ewma || null);
+    this.hwEnergy = new HoltWinters(0.3, 0.1);
+    this.ml       = LocalMLEngine.fromSnapshot(snapshot.ml_weights);
+    this.bayes    = new BayesianModeSelector();
+    this.afiTracker = new AFITracker(snapshot.afi || 100);
+    this.lastMode = snapshot.lastMode || 'NORMAL_MODE';
+    this.sessionCount = snapshot.sessionCount || 0;
+  }
+
+  serialize() {
+    return {
+      kalman_x:     this.kalman.estimate,
+      ewma:         this.ewma.get(),
+      ml_weights:   this.ml.serialize(),
+      afi:          this.afiTracker.get(),
+      lastMode:     this.lastMode,
+      sessionCount: this.sessionCount,
+    };
+  }
+}
+
+function getOrCreateState(username, snapshot) {
+  if (!userStates.has(username)) {
+    userStates.set(username, new UserEngineState(username, snapshot || {}));
+  }
+  return userStates.get(username);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 18  MAIN PROCESS-STATE PIPELINE
+   Called by POST /api/process-state
+   Returns full decision for frontend + updated state snapshot.
+   ══════════════════════════════════════════════════════════════════════ */
+
+function processState(rawSensors, userRecord, adminWeights, alertPool) {
+  const sensors = normalizeSensors(rawSensors);
+  const username = userRecord.username;
+  const eng = getOrCreateState(username, userRecord.ml_state);
+
+  const w = adminWeights || {};
+
+  /* ── L2: Compute psychological state ── */
+  const { energy, friction, circadian, sensorDelta, mlDelta } =
+    computeEnergy(sensors, userRecord.energy, eng.ml, w, userRecord.onboarding);
+
+  const filteredEnergy = Math.round(eng.kalman.update(energy));
+  eng.ewma.update(filteredEnergy);
+  eng.hwEnergy.update(filteredEnergy);
+  const forecastedEnergy = Math.round(Math.max(0, Math.min(100, eng.hwEnergy.forecast(1))));
+
+  const decay = computeDecayRate(sensors.chaosRhythm, userRecord.progress?.current_streak_days || 0);
+  const afi   = eng.afiTracker.get();
+
+  /* ── L3: Wave Function Collapse ── */
+  const { mode, posterior, confidence } = eng.bayes.select(filteredEnergy, friction, afi, sensors.trigger);
+  eng.lastMode = mode;
+
+  /* ── Target pages for this session ── */
+  const targetAyahCount = computeTargetPages(mode, userRecord.plan, filteredEnergy);
+
+  /* ── Absence risk ── */
+  const risk = absenceRisk(userRecord);
+
+  /* ── Intervention? ── */
+  let intervention = null;
+  const absent = userRecord.progress?.consecutive_absences || 0;
+  if (absent >= (w.absence_intervention_days || CFG.ABSENCE_DAYS_TRIGGER)) {
+    intervention = buildIntervention(userRecord, absent);
+  }
+
+  /* ── Alert ── */
+  const alertSel = new AlertSelector(alertPool);
+  const alert    = alertSel.select(userRecord, sensors.trigger || 'generic_daily');
+
+  /* ── Session target label for ML training (if this was a completed session) ── */
+  if (sensors.trigger === 'session_complete' && sensors.difficulty) {
+    const label   = sessionQualityLabel(sensors.difficulty, sensors.moodScore);
+    const features = eng.ml.buildFeatures({ ...sensors, streak: userRecord.progress?.current_streak_days || 0 });
+    eng.ml.train(features, label);
+    eng.sessionCount++;
+  }
+
+  return {
+    /* Mode decision */
+    mode,
+    confidence,
+    posterior,
+
+    /* Psychological state */
+    energy:          filteredEnergy,
+    energy_forecast: forecastedEnergy,
+    friction:        +friction.toFixed(2),
+    afi:             +afi.toFixed(1),
+    decay_rate:      decay,
+    circadian,
+
+    /* Session */
+    target_pages: targetAyahCount,
+
+    /* Risk & intervention */
+    absence_risk: risk,
+    intervention,
+
+    /* Alert */
+    alert,
+
+    /* Streak */
+    streak: userRecord.progress?.current_streak_days || 0,
+
+    /* Diagnostics */
+    diagnostics: { sensorDelta, mlDelta, ml_samples: eng.ml.n, ml_loss: +eng.ml.avgLoss.toFixed(5) },
+
+    /* Serialisable state to store back in DB */
+    _ml_state: eng.serialize(),
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 19  HELPERS
+   ══════════════════════════════════════════════════════════════════════ */
+
+function normalizeSensors(s) {
+  return {
+    trigger:         s.trigger         || 'auto',
+    focusSeconds:    +(s.focusSeconds   || 0),
+    hiddenSeconds:   +(s.hiddenSeconds  || 0),
+    hesitationMs:    +(s.hesitationMs   || 0),
+    mouseErratics:   +(s.mouseErratics  || 0),
+    touchErratics:   +(s.touchErratics  || 0),
+    exitAttempts:    +(s.exitAttempts   || 0),
+    scrollSpeed:     +(s.scrollSpeed    || 0),
+    scrolledToBottom: !!s.scrolledToBottom,
+    chaosRhythm:     +(s.chaosRhythm   || 0),
+    difficulty:      s.difficulty      || null,
+    moodScore:       +(s.moodScore     || 5),
+    sessionDurationSeconds: +(s.sessionDurationSeconds || 0),
+  };
+}
+
+function sessionQualityLabel(difficulty, moodScore) {
+  const diffMap  = { easy: 0.9, medium: 0.6, hard: 0.2 };
+  const moodNorm = Math.max(0, Math.min(1, (moodScore || 5) / 10));
+  const dVal     = diffMap[difficulty] ?? 0.5;
+  return 0.6 * dVal + 0.4 * moodNorm;
+}
+
+function computeTargetPages(mode, plan, energy) {
+  const base = plan?.current_daily_pages || 1;
+  switch (mode) {
+    case 'RELOAD_MODE':       return +Math.max(0.25, base * 0.5).toFixed(2);
+    case 'CHALLENGE_MODE':    return +Math.min(base * 2, 5).toFixed(2);
+    case 'PATTERN_INTERRUPT': return +base.toFixed(2);
+    default:                  return +base.toFixed(2);
+  }
+}
+
+function buildIntervention(user, absent) {
+  const pages   = user.plan?.current_daily_pages || 0.25;
+  const reduced = absent >= 5 ? Math.max(0.25, pages * 0.5)
+                : absent >= 3 ? Math.max(0.25, pages * 0.75)
+                : pages;
+  return {
+    type: 'absence_intervention', absent_days: absent, reduced_pages: reduced,
+    message_ar: `غبت ${absent} أيام. هدفك اليوم: ${reduced} صفحة فقط. ابدأ الآن.`,
+    message_en: `Absent ${absent} days. Today's goal: ${reduced} page(s). Start now.`,
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   § 20  EXPORTS
+   ══════════════════════════════════════════════════════════════════════ */
+
+module.exports = {
+  // Main pipeline
+  processState,
+  assignReviewSystem,
+  absenceRisk,
+
+  // Statistical tools (exposed for server.js reuse)
+  Stats,
+  SpacedRepetitionEngine,
+  ProgressionPredictor,
+
+  // Alert intelligence
+  AlertSelector,
+
+  // Exposed for admin diagnostics
+  computeEnergy,
+  computeFriction,
+  computeDecayRate,
+  circadianMultiplier,
+
+  // Classes (for testing / extension)
+  KalmanFilter,
+  EWMA,
+  HoltWinters,
+  LocalMLEngine,
+  BayesianModeSelector,
+  AFITracker,
+  UserEngineState,
+  getOrCreateState,
+
+  // Constants
+  CFG,
+  MODES,
+};

@@ -1,0 +1,13 @@
+{
+  "name": "quantum-quran-coach",
+  "version": "2.0.0",
+  "description": "Quantum Quran Coach — Termux-compatible Node.js SPA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}

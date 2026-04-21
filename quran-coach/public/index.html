@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quantum Quran Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="quantum-bg">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div>
+  <div class="orb orb-3"></div><div class="orb orb-4"></div>
+</div>
+
+<div id="loading-screen" class="loading-screen">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Quantum boot…</div>
+</div>
+
+<div id="toast-container"></div>
+
+<div id="app" class="app-shell hidden">
+
+  <!-- AUTH -->
+  <section id="view-auth" class="view">
+    <div class="auth-container">
+      <div class="auth-logo">
+        <div class="logo-orb"></div>
+        <div class="logo-title">Quantum Quran Coach</div>
+        <div class="logo-subtitle mono">v2 · BILLION-DOLLAR EDITION</div>
+      </div>
+      <div class="auth-tabs glass-card">
+        <button class="tab-btn active" data-tab="login">دخول</button>
+        <button class="tab-btn" data-tab="register">حساب جديد</button>
+      </div>
+      <form class="auth-form glass-card" id="form-login">
+        <div class="field-group"><label class="field-label">اسم المستخدم</label>
+          <input class="field-input" name="username" autocomplete="username" required></div>
+        <div class="field-group"><label class="field-label">كلمة المرور</label>
+          <input class="field-input" type="password" name="password" autocomplete="current-password" required></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg">دخول</button>
+      </form>
+      <form class="auth-form glass-card hidden" id="form-register">
+        <div class="field-group"><label class="field-label">اسم المستخدم</label>
+          <input class="field-input" name="username" required pattern="[a-z0-9_]{3,20}">
+          <span class="field-hint">حروف صغيرة وأرقام فقط (3-20)</span></div>
+        <div class="field-group"><label class="field-label">الاسم الظاهر</label>
+          <input class="field-input" name="display_name" required></div>
+        <div class="field-group"><label class="field-label">كلمة المرور</label>
+          <input class="field-input" type="password" name="password" required minlength="4"></div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg">إنشاء الحساب</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ONBOARDING -->
+  <section id="view-onboarding" class="view">
+    <div class="onboarding-container">
+      <div class="onboarding-header">
+        <div class="view-title">لنُهيّئ خطتك</div>
+        <div class="view-subtitle">إجابات صادقة = خطة دقيقة</div>
+      </div>
+      <form id="form-onboarding" class="onboarding-card glass-card">
+        <label class="field-label">دقائق متاحة يومياً</label>
+        <div class="option-grid" data-name="daily_minutes">
+          <button type="button" class="option-btn" data-v="15">15</button>
+          <button type="button" class="option-btn active" data-v="30">30</button>
+          <button type="button" class="option-btn" data-v="60">60</button>
+          <button type="button" class="option-btn" data-v="90">90</button>
+        </div>
+        <label class="field-label">الهدف بالأشهر</label>
+        <div class="option-grid" data-name="goal_months">
+          <button type="button" class="option-btn" data-v="6">6</button>
+          <button type="button" class="option-btn" data-v="12">12</button>
+          <button type="button" class="option-btn active" data-v="24">24</button>
+          <button type="button" class="option-btn" data-v="36">36</button>
+        </div>
+        <label class="field-label">المستوى الحالي</label>
+        <div class="option-grid" data-name="current_level">
+          <button type="button" class="option-btn active" data-v="beginner">مبتدئ</button>
+          <button type="button" class="option-btn" data-v="intermediate">متوسط</button>
+          <button type="button" class="option-btn" data-v="advanced">متقدم</button>
+          <button type="button" class="option-btn" data-v="hafiz">حافظ مراجع</button>
+        </div>
+        <label class="field-label">الوقت المفضّل</label>
+        <div class="option-grid" data-name="preferred_time">
+          <button type="button" class="option-btn active" data-v="after_fajr">بعد الفجر</button>
+          <button type="button" class="option-btn" data-v="noon">الظهر</button>
+          <button type="button" class="option-btn" data-v="evening">المساء</button>
+          <button type="button" class="option-btn" data-v="night">الليل</button>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg">ابدأ الرحلة</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- TOP BAR -->
+  <header class="top-bar glass-card">
+    <div class="user-pill">
+      <div class="avatar-dot" id="user-avatar">?</div>
+      <div><div class="user-pill-name" id="user-name">—</div>
+        <div class="mono" style="font-size:.7rem;color:var(--text-3)" id="user-mode">NORMAL</div>
+      </div>
+    </div>
+    <div class="top-bar-actions">
+      <button class="icon-btn" data-go="view-profile" title="الملف الشخصي">👤</button>
+      <button class="icon-btn" data-go="view-feed" title="المنشورات">📰</button>
+      <button class="icon-btn" data-go="view-chats" title="المحادثات">💬</button>
+      <button class="icon-btn" data-go="view-library" title="مكتبتي">📚</button>
+      <button class="icon-btn" data-go="view-support" title="الدعم">🛟</button>
+      <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
+      <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
+    </div>
+  </header>
+
+  <div id="broadcast" class="broadcast-banner glass-card hidden"></div>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="view active">
+    <div class="island-section">
+      <div class="island island-normal" id="island">
+        <div class="island-orbit"></div>
+        <div class="island-core">
+          <div class="mono" style="font-size:2.2rem;font-weight:900" id="island-energy">75</div>
+          <div style="font-size:.85rem;color:var(--text-2)" id="island-state-text">الحالة النفسية: مستقرة</div>
+          <div class="mono" style="font-size:.7rem;color:var(--text-3)" id="island-mode-label">الوضع العادي</div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:14px 18px;text-align:center;max-width:380px">
+        <div id="dash-alert-text" style="font-size:.95rem;line-height:1.6">مرحبًا بعودتك. خذ نفسًا، وابدأ.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <button class="btn btn-primary" data-go="view-session">ابدأ جلسة</button>
+        <button class="btn btn-secondary" data-go="view-plan">الخطة</button>
+        <button class="btn btn-ghost" data-go="view-leaderboard">المتصدرون</button>
+      </div>
+      <div class="glass-card" style="padding:16px;margin:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;max-width:480px;width:calc(100% - 32px)">
+        <div><div class="mono" style="font-size:1.4rem" id="stat-pages">0</div><div style="color:var(--text-2);font-size:.75rem">صفحات</div></div>
+        <div><div class="mono" style="font-size:1.4rem" id="stat-streak">0</div><div style="color:var(--text-2);font-size:.75rem">سلسلة</div></div>
+        <div><div class="mono" style="font-size:1.4rem" id="stat-sessions">0</div><div style="color:var(--text-2);font-size:.75rem">جلسات</div></div>
+      </div>
+      <!-- sensor dots -->
+      <div style="display:flex;gap:10px">
+        <span class="sensor-dot" id="s-focus" title="تركيز"></span>
+        <span class="sensor-dot" id="s-intent" title="نية"></span>
+        <span class="sensor-dot" id="s-kinetic" title="حركي"></span>
+        <span class="sensor-dot" id="s-rhythm" title="إيقاع"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION -->
+  <section id="view-session" class="view">
+    <div class="page-container">
+      <h2 class="view-title">جلسة الحفظ</h2>
+      <div class="glass-card pad">
+        <div id="session-mode-badge" class="mode-badge mode-normal">الوضع العادي</div>
+        <p>هدف اليوم: <strong id="session-target-pages">0.25</strong> صفحة</p>
+        <p>الجزء الحالي: <strong id="session-juz">1</strong></p>
+        <label class="field-label">الصعوبة بعد الانتهاء</label>
+        <div class="option-grid" data-name="difficulty">
+          <button type="button" class="option-btn active" data-v="easy">سهلة</button>
+          <button type="button" class="option-btn" data-v="medium">متوسطة</button>
+          <button type="button" class="option-btn" data-v="hard">صعبة</button>
+        </div>
+        <label class="field-label">الصفحات المنجزة</label>
+        <input id="session-pages" class="field-input" type="number" step="0.25" value="0.25">
+        <label class="field-label">المدة (دقائق)</label>
+        <input id="session-duration" class="field-input" type="number" value="20">
+        <label class="field-label">المزاج (1-10)</label>
+        <input id="session-mood" class="field-input" type="number" min="1" max="10" value="7">
+        <button class="btn btn-primary btn-full" id="btn-complete-session">إنهاء الجلسة</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section id="view-plan" class="view">
+    <div class="page-container">
+      <h2 class="view-title">خطتي التكيُّفية</h2>
+      <div class="glass-card pad" id="plan-current">…</div>
+      <h3 style="margin:14px 6px">معاينة 30 يوم</h3>
+      <div class="glass-card pad" id="plan-preview" style="overflow-x:auto"></div>
+      <h3 style="margin:14px 6px">المراجعة المتباعدة</h3>
+      <div class="glass-card pad" id="plan-sr"></div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="view-profile" class="view">
+    <div class="page-container">
+      <h2 class="view-title">ملفي الشخصي</h2>
+      <div class="glass-card pad">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+          <div class="avatar-dot" id="profile-avatar" style="width:60px;height:60px;font-size:1.5rem"></div>
+          <div><div id="profile-name" style="font-weight:700"></div>
+            <div id="profile-handle" class="mono" style="color:var(--text-3);font-size:.8rem"></div></div>
+        </div>
+        <label class="field-label">الاسم الظاهر</label>
+        <input id="pf-display" class="field-input">
+        <label class="field-label">نبذة قصيرة</label>
+        <textarea id="pf-bio" class="field-input" rows="3" maxlength="300"></textarea>
+        <label class="field-label">لون الأفاتار</label>
+        <input id="pf-color" type="color" class="field-input" style="height:44px">
+        <button class="btn btn-primary btn-full" id="btn-save-profile">حفظ</button>
+      </div>
+      <h3 style="margin:14px 6px">منشوراتي</h3>
+      <div id="my-posts"></div>
+    </div>
+  </section>
+
+  <!-- FEED -->
+  <section id="view-feed" class="view">
+    <div class="page-container">
+      <h2 class="view-title">منشورات الأصدقاء</h2>
+      <div class="glass-card pad">
+        <textarea id="post-text" class="field-input" rows="3" placeholder="ما الذي حفظته اليوم؟"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <input type="file" id="post-image" accept="image/*" style="flex:1;color:var(--text-2);font-size:.8rem">
+          <button class="btn btn-primary" id="btn-publish">نشر</button>
+        </div>
+        <div class="field-hint">الصورة الأصلية تُحفظ على جهازك فقط — يُرفع مصغّر صغير للسيرفر.</div>
+      </div>
+      <div id="feed-list" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- CHATS -->
+  <section id="view-chats" class="view">
+    <div class="page-container">
+      <h2 class="view-title">محادثاتي</h2>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn btn-secondary" data-go="view-friends">الأصدقاء</button>
+        <button class="btn btn-secondary" data-go="view-groups">المجموعات</button>
+      </div>
+      <div id="chats-list"></div>
+    </div>
+  </section>
+
+  <!-- CHAT ROOM -->
+  <section id="view-chatroom" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-chats">⟵ رجوع</button>
+      <h2 class="view-title" id="chatroom-title">محادثة</h2>
+      <div class="glass-card pad" id="chatroom-messages" style="min-height:300px;max-height:55vh;overflow-y:auto"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input id="chatroom-input" class="field-input" placeholder="رسالة...">
+        <button class="btn btn-secondary" id="btn-rec-toggle" title="تسجيل صوت">🎙️</button>
+        <button class="btn btn-primary" id="btn-send-msg">إرسال</button>
+      </div>
+      <div id="rec-status" style="margin-top:6px;color:var(--text-2);font-size:.85rem"></div>
+    </div>
+  </section>
+
+  <!-- FRIENDS -->
+  <section id="view-friends" class="view">
+    <div class="page-container">
+      <h2 class="view-title">الأصدقاء</h2>
+      <div class="glass-card pad">
+        <input id="friend-search" class="field-input" placeholder="ابحث باسم المستخدم...">
+        <div id="search-results" style="margin-top:8px"></div>
+      </div>
+      <h3 style="margin:14px 6px">طلبات وردتك</h3>
+      <div id="incoming-requests"></div>
+      <h3 style="margin:14px 6px">قائمتي</h3>
+      <div id="friends-list"></div>
+    </div>
+  </section>
+
+  <!-- GROUPS -->
+  <section id="view-groups" class="view">
+    <div class="page-container">
+      <h2 class="view-title">مجموعات الحفظ</h2>
+      <div class="glass-card pad">
+        <input id="group-name" class="field-input" placeholder="اسم المجموعة">
+        <div id="group-member-picker" style="margin-top:6px;font-size:.85rem;color:var(--text-2)"></div>
+        <button class="btn btn-primary btn-full" id="btn-create-group" style="margin-top:8px">إنشاء مجموعة</button>
+      </div>
+      <div id="groups-list" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- GROUP ROOM -->
+  <section id="view-grouproom" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-groups">⟵ رجوع</button>
+      <h2 class="view-title" id="grouproom-title">مجموعة</h2>
+      <div class="glass-card pad" id="grouproom-messages" style="min-height:300px;max-height:55vh;overflow-y:auto"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input id="grouproom-input" class="field-input" placeholder="رسالة...">
+        <button class="btn btn-primary" id="btn-send-group">إرسال</button>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <input id="group-add-user" class="field-input" placeholder="ضمّ صديق (اسم المستخدم)">
+        <button class="btn btn-secondary" id="btn-add-to-group">إضافة</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIBRARY (client-side: voice clips + saved images) -->
+  <section id="view-library" class="view">
+    <div class="page-container">
+      <h2 class="view-title">مكتبتي الصوتية والصورية</h2>
+      <div class="glass-card pad">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btn-lib-record">🎙️ تسجيل آية</button>
+          <button class="btn btn-secondary" id="btn-lib-image">📷 صورة</button>
+          <input type="file" id="lib-image-input" accept="image/*" style="display:none">
+        </div>
+        <div id="lib-rec-status" style="margin-top:6px;color:var(--text-2);font-size:.85rem"></div>
+        <div class="field-hint">كل شي يُحفظ على جهازك فقط. السيرفر لا يستقبل أي بيانات صوتية أو صور كبيرة.</div>
+      </div>
+      <h3 style="margin:14px 6px">التسجيلات</h3>
+      <div id="lib-recordings"></div>
+      <h3 style="margin:14px 6px">الصور</h3>
+      <div id="lib-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="view-leaderboard" class="view">
+    <div class="page-container">
+      <h2 class="view-title">المتصدرون</h2>
+      <div id="leaderboard-list"></div>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section id="view-support" class="view">
+    <div class="page-container">
+      <h2 class="view-title">الدعم الفني</h2>
+      <div class="glass-card pad" id="support-messages" style="min-height:200px;max-height:50vh;overflow-y:auto"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input id="support-input" class="field-input" placeholder="اكتب مشكلتك...">
+        <button class="btn btn-primary" id="btn-send-support">إرسال</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN GATE -->
+  <section id="view-admin-gate" class="view">
+    <div class="page-container">
+      <h2 class="view-title">دخول الإدارة</h2>
+      <form id="form-admin" class="glass-card pad">
+        <input id="admin-pw" class="field-input" type="password" placeholder="كلمة المرور (admin123 افتراضياً)">
+        <button class="btn btn-primary btn-full" type="submit">دخول</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ADMIN PANEL -->
+  <section id="view-admin" class="view">
+    <div class="page-container">
+      <h2 class="view-title">لوحة الإدارة الكاملة</h2>
+      <div class="admin-tabs">
+        <button class="tab-btn active" data-atab="overview">نظرة عامة</button>
+        <button class="tab-btn" data-atab="users">المستخدمون</button>
+        <button class="tab-btn" data-atab="posts">المنشورات</button>
+        <button class="tab-btn" data-atab="chats">الدردشات</button>
+        <button class="tab-btn" data-atab="tickets">التذاكر</button>
+        <button class="tab-btn" data-atab="broadcast">الإعلان</button>
+        <button class="tab-btn" data-atab="weights">الخوارزميات</button>
+      </div>
+      <div id="atab-overview"  class="atab"></div>
+      <div id="atab-users"     class="atab hidden"></div>
+      <div id="atab-posts"     class="atab hidden"></div>
+      <div id="atab-chats"     class="atab hidden"></div>
+      <div id="atab-tickets"   class="atab hidden"></div>
+      <div id="atab-broadcast" class="atab hidden"></div>
+      <div id="atab-weights"   class="atab hidden"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
