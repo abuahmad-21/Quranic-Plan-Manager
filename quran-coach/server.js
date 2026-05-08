@@ -177,6 +177,10 @@ R('PATCH','/api/me', async (req,res)=>{
   if (typeof b.display_name==='string') u.display_name=b.display_name.slice(0,40);
   if (typeof b.bio==='string') u.bio=b.bio.slice(0,300);
   if (typeof b.avatar_color==='string' && /^#[0-9a-f]{6}$/i.test(b.avatar_color)) u.avatar_color=b.avatar_color;
+  if (typeof b.plan_mode==='string' && ['both','memorization_only','review_only'].includes(b.plan_mode)){
+    if(!u.onboarding) u.onboarding={};
+    u.onboarding.plan_mode = b.plan_mode;
+  }
   persist(); send(res,200,{ok:true,user:safeUser(u)});
 });
 
@@ -767,7 +771,8 @@ R('GET','/api/channels/:id', async (req,res,p)=>{
   const memberDetails = ch.members.map(m=>{
     const mu=DB.users[m];
     return mu?{username:mu.username,display_name:mu.display_name,avatar_color:mu.avatar_color,
-      pages:mu.progress?.total_pages_memorized||0,streak:mu.progress?.current_streak_days||0}:{username:m};
+      pages:mu.progress?.total_pages_memorized||0,streak:mu.progress?.current_streak_days||0,
+      is_sheikh:m===ch.sheikh_username}:{username:m,is_sheikh:m===ch.sheikh_username};
   });
   send(res,200,{channel:{
     id:ch.id,name:ch.name,description:ch.description,
@@ -931,4 +936,43 @@ const server = http.createServer(async (req,res)=>{
 server.listen(PORT, ()=>{
   console.log(`Quantum Quran Coach running on http://localhost:${PORT}`);
   console.log(`Admin password (default): admin123  →  set via ADMIN_PASSWORD or db.json`);
+
+  /* ── Background AI Optimizer ──
+     Runs every 4 hours, reads all user data, asks AI to suggest
+     algorithm weight improvements, applies them within ±15% limit. */
+  async function runAiOptimizer(){
+    const users = Object.values(DB.users);
+    if(!users.length || !callAI) return;
+    try {
+      const n = users.length;
+      const avgEnergy   = users.reduce((s,u)=>s+(u.energy?.score||0),0)/n;
+      const avgStreak   = users.reduce((s,u)=>s+(u.progress?.current_streak_days||0),0)/n;
+      const avgPages    = users.reduce((s,u)=>s+(u.progress?.total_pages_memorized||0),0)/n;
+      const totalSess   = users.reduce((s,u)=>s+(u.progress?.total_sessions_completed||0),0);
+      const dropping    = users.filter(u=>(u.progress?.consecutive_absences||0)>=3).length;
+      const modeDistrib = {both:0,memorization_only:0,review_only:0};
+      users.forEach(u=>{ const m=u.onboarding?.plan_mode||'both'; if(modeDistrib[m]!==undefined) modeDistrib[m]++; });
+
+      const prompt = `أنت نظام تحسين خوارزميات لتطبيق حفظ القرآن الكريم. وظيفتك تحليل بيانات المستخدمين وتحسين معاملات الخوارزمية.\n\nبيانات المستخدمين (${n} مستخدم):\n- متوسط الطاقة: ${avgEnergy.toFixed(1)}/100\n- متوسط سلسلة الأيام: ${avgStreak.toFixed(1)} يوم\n- متوسط الصفحات المحفوظة: ${avgPages.toFixed(2)}\n- إجمالي الجلسات: ${totalSess}\n- منقطعون عن التطبيق: ${dropping}\n- توزيع أنواع الخطط: ${JSON.stringify(modeDistrib)}\n\nالمعاملات الحالية:\n${JSON.stringify(DB.admin.algorithm_weights,null,2)}\n\nأعطني JSON فقط (بدون شرح) بنفس المفاتيح مع قيم محسّنة. القاعدة: لا تتجاوز تغيير 15% في أي قيمة. ابدأ مباشرة بـ {`;
+      const reply = await callAI(prompt, 'حلّل البيانات وحسّن المعاملات');
+      if(!reply) return;
+      const raw = (reply.includes('{') ? '{' : '') + reply.split('{').slice(1).join('{');
+      const match = ('{'+raw).match(/\{[\s\S]*?\}/);
+      if(!match) return;
+      const suggested = JSON.parse(match[0]);
+      const cur = DB.admin.algorithm_weights;
+      let changed = 0;
+      for(const [k,v] of Object.entries(suggested)){
+        if(k in cur && typeof v==='number' && isFinite(v)){
+          const maxΔ = Math.abs(cur[k])*0.15 + 0.01;
+          cur[k] = Math.round((cur[k] + Math.max(-maxΔ, Math.min(maxΔ, v-cur[k])))*1000)/1000;
+          changed++;
+        }
+      }
+      if(changed){ DB.admin.ai_last_optimization=now(); DB.admin.ai_opt_user_count=n; persist(); }
+      console.log(`[AI Optimizer] Ran on ${n} users, updated ${changed} weights.`);
+    } catch(e){ console.error('[AI Optimizer]', e.message); }
+  }
+  setTimeout(runAiOptimizer, 2*60*1000);           // first run: 2 min after start
+  setInterval(runAiOptimizer, 4*60*60*1000);        // then every 4 hours
 });

@@ -27,9 +27,17 @@
       "plan_decay_factor": 0.85,
       "plan_growth_factor": 1.15
     },
-    "broadcast_messages": [],
+    "broadcast_messages": [
+      {
+        "id": "e3cbe09532328a09",
+        "message": "هاب",
+        "sent_at": "2026-05-08T06:02:55.610Z",
+        "sent_by": "admin",
+        "active": true
+      }
+    ],
     "stats": {
-      "total_users": 3,
+      "total_users": 5,
       "total_sessions_today": 1,
       "total_pages_memorized_alltime": 0.5
     }
@@ -302,11 +310,196 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "ffgh": {
+      "username": "ffgh",
+      "password_hash": "5e77061a9b955ac03d9a574a8a68d8a58005949fa4fdd3d9e38dbd263028ffe8",
+      "display_name": "Gfggg",
+      "created_at": "2026-05-08T05:49:16.840Z",
+      "last_active": "2026-05-08T05:57:12.901Z",
+      "avatar_color": "#ea9c00",
+      "bio": "",
+      "is_banned": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-08T05:49:20.990Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-08T05:49:20.990Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 0,
+        "afi": 77,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
+    },
+    "ffgg": {
+      "username": "ffgg",
+      "password_hash": "55f74cda162abc3b5fff713e85bd56719e95d1b644ebc2638aaea801b9096ea2",
+      "display_name": "Hgggh",
+      "created_at": "2026-05-08T06:01:54.980Z",
+      "last_active": "2026-05-08T06:03:03.021Z",
+      "avatar_color": "#0c533a",
+      "bio": "",
+      "is_banned": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-08T06:01:57.526Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-08T06:01:57.526Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 3.45,
+        "afi": 83,
+        "history": [
+          75,
+          92,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
     }
   },
   "chats": {},
   "groups": {},
   "posts": [],
-  "support_tickets": {},
-  "voice_permissions": {}
+  "support_tickets": {
+    "ffgg": {
+      "messages": [
+        {
+          "from": "ffgg",
+          "text": "اريد اصبخ شيخ",
+          "timestamp": "2026-05-08T06:02:24.254Z"
+        }
+      ],
+      "opened_at": "2026-05-08T06:02:24.254Z"
+    }
+  },
+  "voice_permissions": {},
+  "channels": {}
 }

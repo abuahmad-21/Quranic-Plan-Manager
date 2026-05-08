@@ -142,7 +142,6 @@ const App = {
     if (id==='view-admin') Admin.load();
     if (id==='view-notifications') Notifications.load();
     if (id==='view-channels') Channels.load();
-    if (id==='view-ai-coach') AiCoach.init();
     if (id==='view-channelroom' && !S.currentChannel) App.showView('view-channels');
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
@@ -295,7 +294,12 @@ const Session = {
 const Plan = {
   async load(){
     const r = await Api.get('/plan');
+    const modeLabels = {both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'};
+    const currentMode = S.user?.onboarding?.plan_mode || 'both';
     document.getElementById('plan-current').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div><strong>نوع الخطة:</strong> <span class="plan-mode-badge">${modeLabels[currentMode]||'حفظ ومراجعة'}</span></div>
+      </div>
       <div><strong>الهدف اليومي:</strong> ${r.plan?.current_daily_pages||0} صفحة</div>
       <div><strong>المرحلة:</strong> ${r.plan?.phase||'—'}</div>
       <div><strong>تاريخ البدء:</strong> ${fmtTime(r.plan?.start_date)}</div>
@@ -303,6 +307,26 @@ const Plan = {
       <div><strong>توصية الخوارزمية:</strong> ${r.recommendation.reason}</div>
       <div>اللياقة: ${(r.recommendation.fitness*100|0)}% · الجودة: ${(r.recommendation.qScore*100|0)}% · الغياب: ${(r.recommendation.absRate*100|0)}%</div>
       ` : ''}`;
+
+    // Plan mode selector
+    const modeSelector = document.getElementById('plan-mode-selector');
+    if(modeSelector){
+      modeSelector.querySelectorAll('[data-pm]').forEach(b=>{
+        b.classList.toggle('active', b.dataset.pm===currentMode);
+        b.onclick = ()=>{
+          modeSelector.querySelectorAll('[data-pm]').forEach(x=>x.classList.remove('active'));
+          b.classList.add('active');
+        };
+      });
+    }
+    const saveBtn = document.getElementById('btn-save-plan-mode');
+    if(saveBtn) saveBtn.onclick = async ()=>{
+      const mode = modeSelector?.querySelector('.active')?.dataset.pm || 'both';
+      const r2 = await Api.patch('/me', {plan_mode: mode});
+      if(r2.ok){ if(S.user?.onboarding) S.user.onboarding.plan_mode=mode; toast('✅ تم تحديث نوع الخطة','success'); Plan.load(); }
+      else toast('خطأ','error');
+    };
+
     document.getElementById('plan-preview').innerHTML =
       '<div style="display:flex;gap:4px;min-width:max-content">'+
       r.preview.map((v,i)=>`<div style="text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:6px;min-width:46px"><div class="mono" style="font-size:.7rem;color:var(--text-3)">${i+1}</div><div class="mono" style="font-size:.85rem">${v}</div></div>`).join('')+
@@ -319,23 +343,48 @@ const Plan = {
 const Profile = {
   async load(){
     const r = await Api.get('/me'); S.user = r.user;
-    setText('profile-name', S.user.display_name);
-    setText('profile-handle', '@'+S.user.username);
-    const av=document.getElementById('profile-avatar'); av.textContent=(S.user.display_name||'?')[0]; av.style.background=S.user.avatar_color;
-    document.getElementById('pf-display').value = S.user.display_name||'';
-    document.getElementById('pf-bio').value     = S.user.bio||'';
-    document.getElementById('pf-color').value   = S.user.avatar_color||'#3b82f6';
+    const u = S.user;
+    setText('profile-name', u.display_name);
+    setText('profile-handle', '@'+u.username);
+    const av=document.getElementById('profile-avatar');
+    av.textContent=(u.display_name||'?')[0]; av.style.background=u.avatar_color;
+
+    // Bio display
+    const bioEl=document.getElementById('profile-bio-display');
+    if(bioEl) bioEl.textContent = u.bio||'لا توجد نبذة بعد.';
+
+    // Badges
+    const lvlMap={beginner:'مبتدئ 🌱',intermediate:'متوسط 📖',advanced:'متقدم ⭐',hafiz:'حافظ 🏆'};
+    const modeMap={both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'};
+    const badgesEl=document.getElementById('profile-badges');
+    if(badgesEl) badgesEl.innerHTML=`
+      <span class="plan-mode-badge">${lvlMap[u.onboarding?.current_level]||'مبتدئ 🌱'}</span>
+      <span class="plan-mode-badge" style="background:rgba(250,204,21,.15);color:#fbbf24">${modeMap[u.onboarding?.plan_mode||'both']}</span>`;
+
+    // Stats
+    const p=u.progress||{};
+    setText('pf-stat-pages', (p.total_pages_memorized||0).toFixed(1));
+    setText('pf-stat-streak', p.current_streak_days||0);
+    setText('pf-stat-sessions', p.total_sessions_completed||0);
+    setText('pf-stat-energy', Math.round(u.energy?.score||0));
+    setText('pf-stat-friends', (u.friends||[]).length);
+    setText('pf-stat-longest', p.longest_streak_days||0);
+
+    // Edit form
+    document.getElementById('pf-display').value = u.display_name||'';
+    document.getElementById('pf-bio').value     = u.bio||'';
+    document.getElementById('pf-color').value   = u.avatar_color||'#3b82f6';
     document.getElementById('btn-save-profile').onclick = async ()=>{
-      const r = await Api.patch('/me',{
+      const r2 = await Api.patch('/me',{
         display_name:document.getElementById('pf-display').value,
         bio:document.getElementById('pf-bio').value,
         avatar_color:document.getElementById('pf-color').value,
       });
-      if (r.error) return toast('خطأ','error');
-      S.user = r.user; toast('تم الحفظ','success');
+      if (r2.error) return toast('خطأ','error');
+      S.user = r2.user; toast('تم الحفظ ✅','success');
       Profile.load();
     };
-    document.getElementById('my-posts').innerHTML = (S.user.posts||[]).slice().reverse().map(p=>Feed.renderPost(p,true)).join('') || '<p style="color:var(--text-2)">لا توجد منشورات بعد.</p>';
+    document.getElementById('my-posts').innerHTML = (u.posts||[]).slice().reverse().map(p=>Feed.renderPost(p,true)).join('') || '<p style="color:var(--text-2)">لا توجد منشورات بعد.</p>';
   }
 };
 
@@ -902,7 +951,6 @@ const ChannelRoom = {
     const membersSection = document.getElementById('channel-members-section');
     if(sheikhInput) sheikhInput.style.display = isS?'block':'none';
     if(sheikhBtn) sheikhBtn.style.display = isS?'inline-flex':'none';
-    if(membersSection) membersSection.style.display = 'none';
     // Announcements
     const annEl = document.getElementById('channel-announcements');
     if(annEl) annEl.innerHTML = (ch.announcements||[]).slice().reverse().map(a=>`
@@ -940,23 +988,34 @@ const ChannelRoom = {
     if(sheikhBtn) sheikhBtn.onclick = ()=>{
       if(membersSection) membersSection.style.display = membersSection.style.display==='none'?'block':'none';
     };
-    // Members list (Sheikh only)
-    if(isS && membersSection){
+    // Members list (Sheikh sees all, members see sheikh DM button)
+    if(membersSection){
+      membersSection.style.display = 'block';
       const membersList = document.getElementById('channel-members-list');
       if(membersList) membersList.innerHTML = (ch.members||[]).map(m=>`
         <div class="card-row glass-card" style="margin-bottom:4px">
           <div class="card-row-left">
             <div class="avatar-dot" style="background:${m.avatar_color||'#3b82f6'};font-size:.85rem">${(m.display_name||m.username||'?')[0]}</div>
-            <div>${escapeHTML(m.display_name||m.username)}<div style="font-size:.7rem;color:var(--text-3)">@${escapeHTML(m.username)} · ${(m.pages||0).toFixed(1)}ص · 🔥${m.streak||0}</div></div>
+            <div>${escapeHTML(m.display_name||m.username)}
+              ${m.is_sheikh?'<span class="sheikh-badge" style="font-size:.65rem;margin-right:4px">شيخ</span>':''}
+              <div style="font-size:.7rem;color:var(--text-3)">@${escapeHTML(m.username)} · ${(m.pages||0).toFixed(1)}ص · 🔥${m.streak||0}</div>
+            </div>
           </div>
-          ${m.username!==S.username?`<button class="btn btn-sm btn-danger" data-kick="${escapeHTML(m.username)}">إزالة</button>`:'<span class="plan-mode-badge sheikh-badge" style="font-size:.7rem">شيخ</span>'}
+          <div style="display:flex;gap:4px;align-items:center">
+            ${m.username!==S.username?`<button class="btn btn-sm btn-secondary" data-dm="${escapeHTML(m.username)}" title="مراسلة مباشرة">📨</button>`:''}
+            ${isS && m.username!==S.username?`<button class="btn btn-sm btn-danger" data-kick="${escapeHTML(m.username)}">إزالة</button>`:''}
+          </div>
         </div>`).join('');
+      document.querySelectorAll('[data-dm]').forEach(b=>b.onclick=()=>ChatRoom.open(b.dataset.dm));
       document.querySelectorAll('[data-kick]').forEach(b=>b.onclick=async()=>{
         if(!confirm(`إزالة @${b.dataset.kick}؟`)) return;
         const r3 = await Api.del('/channels/'+id+'/member/'+b.dataset.kick);
         if(r3.ok){ toast('أُزيل العضو','success'); ChannelRoom.open(id); }
       });
     }
+    // Sheikh panel toggle (only sheikh sees the announce input)
+    if(sheikhBtn) sheikhBtn.style.display = isS?'inline-flex':'none';
+    if(sheikhInput) sheikhInput.style.display = isS?'block':'none';
   }
 };
 

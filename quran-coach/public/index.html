@@ -118,7 +118,6 @@
       <button class="icon-btn" data-go="view-library" title="مكتبتي">📚</button>
       <button class="icon-btn" data-go="view-support" title="الدعم">🛟</button>
       <button class="icon-btn" data-go="view-channels" title="الشُّعب">📡</button>
-      <button class="icon-btn" data-go="view-ai-coach" title="المدرب الذكي">🤖</button>
       <span style="position:relative;display:inline-flex"><button class="icon-btn" data-go="view-notifications" title="الإشعارات">🔔</button><span id="notif-badge" class="notif-badge hidden">0</span></span>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
@@ -193,6 +192,15 @@
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">خطتي التكيُّفية</h2>
       <div class="glass-card pad" id="plan-current">…</div>
+      <div class="glass-card pad" style="margin-top:10px">
+        <div class="field-label" style="margin-bottom:8px">تغيير نوع الخطة</div>
+        <div class="option-grid" id="plan-mode-selector">
+          <button type="button" class="option-btn" data-pm="both">حفظ ومراجعة</button>
+          <button type="button" class="option-btn" data-pm="memorization_only">حفظ فقط</button>
+          <button type="button" class="option-btn" data-pm="review_only">مراجعة فقط</button>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-save-plan-mode" style="margin-top:10px">حفظ نوع الخطة</button>
+      </div>
       <h3 style="margin:14px 6px">معاينة 30 يوم</h3>
       <div class="glass-card pad" id="plan-preview" style="overflow-x:auto"></div>
       <h3 style="margin:14px 6px">المراجعة المتباعدة</h3>
@@ -205,21 +213,36 @@
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">ملفي الشخصي</h2>
-      <div class="glass-card pad">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
-          <div class="avatar-dot" id="profile-avatar" style="width:60px;height:60px;font-size:1.5rem"></div>
-          <div><div id="profile-name" style="font-weight:700"></div>
-            <div id="profile-handle" class="mono" style="color:var(--text-3);font-size:.8rem"></div></div>
+      <div class="glass-card" style="padding:18px;margin-bottom:12px">
+        <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
+          <div class="avatar-dot" id="profile-avatar" style="width:66px;height:66px;font-size:1.7rem;flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div id="profile-name" style="font-weight:700;font-size:1.1rem;margin-bottom:2px"></div>
+            <div id="profile-handle" class="mono" style="color:var(--text-3);font-size:.8rem;margin-bottom:5px"></div>
+            <div id="profile-badges" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+          </div>
         </div>
+        <div id="profile-bio-display" style="font-size:.88rem;color:var(--text-2);margin-bottom:14px;padding:8px;background:rgba(255,255,255,.04);border-radius:8px;min-height:28px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem;color:#34d399" id="pf-stat-pages">0</div><div style="font-size:.7rem;color:var(--text-3)">صفحات</div></div>
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem;color:#fbbf24" id="pf-stat-streak">0</div><div style="font-size:.7rem;color:var(--text-3)">سلسلة 🔥</div></div>
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem" id="pf-stat-sessions">0</div><div style="font-size:.7rem;color:var(--text-3)">جلسات</div></div>
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem;color:#60a5fa" id="pf-stat-energy">0</div><div style="font-size:.7rem;color:var(--text-3)">طاقة ⚡</div></div>
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem" id="pf-stat-friends">0</div><div style="font-size:.7rem;color:var(--text-3)">أصدقاء</div></div>
+          <div class="glass-card" style="padding:10px 4px;text-align:center"><div class="mono" style="font-size:1.35rem;color:#fbbf24" id="pf-stat-longest">0</div><div style="font-size:.7rem;color:var(--text-3)">أطول سلسلة</div></div>
+        </div>
+      </div>
+      <div class="glass-card pad" style="margin-bottom:12px">
+        <h3 style="margin:0 0 10px">تعديل الملف</h3>
         <label class="field-label">الاسم الظاهر</label>
         <input id="pf-display" class="field-input">
         <label class="field-label">نبذة قصيرة</label>
         <textarea id="pf-bio" class="field-input" rows="3" maxlength="300"></textarea>
         <label class="field-label">لون الأفاتار</label>
         <input id="pf-color" type="color" class="field-input" style="height:44px">
-        <button class="btn btn-primary btn-full" id="btn-save-profile">حفظ</button>
+        <button class="btn btn-primary btn-full" id="btn-save-profile">حفظ التعديلات</button>
       </div>
-      <h3 style="margin:14px 6px">منشوراتي</h3>
+      <h3 style="margin:14px 6px 8px">منشوراتي</h3>
       <div id="my-posts"></div>
     </div>
   </section>
