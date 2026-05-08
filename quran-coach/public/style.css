@@ -168,3 +168,19 @@ body{background:var(--bg);color:var(--text-1);font-family:'Tajawal',sans-serif;m
 body.mode-challenge .top-bar{box-shadow:0 0 20px var(--gold-glow)}
 body.mode-interrupt .top-bar{box-shadow:0 0 20px var(--red-glow)}
 body.mode-reload    .top-bar{filter:saturate(.7)}
+
+/* NOTIFICATION BADGE */
+.notif-badge{position:absolute;top:-4px;left:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none}
+
+/* AI COACH */
+#ai-messages .msg{max-width:90%}
+.ai-quick{font-size:.78rem;padding:6px 12px}
+
+/* CHANNEL ANNOUNCEMENT */
+.channel-ann{border-color:rgba(245,158,11,.4) !important;background:rgba(245,158,11,.06) !important}
+
+/* PLAN MODE BADGE */
+.plan-mode-badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:600;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+
+/* SHEIKH BADGE */
+.sheikh-badge{background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}

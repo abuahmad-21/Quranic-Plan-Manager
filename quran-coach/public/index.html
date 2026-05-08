@@ -92,6 +92,12 @@
           <button type="button" class="option-btn" data-v="evening">المساء</button>
           <button type="button" class="option-btn" data-v="night">الليل</button>
         </div>
+        <label class="field-label">نوع الخطة</label>
+        <div class="option-grid" data-name="plan_mode">
+          <button type="button" class="option-btn active" data-v="both">حفظ ومراجعة</button>
+          <button type="button" class="option-btn" data-v="memorization_only">حفظ فقط</button>
+          <button type="button" class="option-btn" data-v="review_only">مراجعة فقط</button>
+        </div>
         <button type="submit" class="btn btn-primary btn-full btn-lg">ابدأ الرحلة</button>
       </form>
     </div>
@@ -111,6 +117,9 @@
       <button class="icon-btn" data-go="view-chats" title="المحادثات">💬</button>
       <button class="icon-btn" data-go="view-library" title="مكتبتي">📚</button>
       <button class="icon-btn" data-go="view-support" title="الدعم">🛟</button>
+      <button class="icon-btn" data-go="view-channels" title="الشُّعب">📡</button>
+      <button class="icon-btn" data-go="view-ai-coach" title="المدرب الذكي">🤖</button>
+      <span style="position:relative;display:inline-flex"><button class="icon-btn" data-go="view-notifications" title="الإشعارات">🔔</button><span id="notif-badge" class="notif-badge hidden">0</span></span>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
     </div>
@@ -375,6 +384,7 @@
         <button class="tab-btn" data-atab="tickets">التذاكر</button>
         <button class="tab-btn" data-atab="broadcast">الإعلان</button>
         <button class="tab-btn" data-atab="weights">الخوارزميات</button>
+        <button class="tab-btn" data-atab="channels">الشُّعب</button>
       </div>
       <div id="atab-overview"  class="atab"></div>
       <div id="atab-users"     class="atab hidden"></div>
@@ -383,6 +393,101 @@
       <div id="atab-tickets"   class="atab hidden"></div>
       <div id="atab-broadcast" class="atab hidden"></div>
       <div id="atab-weights"   class="atab hidden"></div>
+      <div id="atab-channels"  class="atab hidden"></div>
+    </div>
+  </section>
+
+  <!-- NOTIFICATIONS -->
+  <section id="view-notifications" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+        <h2 class="view-title" style="margin:0">الإشعارات</h2>
+        <button class="btn btn-sm btn-secondary" id="btn-read-all-notif">قراءة الكل</button>
+      </div>
+      <div id="notifications-list"></div>
+    </div>
+  </section>
+
+  <!-- CHANNELS -->
+  <section id="view-channels" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <h2 class="view-title">الشُّعب</h2>
+      <div class="glass-card pad" style="margin-bottom:14px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <input id="channel-join-code" class="field-input" placeholder="كود الانضمام (6 أحرف)" style="flex:1;min-width:120px">
+          <button class="btn btn-primary" id="btn-join-channel">انضمام</button>
+        </div>
+        <hr style="border-color:rgba(255,255,255,.08);margin:10px 0">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input id="channel-new-name" class="field-input" placeholder="اسم الشُّعبة الجديدة" style="flex:1;min-width:120px">
+          <input id="channel-new-desc" class="field-input" placeholder="وصف قصير (اختياري)" style="flex:1;min-width:100px">
+          <select id="channel-new-limit" class="field-input" style="flex:0 0 auto;width:auto">
+            <option value="50">50 عضو</option>
+            <option value="100">100 عضو</option>
+            <option value="200" selected>200 عضو</option>
+            <option value="500">500 عضو</option>
+          </select>
+          <button class="btn btn-secondary" id="btn-create-channel">إنشاء شُعبة</button>
+        </div>
+      </div>
+      <h3 style="margin:14px 6px 8px">شُعبي</h3>
+      <div id="my-channels-list" style="margin-bottom:18px"></div>
+      <h3 style="margin:14px 6px 8px">اكتشف شُعباً عامة</h3>
+      <div id="discover-channels-list"></div>
+    </div>
+  </section>
+
+  <!-- CHANNEL ROOM -->
+  <section id="view-channelroom" class="view">
+    <div class="page-container">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <button class="btn btn-ghost btn-sm" data-go="view-channels">⟵ رجوع</button>
+        <h2 class="view-title" id="channelroom-title" style="flex:1;margin:0">شُعبة</h2>
+        <button class="btn btn-sm btn-secondary" id="btn-sheikh-panel" style="display:none">⚙️ أعضاء</button>
+      </div>
+      <div id="channel-announcements" style="margin-bottom:8px"></div>
+      <div id="channel-sheikh-input" style="display:none;margin-bottom:10px">
+        <div class="glass-card pad">
+          <div class="field-label">📢 أرسل إعلاناً لجميع الأعضاء</div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <input id="channel-announce-text" class="field-input" placeholder="نص الإعلان...">
+            <button class="btn btn-primary" id="btn-send-announce">إرسال</button>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card" id="channelroom-messages" style="min-height:300px;max-height:50vh;overflow-y:auto;padding:10px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <input id="channelroom-input" class="field-input" placeholder="رسالة للشُّعبة...">
+        <button class="btn btn-primary" id="btn-send-channel-msg">إرسال</button>
+      </div>
+      <div id="channel-members-section" style="margin-top:14px;display:none">
+        <h3 style="margin:0 0 8px">الأعضاء</h3>
+        <div id="channel-members-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI COACH -->
+  <section id="view-ai-coach" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <h2 class="view-title">🤖 المدرب الذكي</h2>
+      <div class="glass-card pad" style="margin-bottom:10px;font-size:.85rem;color:var(--text-2)">
+        مدرب ذكي يعرف تقدمك ويقدم نصائح مخصصة لرحلة حفظ القرآن الكريم. مجاني تماماً.
+      </div>
+      <div class="glass-card" id="ai-messages" style="min-height:340px;max-height:52vh;overflow-y:auto;padding:14px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input id="ai-input" class="field-input" placeholder="اسأل مدربك...">
+        <button class="btn btn-primary" id="btn-send-ai">إرسال</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-ghost ai-quick" data-q="كيف أحسّن حفظي؟">💡 كيف أحسّن حفظي؟</button>
+        <button class="btn btn-sm btn-ghost ai-quick" data-q="نصيحة للمراجعة">🔄 نصيحة للمراجعة</button>
+        <button class="btn btn-sm btn-ghost ai-quick" data-q="كيف أحافظ على الاستمرارية؟">🔥 الاستمرارية</button>
+        <button class="btn btn-sm btn-ghost ai-quick" data-q="أشعر بالتعب من الحفظ">😔 أشعر بالتعب</button>
+      </div>
     </div>
   </section>
 

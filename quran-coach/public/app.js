@@ -140,6 +140,10 @@ const App = {
     if (id==='view-leaderboard') Leaderboard.load();
     if (id==='view-support') Support.load();
     if (id==='view-admin') Admin.load();
+    if (id==='view-notifications') Notifications.load();
+    if (id==='view-channels') Channels.load();
+    if (id==='view-ai-coach') AiCoach.init();
+    if (id==='view-channelroom' && !S.currentChannel) App.showView('view-channels');
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
@@ -211,6 +215,7 @@ const Auth = {
     S.token=r.token; S.username=r.username;
     localStorage.setItem('qqc_token',r.token); localStorage.setItem('qqc_user',r.username);
     Boot.afterLogin();
+    Notifications.startPolling();
   }
 };
 
@@ -781,6 +786,19 @@ const Admin = {
         toast('أُرسل','success'); document.getElementById('bc-text').value='';
       };
     }
+    if (name==='channels'){
+      const r = await Api.get('/admin/channels', true);
+      document.getElementById('atab-channels').innerHTML = `<div class="glass-card pad">
+        <h3>الشُّعب الكاملة (${(r.channels||[]).length})</h3>
+        ${(r.channels||[]).length===0?'<p style="color:var(--text-2)">لا شُعب مسجّلة</p>':(r.channels||[]).map(c=>`
+        <div class="card-row glass-card" style="margin-bottom:6px">
+          <div><strong>${escapeHTML(c.name)}</strong>
+            <div style="font-size:.75rem;color:var(--text-3)">شيخ: @${escapeHTML(c.sheikh_username)} · ${c.member_count} عضو · ${c.message_count} رسالة · ${c.announcement_count} إعلان</div>
+            <div style="font-size:.75rem;color:var(--gold)">🔑 كود الانضمام: <strong>${escapeHTML(c.join_code)}</strong></div>
+          </div>
+        </div>`).join('')}
+        </div>`;
+    }
     if (name==='weights'){
       const r = await Api.get('/admin/overview', true);
       const w = r.weights||{};
@@ -797,6 +815,194 @@ const Admin = {
   }
 };
 
+/* ══ NOTIFICATIONS ══ */
+const Notifications = {
+  async load(){
+    const r = await Api.get('/notifications');
+    const el = document.getElementById('notifications-list');
+    if(!el) return;
+    el.innerHTML = (r.notifications||[]).map(n=>`
+      <div class="card-row glass-card" style="margin-bottom:6px;opacity:${n.read?'.75':'1'}">
+        <div><div style="font-size:.9rem">${escapeHTML(n.text)}</div>
+          <div style="font-size:.7rem;color:var(--text-3)">${fmtTime(n.created_at)}</div></div>
+        ${n.ref&&!n.ref.includes('/')&&n.ref.startsWith('view-')?`<button class="btn btn-sm btn-ghost" data-gn="${escapeHTML(n.ref)}">فتح</button>`:''}
+      </div>`).join('') || '<p style="color:var(--text-2);text-align:center;padding:24px 0">لا إشعارات</p>';
+    document.querySelectorAll('[data-gn]').forEach(b=>b.onclick=()=>App.showView(b.dataset.gn));
+    const ra = document.getElementById('btn-read-all-notif');
+    if(ra) ra.onclick = async ()=>{ await Api.post('/notifications/read-all'); Notifications.badge(); Notifications.load(); };
+  },
+  async badge(){
+    if(!S.token) return;
+    try {
+      const r = await Api.get('/notifications');
+      const badge = document.getElementById('notif-badge');
+      if(badge){
+        if(r.unread>0){ badge.textContent=r.unread>99?'99+':r.unread; badge.classList.remove('hidden'); }
+        else badge.classList.add('hidden');
+      }
+    } catch(_){}
+  },
+  startPolling(){ Notifications.badge(); setInterval(Notifications.badge, 30000); }
+};
+
+/* ══ CHANNELS (شعبة) ══ */
+const Channels = {
+  async load(){
+    const joinBtn = document.getElementById('btn-join-channel');
+    if(joinBtn) joinBtn.onclick = async ()=>{
+      const code = (document.getElementById('channel-join-code').value||'').trim().toUpperCase();
+      if(!code) return toast('أدخل كود الانضمام','error');
+      const r = await Api.post('/channels/join',{code});
+      if(r.error) return toast(r.error==='invalid_code'?'كود غير صحيح':r.error==='already_member'?'أنت عضو بالفعل':r.error==='channel_full'?'الشُّعبة ممتلئة':'خطأ','error');
+      toast('انضممت بنجاح','success'); document.getElementById('channel-join-code').value=''; Channels.load();
+    };
+    const createBtn = document.getElementById('btn-create-channel');
+    if(createBtn) createBtn.onclick = async ()=>{
+      const name = (document.getElementById('channel-new-name').value||'').trim();
+      const desc = (document.getElementById('channel-new-desc').value||'').trim();
+      const limit = +(document.getElementById('channel-new-limit').value||200);
+      if(!name) return toast('أدخل اسم الشُّعبة','error');
+      const r = await Api.post('/channels',{name, description:desc, max_members:limit});
+      if(r.error) return toast('خطأ','error');
+      toast('أُنشئت الشُّعبة','success'); document.getElementById('channel-new-name').value=''; Channels.load();
+    };
+    const r = await Api.get('/channels');
+    const myList = document.getElementById('my-channels-list');
+    if(myList) myList.innerHTML = (r.channels||[]).map(c=>`
+      <div class="card-row glass-card" style="margin-bottom:6px;cursor:pointer" data-ch="${escapeHTML(c.id)}">
+        <div><strong>${escapeHTML(c.name)}</strong>${c.is_sheikh?'<span class="plan-mode-badge sheikh-badge" style="margin-right:8px;font-size:.7rem">شيخ</span>':''}
+          <div style="font-size:.75rem;color:var(--text-3)">${c.member_count}/${c.max_members} عضو${c.join_code?` · 🔑 <strong>${escapeHTML(c.join_code)}</strong>`:''}</div>
+        </div>
+        <div style="font-size:.75rem;color:var(--text-3)">${c.last?.text?escapeHTML(c.last.text.slice(0,30)):'—'}</div>
+      </div>`).join('') || '<p style="color:var(--text-2);text-align:center;padding:20px 0">لا شُعب. أنشئ شُعبة أو انضم بكود!</p>';
+    document.querySelectorAll('[data-ch]').forEach(el=>el.onclick=()=>ChannelRoom.open(el.dataset.ch));
+    const d = await Api.get('/channels/discover');
+    const discList = document.getElementById('discover-channels-list');
+    if(discList) discList.innerHTML = (d.channels||[]).map(c=>`
+      <div class="card-row glass-card" style="margin-bottom:6px">
+        <div><strong>${escapeHTML(c.name)}</strong>
+          <div style="font-size:.75rem;color:var(--text-3)">${escapeHTML(c.description||'')} · ${c.member_count}/${c.max_members} عضو</div></div>
+        <span style="font-size:.75rem;color:var(--text-3)">انضم بكود الشيخ</span>
+      </div>`).join('') || '<p style="color:var(--text-2);text-align:center;padding:20px 0">لا شُعب عامة متاحة حالياً</p>';
+  }
+};
+
+const ChannelRoom = {
+  currentId: null,
+  async open(id){
+    S.currentChannel = id;
+    ChannelRoom.currentId = id;
+    App.showView('view-channelroom');
+    const r = await Api.get('/channels/'+id);
+    const ch = r.channel; if(!ch) return;
+    setText('channelroom-title', ch.name);
+    const isS = ch.is_sheikh;
+    const sheikhInput = document.getElementById('channel-sheikh-input');
+    const sheikhBtn = document.getElementById('btn-sheikh-panel');
+    const membersSection = document.getElementById('channel-members-section');
+    if(sheikhInput) sheikhInput.style.display = isS?'block':'none';
+    if(sheikhBtn) sheikhBtn.style.display = isS?'inline-flex':'none';
+    if(membersSection) membersSection.style.display = 'none';
+    // Announcements
+    const annEl = document.getElementById('channel-announcements');
+    if(annEl) annEl.innerHTML = (ch.announcements||[]).slice().reverse().map(a=>`
+      <div class="glass-card pad channel-ann" style="margin-bottom:6px">
+        <div style="font-size:.72rem;color:var(--gold)">📢 إعلان · ${fmtTime(a.timestamp)}</div>
+        <div style="margin-top:4px">${escapeHTML(a.text)}</div>
+      </div>`).join('');
+    // Messages
+    const box = document.getElementById('channelroom-messages');
+    if(box){
+      box.innerHTML = (ch.messages||[]).map(m=>{
+        const mine=m.from===S.username;
+        return `<div class="msg ${mine?'msg-mine':'msg-other'}"><strong style="font-size:.68rem;opacity:.7">@${escapeHTML(m.from)}</strong><br>${escapeHTML(m.text)}<div class="msg-time">${fmtTime(m.timestamp)}</div></div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+    // Send message
+    const sendBtn = document.getElementById('btn-send-channel-msg');
+    const msgInput = document.getElementById('channelroom-input');
+    if(sendBtn) sendBtn.onclick = async ()=>{
+      const t = (msgInput?.value||'').trim(); if(!t) return;
+      await Api.post('/channels/'+id+'/message',{text:t});
+      if(msgInput) msgInput.value=''; ChannelRoom.open(id);
+    };
+    if(msgInput) msgInput.onkeydown = e=>{ if(e.key==='Enter') sendBtn?.click(); };
+    // Announce
+    const annBtn = document.getElementById('btn-send-announce');
+    const annInput = document.getElementById('channel-announce-text');
+    if(annBtn) annBtn.onclick = async ()=>{
+      const t = (annInput?.value||'').trim(); if(!t) return;
+      const r2 = await Api.post('/channels/'+id+'/announce',{text:t});
+      if(r2.ok){ toast('أُرسل الإعلان','success'); if(annInput) annInput.value=''; ChannelRoom.open(id); }
+    };
+    // Sheikh panel toggle
+    if(sheikhBtn) sheikhBtn.onclick = ()=>{
+      if(membersSection) membersSection.style.display = membersSection.style.display==='none'?'block':'none';
+    };
+    // Members list (Sheikh only)
+    if(isS && membersSection){
+      const membersList = document.getElementById('channel-members-list');
+      if(membersList) membersList.innerHTML = (ch.members||[]).map(m=>`
+        <div class="card-row glass-card" style="margin-bottom:4px">
+          <div class="card-row-left">
+            <div class="avatar-dot" style="background:${m.avatar_color||'#3b82f6'};font-size:.85rem">${(m.display_name||m.username||'?')[0]}</div>
+            <div>${escapeHTML(m.display_name||m.username)}<div style="font-size:.7rem;color:var(--text-3)">@${escapeHTML(m.username)} · ${(m.pages||0).toFixed(1)}ص · 🔥${m.streak||0}</div></div>
+          </div>
+          ${m.username!==S.username?`<button class="btn btn-sm btn-danger" data-kick="${escapeHTML(m.username)}">إزالة</button>`:'<span class="plan-mode-badge sheikh-badge" style="font-size:.7rem">شيخ</span>'}
+        </div>`).join('');
+      document.querySelectorAll('[data-kick]').forEach(b=>b.onclick=async()=>{
+        if(!confirm(`إزالة @${b.dataset.kick}؟`)) return;
+        const r3 = await Api.del('/channels/'+id+'/member/'+b.dataset.kick);
+        if(r3.ok){ toast('أُزيل العضو','success'); ChannelRoom.open(id); }
+      });
+    }
+  }
+};
+
+/* ══ AI COACH ══ */
+const AiCoach = {
+  _inited: false,
+  messages: [],
+  init(){
+    if(AiCoach._inited){ AiCoach.render(); return; }
+    AiCoach._inited = true;
+    AiCoach.messages = [];
+    const sendBtn = document.getElementById('btn-send-ai');
+    const aiInput = document.getElementById('ai-input');
+    if(sendBtn) sendBtn.onclick = AiCoach.send;
+    if(aiInput) aiInput.onkeydown = e=>{ if(e.key==='Enter') AiCoach.send(); };
+    document.querySelectorAll('.ai-quick').forEach(b=>b.onclick=()=>{
+      const aiInp = document.getElementById('ai-input');
+      if(aiInp) aiInp.value = b.dataset.q; AiCoach.send();
+    });
+    AiCoach.render();
+  },
+  async send(){
+    const inp = document.getElementById('ai-input');
+    const text = (inp?.value||'').trim(); if(!text) return;
+    if(inp) inp.value='';
+    AiCoach.messages.push({from:'user',text});
+    AiCoach.render();
+    const r = await Api.post('/ai-coach',{message:text});
+    AiCoach.messages.push({from:'ai',text:r.reply||'...'});
+    AiCoach.render();
+  },
+  render(){
+    const box = document.getElementById('ai-messages');
+    if(!box) return;
+    if(!AiCoach.messages.length){
+      box.innerHTML='<div style="color:var(--text-2);text-align:center;padding:50px 0">👋 أهلاً! كيف أساعدك في رحلة حفظ القرآن اليوم؟</div>';
+      return;
+    }
+    box.innerHTML = AiCoach.messages.map(m=>{
+      const mine=m.from==='user';
+      return `<div class="msg ${mine?'msg-mine':'msg-other'}">${escapeHTML(m.text)}</div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+};
+
 /* ══ Boot ══ */
 const Boot = {
   async start(){
@@ -810,6 +1016,7 @@ const Boot = {
     else App.showView('view-auth');
     UI.setLoading(false);
     Sensors.init();
+    if(S.token) Notifications.startPolling();
   },
   async afterLogin(){
     const r = await Api.get('/me');

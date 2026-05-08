@@ -23,6 +23,7 @@ const TECHS    = JSON.parse(fs.readFileSync(path.join(ROOT,'data','techniques.js
 
 /* ══ DB helpers (debounced write) ══ */
 let DB = JSON.parse(fs.readFileSync(DB_PATH));
+if(!DB.channels) DB.channels = {};
 let writePending = false;
 function persist(){
   if (writePending) return;
@@ -335,6 +336,7 @@ R('POST','/api/friends/accept', async (req,res)=>{
   from.friend_requests_sent  = from.friend_requests_sent.filter(x=>x!==u.username);
   if (!u.friends.includes(from.username))    u.friends.push(from.username);
   if (!from.friends.includes(u.username))    from.friends.push(u.username);
+  addNotif(from.username,'friend_accepted',`✅ قَبِل @${u.username} طلب صداقتك`,'view-friends');
   persist(); send(res,200,{ok:true});
 });
 
@@ -627,6 +629,7 @@ R('POST','/api/admin/tickets/:user/reply', async (req,res,p)=>{
   const b = await readBody(req);
   if (!DB.support_tickets[p.user]) DB.support_tickets[p.user] = {messages:[], opened_at:now()};
   DB.support_tickets[p.user].messages.push({from:'admin', text:String(b.text||'').slice(0,2000), timestamp:now()});
+  addNotif(p.user,'support_reply','💬 رد من فريق الدعم: '+String(b.text||'').slice(0,60),'view-support');
   persist(); send(res,200,{ok:true});
 });
 
@@ -671,6 +674,218 @@ R('DELETE','/api/admin/quote/:id', async (req,res,p)=>{
 R('GET','/api/admin/groups', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{groups: Object.values(DB.groups)});
+});
+
+/* ── Extra Helpers ── */
+function channelCode(){ return Math.random().toString(36).substr(2,6).toUpperCase(); }
+function addNotif(username, type, text, ref=''){
+  const u = DB.users[username]; if(!u) return;
+  if(!u.notifications) u.notifications=[];
+  u.notifications.push({id:uid(), type, text, ref, read:false, created_at:now()});
+  if(u.notifications.length>100) u.notifications=u.notifications.slice(-100);
+}
+async function callAI(systemPrompt, userMsg){
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if(!baseUrl || !apiKey) return null;
+  try {
+    const resp = await fetch(`${baseUrl}/chat/completions`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'gpt-5-mini', messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_tokens:300})
+    });
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch(e){ console.error('AI error',e.message); return null; }
+}
+
+/* ── CHANNELS (شعبة) ── */
+R('POST','/api/channels', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const name = String(b.name||'').trim().slice(0,50); if(!name) return send(res,400,{error:'name_required'});
+  const id = uid();
+  DB.channels[id] = {
+    id, name,
+    description: String(b.description||'').slice(0,300),
+    sheikh_username: u.username,
+    join_code: channelCode(),
+    max_members: Math.min(+b.max_members||200, 1000),
+    is_public: b.is_public !== false,
+    members: [u.username],
+    announcements: [],
+    messages: [],
+    plan_override: null,
+    created_at: now(),
+    last_message_at: null,
+  };
+  persist();
+  send(res,200,{ok:true, channel:DB.channels[id]});
+});
+
+R('GET','/api/channels', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const list = Object.values(DB.channels).filter(c=>c.members.includes(u.username));
+  send(res,200,{channels: list.map(c=>({
+    id:c.id, name:c.name, description:c.description,
+    sheikh_username:c.sheikh_username, member_count:c.members.length,
+    max_members:c.max_members, is_sheikh:c.sheikh_username===u.username,
+    last_message_at:c.last_message_at,
+    last:c.messages[c.messages.length-1]||null,
+    join_code:c.sheikh_username===u.username?c.join_code:undefined,
+  }))});
+});
+
+R('GET','/api/channels/discover', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const open = Object.values(DB.channels)
+    .filter(c=>c.is_public && !c.members.includes(u.username) && c.members.length < c.max_members)
+    .slice(0,50)
+    .map(c=>({id:c.id,name:c.name,description:c.description,member_count:c.members.length,max_members:c.max_members,sheikh_username:c.sheikh_username}));
+  send(res,200,{channels:open});
+});
+
+R('POST','/api/channels/join', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const code = String(b.code||'').toUpperCase().trim();
+  const ch = Object.values(DB.channels).find(c=>c.join_code===code);
+  if(!ch) return send(res,404,{error:'invalid_code'});
+  if(ch.members.includes(u.username)) return send(res,409,{error:'already_member'});
+  if(ch.members.length>=ch.max_members) return send(res,403,{error:'channel_full'});
+  ch.members.push(u.username);
+  addNotif(ch.sheikh_username,'channel_join',`انضمّ @${u.username} إلى شُعبة ${ch.name}`,ch.id);
+  persist();
+  send(res,200,{ok:true, channel:{id:ch.id,name:ch.name}});
+});
+
+R('GET','/api/channels/:id', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
+  const isS = ch.sheikh_username===u.username;
+  const memberDetails = ch.members.map(m=>{
+    const mu=DB.users[m];
+    return mu?{username:mu.username,display_name:mu.display_name,avatar_color:mu.avatar_color,
+      pages:mu.progress?.total_pages_memorized||0,streak:mu.progress?.current_streak_days||0}:{username:m};
+  });
+  send(res,200,{channel:{
+    id:ch.id,name:ch.name,description:ch.description,
+    sheikh_username:ch.sheikh_username,max_members:ch.max_members,
+    is_sheikh:isS,join_code:isS?ch.join_code:undefined,
+    members:memberDetails,member_count:ch.members.length,
+    announcements:ch.announcements.slice(-20),
+    messages:ch.messages.slice(-100),
+    plan_override:ch.plan_override,
+  }});
+});
+
+R('POST','/api/channels/:id/message', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
+  const b = await readBody(req);
+  const msg = {id:uid(),from:u.username,text:String(b.text||'').slice(0,2000),timestamp:now()};
+  ch.messages.push(msg);
+  if(ch.messages.length>2000) ch.messages=ch.messages.slice(-2000);
+  ch.last_message_at=msg.timestamp;
+  persist(); send(res,200,{ok:true,message:msg});
+});
+
+R('POST','/api/channels/:id/announce', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const b = await readBody(req);
+  const ann = {id:uid(),text:String(b.text||'').slice(0,2000),from:u.username,timestamp:now()};
+  ch.announcements.push(ann);
+  if(ch.announcements.length>200) ch.announcements=ch.announcements.slice(-200);
+  ch.members.filter(m=>m!==u.username).forEach(m=>
+    addNotif(m,'channel_announcement',`📢 ${ch.name}: ${ann.text.slice(0,60)}`,ch.id)
+  );
+  persist(); send(res,200,{ok:true,announcement:ann});
+});
+
+R('PATCH','/api/channels/:id', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const b = await readBody(req);
+  if(typeof b.name==='string') ch.name=b.name.slice(0,50);
+  if(typeof b.description==='string') ch.description=b.description.slice(0,300);
+  if(typeof b.max_members==='number') ch.max_members=Math.min(b.max_members,1000);
+  if(typeof b.is_public==='boolean') ch.is_public=b.is_public;
+  if(b.plan_override!==undefined) ch.plan_override=b.plan_override;
+  if(b.refresh_code) ch.join_code=channelCode();
+  persist(); send(res,200,{ok:true,channel:ch});
+});
+
+R('DELETE','/api/channels/:id/member/:username', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  if(p.username===u.username) return send(res,400,{error:'cannot_remove_self'});
+  ch.members=ch.members.filter(m=>m!==p.username);
+  persist(); send(res,200,{ok:true});
+});
+
+R('POST','/api/channels/:id/leave', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
+  if(ch.sheikh_username===u.username) return send(res,400,{error:'sheikh_cannot_leave'});
+  ch.members=ch.members.filter(m=>m!==u.username);
+  persist(); send(res,200,{ok:true});
+});
+
+/* ── NOTIFICATIONS ── */
+R('GET','/api/notifications', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  if(!u.notifications) u.notifications=[];
+  const notifs = u.notifications.slice().reverse().slice(0,50);
+  send(res,200,{notifications:notifs, unread:u.notifications.filter(n=>!n.read).length});
+});
+
+R('POST','/api/notifications/read-all', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  (u.notifications||[]).forEach(n=>n.read=true);
+  persist(); send(res,200,{ok:true});
+});
+
+/* ── AI COACH ── */
+R('POST','/api/ai-coach', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const userMsg = String(b.message||'').slice(0,500);
+  if(!userMsg) return send(res,400,{error:'empty'});
+  const planMode = u.onboarding?.plan_mode||'both';
+  const modeLabel = {both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'}[planMode]||'حفظ ومراجعة';
+  const sysPrompt = `أنت مدرب حفظ القرآن الكريم الذكي "كوتش كوانتوم". تساعد المستخدمين في حفظ القرآن ومراجعته.\nمعلومات المستخدم:\n- الاسم: ${u.display_name}\n- المستوى: ${u.onboarding?.current_level||'مبتدئ'}\n- الصفحات المحفوظة: ${u.progress?.total_pages_memorized||0}\n- سلسلة الأيام: ${u.progress?.current_streak_days||0} يوم\n- الهدف اليومي: ${u.plan?.current_daily_pages||0.25} صفحة\n- نوع الخطة: ${modeLabel}\n- عدد الجلسات: ${u.progress?.total_sessions_completed||0}\nأجب دائماً بالعربية، مختصر ومشجع وعملي (3 أسطر كحد أقصى).`;
+  const reply = await callAI(sysPrompt, userMsg);
+  if(reply) return send(res,200,{reply, source:'ai'});
+  const tips=['استمر في طريقك، أنت تبني شيئاً عظيماً يبقى معك للأبد!','الاستمرارية أهم من الكمية. حتى ربع صفحة يومياً تُفرّق.','راجع ما حفظت قبل أن تبدأ حفظاً جديداً — التثبيت أهم.','اقرأ بصوت عالٍ وكرر 20 مرة — يُثبّت الحفظ أكثر.','بعد الفجر أفضل وقت للحفظ والمراجعة علمياً وشرعاً.','اجعل لكل جلسة هدفاً محدداً صغيراً — ربع صفحة أو آيتين.'];
+  send(res,200,{reply:tips[Math.floor(Math.random()*tips.length)], source:'local'});
+});
+
+/* ── ADMIN CHANNELS ── */
+R('GET','/api/admin/channels', async (req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  send(res,200,{channels: Object.values(DB.channels).map(c=>({
+    id:c.id,name:c.name,sheikh_username:c.sheikh_username,
+    member_count:c.members.length,message_count:c.messages.length,
+    announcement_count:c.announcements.length,join_code:c.join_code,created_at:c.created_at
+  }))});
+});
+
+R('POST','/api/admin/direct-message/:username', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const text = String(b.text||'').slice(0,2000);
+  if(!text) return send(res,400,{error:'empty'});
+  if(!DB.support_tickets[p.username]) DB.support_tickets[p.username]={messages:[],opened_at:now()};
+  DB.support_tickets[p.username].messages.push({from:'admin',text,timestamp:now()});
+  addNotif(p.username,'support_reply','💬 رد من فريق الدعم: '+text.slice(0,60),'view-support');
+  persist(); send(res,200,{ok:true});
 });
 
 /* ══════════════════════════════════════════════
