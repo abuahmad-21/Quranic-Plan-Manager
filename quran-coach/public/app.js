@@ -123,6 +123,12 @@ const App = {
   showView(id){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
     const el=document.getElementById(id); if(el) el.classList.add('active');
+    // Hide top-bar and broadcast on auth/onboarding views
+    const noTopBar = ['view-auth','view-onboarding'];
+    const topBar = document.querySelector('.top-bar');
+    const broadcast = document.getElementById('broadcast');
+    if (topBar) topBar.classList.toggle('hidden', noTopBar.includes(id));
+    if (broadcast && noTopBar.includes(id)) broadcast.classList.add('hidden');
     if (id==='view-dashboard') Dashboard.load();
     if (id==='view-plan') Plan.load();
     if (id==='view-feed') Feed.load();
@@ -134,6 +140,8 @@ const App = {
     if (id==='view-leaderboard') Leaderboard.load();
     if (id==='view-support') Support.load();
     if (id==='view-admin') Admin.load();
+    // Stop chat polling when leaving chat room
+    if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
   },
 };

@@ -17,7 +17,7 @@
 
 <div id="loading-screen" class="loading-screen">
   <div class="loader-ring"></div>
-  <div class="loader-text">Quantum boot…</div>
+  <div class="loader-text">جارٍ التحميل…</div>
 </div>
 
 <div id="toast-container"></div>
@@ -155,6 +155,7 @@
   <!-- SESSION -->
   <section id="view-session" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">جلسة الحفظ</h2>
       <div class="glass-card pad">
         <div id="session-mode-badge" class="mode-badge mode-normal">الوضع العادي</div>
@@ -180,6 +181,7 @@
   <!-- PLAN -->
   <section id="view-plan" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">خطتي التكيُّفية</h2>
       <div class="glass-card pad" id="plan-current">…</div>
       <h3 style="margin:14px 6px">معاينة 30 يوم</h3>
@@ -192,6 +194,7 @@
   <!-- PROFILE -->
   <section id="view-profile" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">ملفي الشخصي</h2>
       <div class="glass-card pad">
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
@@ -215,6 +218,7 @@
   <!-- FEED -->
   <section id="view-feed" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">منشورات الأصدقاء</h2>
       <div class="glass-card pad">
         <textarea id="post-text" class="field-input" rows="3" placeholder="ما الذي حفظته اليوم؟"></textarea>
@@ -231,6 +235,7 @@
   <!-- CHATS -->
   <section id="view-chats" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">محادثاتي</h2>
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button class="btn btn-secondary" data-go="view-friends">الأصدقاء</button>
@@ -258,6 +263,7 @@
   <!-- FRIENDS -->
   <section id="view-friends" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-chats">⟵ رجوع</button>
       <h2 class="view-title">الأصدقاء</h2>
       <div class="glass-card pad">
         <input id="friend-search" class="field-input" placeholder="ابحث باسم المستخدم...">
@@ -273,6 +279,7 @@
   <!-- GROUPS -->
   <section id="view-groups" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-chats">⟵ رجوع</button>
       <h2 class="view-title">مجموعات الحفظ</h2>
       <div class="glass-card pad">
         <input id="group-name" class="field-input" placeholder="اسم المجموعة">
@@ -303,6 +310,7 @@
   <!-- LIBRARY (client-side: voice clips + saved images) -->
   <section id="view-library" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">مكتبتي الصوتية والصورية</h2>
       <div class="glass-card pad">
         <div style="display:flex;gap:8px">
@@ -323,6 +331,7 @@
   <!-- LEADERBOARD -->
   <section id="view-leaderboard" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">المتصدرون</h2>
       <div id="leaderboard-list"></div>
     </div>
@@ -331,6 +340,7 @@
   <!-- SUPPORT -->
   <section id="view-support" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">الدعم الفني</h2>
       <div class="glass-card pad" id="support-messages" style="min-height:200px;max-height:50vh;overflow-y:auto"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -343,6 +353,7 @@
   <!-- ADMIN GATE -->
   <section id="view-admin-gate" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">دخول الإدارة</h2>
       <form id="form-admin" class="glass-card pad">
         <input id="admin-pw" class="field-input" type="password" placeholder="كلمة المرور (admin123 افتراضياً)">
@@ -354,6 +365,7 @@
   <!-- ADMIN PANEL -->
   <section id="view-admin" class="view">
     <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">لوحة الإدارة الكاملة</h2>
       <div class="admin-tabs">
         <button class="tab-btn active" data-atab="overview">نظرة عامة</button>
