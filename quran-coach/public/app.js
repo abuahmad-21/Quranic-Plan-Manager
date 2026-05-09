@@ -967,16 +967,89 @@ const Admin = {
     }
     if (name==='channels'){
       const r = await Api.get('/admin/channels', true);
-      document.getElementById('atab-channels').innerHTML = `<div class="glass-card pad">
-        <h3>الشُّعب الكاملة (${(r.channels||[]).length})</h3>
-        ${(r.channels||[]).length===0?'<p style="color:var(--text-2)">لا شُعب مسجّلة</p>':(r.channels||[]).map(c=>`
-        <div class="card-row glass-card" style="margin-bottom:6px">
-          <div><strong>${escapeHTML(c.name)}</strong>
-            <div style="font-size:.75rem;color:var(--text-3)">شيخ: @${escapeHTML(c.sheikh_username)} · ${c.member_count} عضو · ${c.message_count} رسالة · ${c.announcement_count} إعلان</div>
-            <div style="font-size:.75rem;color:var(--gold)">🔑 كود الانضمام: <strong>${escapeHTML(c.join_code)}</strong></div>
+      const channels = r.channels||[];
+      const el = document.getElementById('atab-channels');
+      el.innerHTML = `<div class="glass-card pad" style="margin-bottom:10px">
+        <h3 style="margin:0 0 10px">الشُّعب الكاملة (${channels.length})</h3>
+        ${channels.length===0?'<p style="color:var(--text-2)">لا شُعب مسجّلة</p>':channels.map(c=>`
+        <div class="glass-card" style="margin-bottom:8px;padding:12px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:.95rem">${escapeHTML(c.name)}${c.is_public?'':' 🔒'}</div>
+              <div style="font-size:.75rem;color:var(--text-3);margin-top:2px">شيخ: @${escapeHTML(c.sheikh_username)} · ${c.member_count}/${c.max_members} عضو · ${c.message_count} رسالة · ${c.announcement_count} إعلان</div>
+              <div style="font-size:.75rem;color:var(--gold);margin-top:2px">🔑 <strong>${escapeHTML(c.join_code)}</strong>${c.last_message_at?' · آخر نشاط: '+fmtRel(c.last_message_at):''}</div>
+            </div>
+            <div style="display:flex;gap:5px;flex-shrink:0">
+              <button class="btn btn-sm btn-secondary" data-ch-detail="${escapeHTML(c.id)}">📂 تفاصيل</button>
+              <button class="btn btn-sm btn-danger" data-ch-del="${escapeHTML(c.id)}" data-ch-name="${escapeHTML(c.name)}">🗑️</button>
+            </div>
           </div>
+          <div id="ch-detail-${escapeHTML(c.id)}" style="display:none;margin-top:10px"></div>
         </div>`).join('')}
-        </div>`;
+      </div>`;
+      // Detail toggle
+      el.querySelectorAll('[data-ch-detail]').forEach(btn=>btn.onclick=async()=>{
+        const id=btn.dataset.chDetail;
+        const detailEl=document.getElementById('ch-detail-'+id);
+        if(!detailEl) return;
+        if(detailEl.style.display!=='none'){ detailEl.style.display='none'; return; }
+        detailEl.innerHTML='<div style="color:var(--text-3);font-size:.8rem">جارٍ التحميل…</div>';
+        detailEl.style.display='block';
+        const dr=await Api.get('/admin/channels/'+id,true);
+        const ch=dr.channel;
+        if(!ch){ detailEl.innerHTML='<p style="color:red">خطأ في التحميل</p>'; return; }
+        const members=ch.members||[];
+        const messages=ch.messages||[];
+        const announcements=ch.announcements||[];
+        detailEl.innerHTML=`
+          <!-- Members -->
+          <div style="margin-bottom:10px">
+            <div style="font-size:.8rem;font-weight:700;color:var(--mint);margin-bottom:6px">👥 الأعضاء (${members.length})</div>
+            <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto">
+              ${members.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,.04);border-radius:7px">
+                <div class="avatar-dot" style="background:${m.avatar_color||'#3b82f6'};width:28px;height:28px;font-size:.8rem;flex-shrink:0">${(m.display_name||m.username||'?')[0]}</div>
+                <div style="flex:1;min-width:0">
+                  <span style="font-size:.85rem;font-weight:${m.is_sheikh?'700':'400'}">${escapeHTML(m.display_name||m.username)}${m.is_sheikh?' 🏅':''}</span>
+                  <span style="font-size:.7rem;color:var(--text-3);margin-right:6px">@${escapeHTML(m.username)}</span>
+                </div>
+                <div style="font-size:.72rem;color:var(--text-3);text-align:left">${(m.pages||0).toFixed(1)}ص · 🔥${m.streak||0} · ${m.sessions||0}جلسة</div>
+              </div>`).join('')}
+            </div>
+          </div>
+          <!-- Announcements -->
+          ${announcements.length?`<div style="margin-bottom:10px">
+            <div style="font-size:.8rem;font-weight:700;color:var(--gold);margin-bottom:6px">📢 الإعلانات (${announcements.length})</div>
+            <div style="max-height:150px;overflow-y:auto">
+              ${announcements.slice().reverse().map(a=>`<div style="padding:6px 8px;background:rgba(250,204,21,.06);border-radius:6px;margin-bottom:4px;font-size:.82rem">${escapeHTML(a.text)}<span style="color:var(--text-3);font-size:.7rem;margin-right:6px">${fmtRel(a.timestamp)}</span></div>`).join('')}
+            </div>
+          </div>`:''}
+          <!-- Messages -->
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:#a78bfa;margin-bottom:6px">💬 الرسائل (${messages.length}${messages.length===200?' — آخر 200':''}) </div>
+            ${messages.length===0?'<p style="font-size:.8rem;color:var(--text-3)">لا رسائل بعد</p>':
+            `<div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">
+              ${messages.slice().reverse().map(m=>`<div style="padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.04)">
+                <span style="font-size:.72rem;color:#a78bfa;font-weight:600">@${escapeHTML(m.from)}</span>
+                <span style="font-size:.72rem;color:var(--text-3);margin-right:4px">${fmtRel(m.timestamp)}</span>
+                <div style="font-size:.85rem;margin-top:1px">${escapeHTML(m.text)}</div>
+              </div>`).join('')}
+            </div>`}
+          </div>
+          ${ch.plan_template?`<div style="margin-top:10px;padding:8px 10px;background:rgba(52,211,153,.07);border-radius:8px;border:1px solid rgba(52,211,153,.2)">
+            <div style="font-size:.75rem;color:var(--mint);margin-bottom:3px">📋 خطة الشُّعبة</div>
+            <div style="font-size:.85rem"><strong>${escapeHTML(ch.plan_template.name)}</strong> — ${ch.plan_template.daily_pages} ص/يوم</div>
+            ${ch.plan_template.description?`<div style="font-size:.78rem;color:var(--text-2)">${escapeHTML(ch.plan_template.description)}</div>`:''}
+          </div>`:''}
+        `;
+      });
+      // Delete channel
+      el.querySelectorAll('[data-ch-del]').forEach(btn=>btn.onclick=async()=>{
+        const id=btn.dataset.chDel, name=btn.dataset.chName;
+        if(!confirm(`حذف شُعبة "${name}" نهائياً؟ لا يمكن التراجع.`)) return;
+        const dr=await Api.del('/admin/channels/'+id,true);
+        if(dr.ok){ toast('🗑️ حُذفت الشُّعبة','info'); Admin.loadTab('channels'); }
+        else toast('خطأ في الحذف','error');
+      });
     }
     if (name==='weights'){
       const r = await Api.get('/admin/overview', true);
@@ -1107,7 +1180,8 @@ const Notifications = {
 /* ══ CHANNELS (شعبة) ══ */
 const Channels = {
   async load(){
-    // Show/hide create section based on sheikh status
+    // Always refresh user data so sheikh_verified is up-to-date after approval
+    try { const meR = await Api.get('/me'); if(meR.user) S.user = meR.user; } catch(_){}
     const isSheikhVerified = S.user?.sheikh_verified || false;
     const createSection = document.getElementById('channel-create-section');
     const lockedNotice  = document.getElementById('channel-locked-notice');

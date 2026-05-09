@@ -703,7 +703,7 @@ async function callAI(systemPrompt, userMsg){
     const resp = await fetch(`${baseUrl}/chat/completions`,{
       method:'POST',
       headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify({model:'gpt-5-mini', messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_tokens:300})
+      body:JSON.stringify({model:'gpt-5-mini', messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_completion_tokens:300})
     });
     const data = await resp.json();
     return data.choices?.[0]?.message?.content || null;
@@ -1157,8 +1157,46 @@ R('GET','/api/admin/channels', async (req,res)=>{
   send(res,200,{channels: Object.values(DB.channels).map(c=>({
     id:c.id,name:c.name,sheikh_username:c.sheikh_username,
     member_count:c.members.length,message_count:c.messages.length,
-    announcement_count:c.announcements.length,join_code:c.join_code,created_at:c.created_at
+    announcement_count:c.announcements.length,join_code:c.join_code,
+    is_public:c.is_public,max_members:c.max_members,
+    created_at:c.created_at,last_message_at:c.last_message_at
   }))});
+});
+
+R('GET','/api/admin/channels/:id', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const ch = DB.channels[p.id];
+  if(!ch) return send(res,404,{error:'not_found'});
+  const memberDetails = ch.members.map(m=>{
+    const mu = DB.users[m];
+    return mu ? {
+      username:mu.username, display_name:mu.display_name,
+      avatar_color:mu.avatar_color, is_sheikh:m===ch.sheikh_username,
+      pages:mu.progress?.total_pages_memorized||0,
+      streak:mu.progress?.current_streak_days||0,
+      sessions:mu.progress?.total_sessions_completed||0,
+    } : {username:m, is_sheikh:m===ch.sheikh_username};
+  });
+  send(res,200,{channel:{
+    id:ch.id, name:ch.name, description:ch.description,
+    sheikh_username:ch.sheikh_username, join_code:ch.join_code,
+    is_public:ch.is_public, max_members:ch.max_members,
+    created_at:ch.created_at, last_message_at:ch.last_message_at,
+    members:memberDetails,
+    messages:ch.messages.slice(-200),
+    announcements:ch.announcements.slice(-50),
+    review_sessions:(ch.review_sessions||[]).slice(-10),
+    plan_template:ch.plan_template||null,
+    invite_count:(ch.invite_tokens||[]).length,
+    active_review:((ch.review_sessions||[]).find(s=>s.is_active))||null,
+  }});
+});
+
+R('DELETE','/api/admin/channels/:id', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  if(!DB.channels[p.id]) return send(res,404,{error:'not_found'});
+  delete DB.channels[p.id];
+  persist(); send(res,200,{ok:true});
 });
 
 R('POST','/api/admin/direct-message/:username', async (req,res,p)=>{
