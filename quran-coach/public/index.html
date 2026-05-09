@@ -468,24 +468,77 @@
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <button class="btn btn-ghost btn-sm" data-go="view-channels">⟵ رجوع</button>
         <h2 class="view-title" id="channelroom-title" style="flex:1;margin:0">شُعبة</h2>
-        <button class="btn btn-sm btn-secondary" id="btn-sheikh-panel" style="display:none">⚙️ أعضاء</button>
+        <button class="btn btn-sm btn-secondary" id="btn-members-toggle">👥</button>
+        <button class="btn btn-sm btn-secondary" id="btn-sheikh-panel" style="display:none">⚙️ إدارة</button>
       </div>
+
+      <!-- Plan template (visible to all members) -->
+      <div id="channel-plan-template" style="display:none;margin-bottom:8px"></div>
+
+      <!-- Announcements -->
       <div id="channel-announcements" style="margin-bottom:8px"></div>
+
+      <!-- Sheikh Admin Panel -->
       <div id="channel-sheikh-input" style="display:none;margin-bottom:10px">
-        <div class="glass-card pad">
-          <div class="field-label">📢 أرسل إعلاناً لجميع الأعضاء</div>
+        <!-- Announce -->
+        <div class="glass-card pad" style="margin-bottom:8px">
+          <div class="field-label">📢 إعلان للجميع</div>
           <div style="display:flex;gap:6px;margin-top:6px">
             <input id="channel-announce-text" class="field-input" placeholder="نص الإعلان...">
             <button class="btn btn-primary" id="btn-send-announce">إرسال</button>
           </div>
         </div>
+        <!-- Plan template -->
+        <div class="glass-card pad" style="margin-bottom:8px">
+          <div class="field-label">📋 خطة الحفظ للشُّعبة</div>
+          <input id="plan-tpl-name" class="field-input" placeholder="اسم الخطة (مثال: خطة شهر رمضان)" style="margin-top:6px">
+          <input id="plan-tpl-pages" class="field-input" type="number" step="0.25" placeholder="الصفحات اليومية" style="margin-top:6px" value="0.5">
+          <textarea id="plan-tpl-desc" class="field-input" rows="2" placeholder="وصف الخطة..." style="margin-top:6px"></textarea>
+          <button class="btn btn-secondary btn-full" id="btn-save-plan-tpl" style="margin-top:6px">💾 حفظ خطة الشُّعبة</button>
+        </div>
+        <!-- Invite token generator -->
+        <div class="glass-card pad" style="margin-bottom:8px">
+          <div class="field-label">🔑 دعوة عضو جديد</div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <input id="invite-target-user" class="field-input" placeholder="اسم مستخدم (اختياري)">
+            <button class="btn btn-secondary" id="btn-gen-invite">توليد رمز</button>
+          </div>
+          <div id="invite-result" style="margin-top:8px;display:none">
+            <div style="font-size:.85rem;color:var(--text-2);margin-bottom:4px">رمز الدعوة:</div>
+            <div id="invite-token-display" class="mono" style="font-size:1.4rem;letter-spacing:4px;text-align:center;padding:10px;background:rgba(255,255,255,.06);border-radius:8px;color:var(--gold)"></div>
+            <div id="invite-for-user" style="font-size:.75rem;color:var(--text-3);text-align:center;margin-top:4px"></div>
+            <button class="btn btn-ghost btn-sm btn-full" id="btn-copy-invite" style="margin-top:6px">📋 نسخ الرمز</button>
+          </div>
+          <div style="margin-top:10px">
+            <div class="field-label" style="margin-bottom:6px">الدعوات النشطة</div>
+            <div id="invites-list" style="font-size:.8rem"></div>
+          </div>
+        </div>
+        <!-- Channel settings -->
+        <div class="glass-card pad">
+          <div class="field-label">⚙️ إعدادات الشُّعبة</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+            <span style="font-size:.85rem;color:var(--text-2)">كود الانضمام العام:</span>
+            <span id="ch-join-code" class="mono" style="color:var(--gold);font-size:1rem;letter-spacing:2px"></span>
+            <button class="btn btn-sm btn-ghost" id="btn-refresh-code">🔄</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:8px">
+            <span style="font-size:.85rem;color:var(--text-2)">الحد الأقصى للأعضاء:</span>
+            <input id="ch-max-members" class="field-input" type="number" style="width:80px;padding:4px 8px">
+            <button class="btn btn-sm btn-secondary" id="btn-save-ch-settings">حفظ</button>
+          </div>
+        </div>
       </div>
-      <div class="glass-card" id="channelroom-messages" style="min-height:300px;max-height:50vh;overflow-y:auto;padding:10px;margin-bottom:8px"></div>
+
+      <!-- Messages box -->
+      <div class="glass-card" id="channelroom-messages" style="min-height:280px;max-height:46vh;overflow-y:auto;padding:10px;margin-bottom:8px"></div>
       <div style="display:flex;gap:6px">
         <input id="channelroom-input" class="field-input" placeholder="رسالة للشُّعبة...">
         <button class="btn btn-primary" id="btn-send-channel-msg">إرسال</button>
       </div>
-      <div id="channel-members-section" style="margin-top:14px;display:none">
+
+      <!-- Members list (collapsible) -->
+      <div id="channel-members-section" style="margin-top:12px;display:none">
         <h3 style="margin:0 0 8px">الأعضاء</h3>
         <div id="channel-members-list"></div>
       </div>

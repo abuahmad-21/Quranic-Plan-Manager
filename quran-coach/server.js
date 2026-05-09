@@ -720,6 +720,8 @@ R('POST','/api/channels', async (req,res)=>{
     announcements: [],
     messages: [],
     plan_override: null,
+    plan_template: null,
+    invite_tokens: [],
     created_at: now(),
     last_message_at: null,
   };
@@ -753,10 +755,23 @@ R('POST','/api/channels/join', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const code = String(b.code||'').toUpperCase().trim();
-  const ch = Object.values(DB.channels).find(c=>c.join_code===code);
+  // Check regular join_code first
+  let ch = Object.values(DB.channels).find(c=>c.join_code===code);
+  let inviteTok = null;
+  if(!ch){
+    // Check personal invite tokens
+    for(const c of Object.values(DB.channels)){
+      const tok = (c.invite_tokens||[]).find(t=>t.token===code && !t.used_by);
+      if(tok){ ch=c; inviteTok=tok; break; }
+    }
+  }
   if(!ch) return send(res,404,{error:'invalid_code'});
   if(ch.members.includes(u.username)) return send(res,409,{error:'already_member'});
   if(ch.members.length>=ch.max_members) return send(res,403,{error:'channel_full'});
+  if(inviteTok){
+    if(inviteTok.target_username && inviteTok.target_username!==u.username) return send(res,403,{error:'invite_not_for_you'});
+    inviteTok.used_by=u.username; inviteTok.used_at=now();
+  }
   ch.members.push(u.username);
   addNotif(ch.sheikh_username,'channel_join',`انضمّ @${u.username} إلى شُعبة ${ch.name}`,ch.id);
   persist();
@@ -782,6 +797,8 @@ R('GET','/api/channels/:id', async (req,res,p)=>{
     announcements:ch.announcements.slice(-20),
     messages:ch.messages.slice(-100),
     plan_override:ch.plan_override,
+    plan_template:ch.plan_template||null,
+    pending_invites:isS?(ch.invite_tokens||[]).filter(t=>!t.used_by).length:undefined,
   }});
 });
 
@@ -831,6 +848,52 @@ R('DELETE','/api/channels/:id/member/:username', async (req,res,p)=>{
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
   if(p.username===u.username) return send(res,400,{error:'cannot_remove_self'});
   ch.members=ch.members.filter(m=>m!==p.username);
+  persist(); send(res,200,{ok:true});
+});
+
+R('POST','/api/channels/:id/invite-token', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const b = await readBody(req);
+  const target = typeof b.target_username==='string'?b.target_username.trim().toLowerCase():null;
+  if(target && !DB.users[target]) return send(res,404,{error:'user_not_found'});
+  if(target && ch.members.includes(target)) return send(res,409,{error:'already_member'});
+  if(!ch.invite_tokens) ch.invite_tokens=[];
+  const token = channelCode();
+  ch.invite_tokens.push({token, target_username:target||null, created_at:now(), used_by:null, used_at:null});
+  if(target){
+    addNotif(target,'channel_invite',`📨 دعاك الشيخ @${u.username} للانضمام إلى شُعبة "${ch.name}" — رمز الدعوة: ${token}`,p.id);
+  }
+  persist(); send(res,200,{ok:true, token});
+});
+
+R('GET','/api/channels/:id/invites', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  send(res,200,{invites:(ch.invite_tokens||[]).slice().reverse()});
+});
+
+R('DELETE','/api/channels/:id/invite/:token', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  ch.invite_tokens=(ch.invite_tokens||[]).filter(t=>t.token!==p.token);
+  persist(); send(res,200,{ok:true});
+});
+
+R('POST','/api/channels/:id/plan-template', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const b = await readBody(req);
+  ch.plan_template = {
+    name: String(b.name||'').slice(0,100),
+    daily_pages: Math.max(0.25, Math.min(+b.daily_pages||0.5, 10)),
+    description: String(b.description||'').slice(0,500),
+    updated_at: now(),
+  };
   persist(); send(res,200,{ok:true});
 });
 
