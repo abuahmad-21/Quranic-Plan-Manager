@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 7,
+      "total_users": 8,
       "total_sessions_today": 1,
       "total_pages_memorized_alltime": 0.5
     },
@@ -49,6 +49,17 @@
         "bio": "حافظ للقرآن منذ 10 سنوات",
         "time_pref": "بعد الفجر يومياً",
         "submitted_at": "2026-05-09T01:40:12.041Z",
+        "status": "approved",
+        "pages": 0,
+        "sessions": 0
+      },
+      "gfghgh": {
+        "username": "gfghgh",
+        "display_name": "Bbvbb",
+        "phone": "0795195752",
+        "bio": "Ughj",
+        "time_pref": "Jhhhhh",
+        "submitted_at": "2026-05-09T01:47:21.633Z",
         "status": "approved",
         "pages": 0,
         "sessions": 0
@@ -858,6 +869,309 @@
           "ref": "view-channels",
           "read": false,
           "created_at": "2026-05-09T01:40:12.128Z"
+        }
+      ],
+      "posts": []
+    },
+    "gfghgh": {
+      "username": "gfghgh",
+      "password_hash": "92e7dd7306dbdd412c8d6b626b7c808f0c3fc692c9297aedf047ae918b11be58",
+      "display_name": "Bbvbb",
+      "created_at": "2026-05-09T01:41:45.644Z",
+      "last_active": "2026-05-09T01:55:53.216Z",
+      "avatar_color": "#16213f",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": true,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto",
+        "plan_mode": "both"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-09T01:41:51.809Z",
+        "current_daily_pages": 0.75,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-09T01:41:51.809Z",
+        "phase_days_elapsed": 0,
+        "manual_override": true,
+        "override_target": 0.75,
+        "weekly_off_days": [
+          5
+        ],
+        "generated_plan": {
+          "from_page": 1,
+          "to_page": 20,
+          "total_pages": 20,
+          "duration_days": 30,
+          "daily_memorization_pages": 0.75,
+          "daily_review_pages": 0.75,
+          "review_days_every": 10,
+          "mode": "both",
+          "preview": [
+            {
+              "day": 1,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 0.75
+            },
+            {
+              "day": 2,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 1.5
+            },
+            {
+              "day": 3,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 2.25
+            },
+            {
+              "day": 4,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 3
+            },
+            {
+              "day": 5,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 3.75
+            },
+            {
+              "day": 6,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 4.5
+            },
+            {
+              "day": 7,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 5.25
+            },
+            {
+              "day": 8,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 6
+            },
+            {
+              "day": 9,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 6.75
+            },
+            {
+              "day": 10,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 7.5
+            },
+            {
+              "day": 11,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 8.25
+            },
+            {
+              "day": 12,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 9
+            },
+            {
+              "day": 13,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 9.75
+            },
+            {
+              "day": 14,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 10.5
+            },
+            {
+              "day": 15,
+              "type": "مراجعة",
+              "pages": 0.75,
+              "cumulative": 10.5
+            },
+            {
+              "day": 16,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 11.25
+            },
+            {
+              "day": 17,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 12
+            },
+            {
+              "day": 18,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 12.75
+            },
+            {
+              "day": 19,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 13.5
+            },
+            {
+              "day": 20,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 14.25
+            },
+            {
+              "day": 21,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 15
+            },
+            {
+              "day": 22,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 15.75
+            },
+            {
+              "day": 23,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 16.5
+            },
+            {
+              "day": 24,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 17.25
+            },
+            {
+              "day": 25,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 18
+            },
+            {
+              "day": 26,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 18.75
+            },
+            {
+              "day": 27,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 19.5
+            },
+            {
+              "day": 28,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 20.25
+            },
+            {
+              "day": 29,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 21
+            },
+            {
+              "day": 30,
+              "type": "مراجعة",
+              "pages": 0.75,
+              "cumulative": 21
+            }
+          ],
+          "ai_note": "خطة دقيقة ومتوازنة: 0.75 صفحة يومياً تُوصلك لهدفك في 30 يوماً بإذن الله.",
+          "generated_at": "2026-05-09T01:45:23.613Z"
+        }
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 7.42,
+        "afi": 47,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "488362eca13e6f0d",
+          "type": "sheikh_rejected",
+          "text": "❌ عذراً، لم تُوافَق على طلب الشيخ في هذه المرة. Gfgggfuug",
+          "ref": "view-support",
+          "read": true,
+          "created_at": "2026-05-09T01:47:07.097Z"
+        },
+        {
+          "id": "a43025c0a30ce69b",
+          "type": "sheikh_approved",
+          "text": "🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.",
+          "ref": "view-channels",
+          "read": true,
+          "created_at": "2026-05-09T01:47:31.769Z"
         }
       ],
       "posts": []
