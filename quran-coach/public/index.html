@@ -475,11 +475,37 @@
       <!-- Plan template (visible to all members) -->
       <div id="channel-plan-template" style="display:none;margin-bottom:8px"></div>
 
+      <!-- Active Review Session (visible to all) -->
+      <div id="channel-review-session" style="display:none;margin-bottom:10px"></div>
+
       <!-- Announcements -->
       <div id="channel-announcements" style="margin-bottom:8px"></div>
 
       <!-- Sheikh Admin Panel -->
       <div id="channel-sheikh-input" style="display:none;margin-bottom:10px">
+        <!-- Review Session Creator -->
+        <div class="glass-card pad" style="margin-bottom:8px">
+          <div class="field-label">📖 إنشاء جلسة مراجعة</div>
+          <input id="rs-title" class="field-input" placeholder="عنوان الجلسة (مثال: مراجعة سورة البقرة)" style="margin-top:6px">
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <div style="flex:1">
+              <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">من صفحة</div>
+              <input id="rs-from" class="field-input" type="number" min="1" max="604" placeholder="1" value="1">
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">إلى صفحة</div>
+              <input id="rs-to" class="field-input" type="number" min="1" max="604" placeholder="10" value="10">
+            </div>
+            <div style="flex:1">
+              <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">الموعد النهائي</div>
+              <input id="rs-deadline" class="field-input" type="date">
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button class="btn btn-secondary btn-full" id="btn-start-review-session">🚀 إطلاق جلسة المراجعة</button>
+            <button class="btn btn-danger" id="btn-close-review-session" style="display:none">إنهاء</button>
+          </div>
+        </div>
         <!-- Announce -->
         <div class="glass-card pad" style="margin-bottom:8px">
           <div class="field-label">📢 إعلان للجميع</div>

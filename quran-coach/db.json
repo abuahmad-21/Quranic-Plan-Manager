@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 5,
+      "total_users": 6,
       "total_sessions_today": 1,
       "total_pages_memorized_alltime": 0.5
     }
@@ -483,6 +483,95 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "isisjj": {
+      "username": "isisjj",
+      "password_hash": "9a8a9834a62d24e39e7fc55656fb05520ec5ddc65c3fece71d882dba5dbed5cb",
+      "display_name": "Djjd",
+      "created_at": "2026-05-09T01:19:17.437Z",
+      "last_active": "2026-05-09T01:22:08.261Z",
+      "avatar_color": "#0cb007",
+      "bio": "",
+      "is_banned": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-09T01:19:19.552Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-09T01:19:19.552Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 2.89,
+        "afi": 69,
+        "history": [
+          90,
+          96,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
     }
   },
   "chats": {},
@@ -501,5 +590,40 @@
     }
   },
   "voice_permissions": {},
-  "channels": {}
+  "channels": {
+    "c2816139935cf51a": {
+      "id": "c2816139935cf51a",
+      "name": "Rjj",
+      "description": "Ddhhdh",
+      "sheikh_username": "isisjj",
+      "join_code": "UODEFN",
+      "max_members": 200,
+      "is_public": true,
+      "members": [
+        "isisjj"
+      ],
+      "announcements": [],
+      "messages": [
+        {
+          "id": "b67e57078781bc22",
+          "from": "isisjj",
+          "text": "Hi",
+          "timestamp": "2026-05-09T01:20:58.365Z"
+        }
+      ],
+      "plan_override": null,
+      "plan_template": null,
+      "invite_tokens": [
+        {
+          "token": "JDBH8Q",
+          "target_username": null,
+          "created_at": "2026-05-09T01:20:48.898Z",
+          "used_by": null,
+          "used_at": null
+        }
+      ],
+      "created_at": "2026-05-09T01:20:27.537Z",
+      "last_message_at": "2026-05-09T01:20:58.365Z"
+    }
+  }
 }

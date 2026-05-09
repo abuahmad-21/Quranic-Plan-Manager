@@ -997,6 +997,34 @@ const ChannelRoom = {
       if(d) d.value=ch.plan_template.description||'';
     }
 
+    // ── Active Review Session ──
+    ChannelRoom.renderReviewSession(ch, isS, id);
+
+    // Sheikh: start/close review session
+    if(isS){
+      const startBtn = document.getElementById('btn-start-review-session');
+      const closeBtn = document.getElementById('btn-close-review-session');
+      const rs = ch.active_review_session;
+      if(rs && closeBtn) closeBtn.style.display='inline-flex';
+      if(!rs && closeBtn) closeBtn.style.display='none';
+      if(startBtn) startBtn.onclick = async ()=>{
+        const title=(document.getElementById('rs-title')?.value||'').trim();
+        const from=+document.getElementById('rs-from')?.value||1;
+        const to=+document.getElementById('rs-to')?.value||10;
+        const dl=document.getElementById('rs-deadline')?.value||'';
+        if(!title) return toast('أدخل عنوان الجلسة','error');
+        if(to<from) return toast('الصفحة النهائية يجب أن تكون أكبر من البداية','error');
+        const r2=await Api.post('/channels/'+id+'/review-session',{title,from_page:from,to_page:to,deadline:dl});
+        if(r2.ok){ toast('🚀 انطلقت جلسة المراجعة!','success'); ChannelRoom.open(id); }
+      };
+      if(closeBtn) closeBtn.onclick = async ()=>{
+        if(!ch.active_review_session) return;
+        if(!confirm('إنهاء جلسة المراجعة؟')) return;
+        await Api.del('/channels/'+id+'/review-session/'+ch.active_review_session.id);
+        toast('تم إنهاء الجلسة','info'); ChannelRoom.open(id);
+      };
+    }
+
     // Announcements
     const annEl = document.getElementById('channel-announcements');
     if(annEl) annEl.innerHTML = (ch.announcements||[]).slice().reverse().map(a=>`
@@ -1105,6 +1133,81 @@ const ChannelRoom = {
       const r7=await Api.del('/channels/'+id+'/member/'+b.dataset.kick);
       if(r7.ok){ toast('أُزيل العضو','success'); ChannelRoom.open(id); }
     });
+  },
+
+  renderReviewSession(ch, isS, channelId){
+    const el = document.getElementById('channel-review-session');
+    if(!el) return;
+    const rs = ch.active_review_session;
+    if(!rs){ el.style.display='none'; return; }
+    el.style.display='block';
+
+    const members = ch.members||[];
+    const totalMembers = members.filter(m=>m.username!==ch.sheikh_username).length || 1;
+    const completions = rs.completions||{};
+    const completedList = Object.entries(completions);
+    const doneCount = completedList.length;
+    const pct = Math.round(doneCount/totalMembers*100);
+    const myCompletion = completions[S.username];
+    const totalPages = rs.to_page - rs.from_page + 1;
+    const daysLeft = rs.deadline ? Math.ceil((new Date(rs.deadline)-Date.now())/86400000) : null;
+
+    // Build member completion rows for sheikh
+    const memberRows = isS ? members.map(m=>{
+      const c = completions[m.username];
+      const done = !!c;
+      const isSheikhUser = m.username===ch.sheikh_username;
+      if(isSheikhUser) return '';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div class="avatar-dot" style="background:${m.avatar_color||'#3b82f6'};width:30px;height:30px;font-size:.8rem;flex-shrink:0">${(m.display_name||m.username||'?')[0]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem">${escapeHTML(m.display_name||m.username)}</div>
+          ${done?`<div style="font-size:.72rem;color:#34d399">${c.pages_done} صفحة · ${fmtRel(c.completed_at)}${c.notes?` · "${escapeHTML(c.notes)}"`:''}</div>`
+                :`<div style="font-size:.72rem;color:var(--text-3)">لم يُسجّل بعد</div>`}
+        </div>
+        <span style="font-size:1.1rem">${done?'✅':'⏳'}</span>
+      </div>`;
+    }).join('') : '';
+
+    el.innerHTML = `<div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:.72rem;color:#a78bfa;margin-bottom:2px">📖 جلسة مراجعة نشطة</div>
+          <strong style="font-size:1rem">${escapeHTML(rs.title)}</strong>
+          <div style="font-size:.78rem;color:var(--text-2);margin-top:2px">الصفحات: ${rs.from_page} – ${rs.to_page} (${totalPages} صفحة)${daysLeft!==null?` · ${daysLeft>0?`باقي ${daysLeft} يوم`:daysLeft===0?'آخر يوم!':'انتهى الموعد'}`:''}</div>
+        </div>
+        <div style="font-size:1.3rem;font-weight:700;color:${pct>=100?'#34d399':'#a78bfa'}">${pct}%</div>
+      </div>
+      <!-- Progress bar -->
+      <div style="background:rgba(255,255,255,.08);border-radius:20px;height:8px;margin-bottom:10px;overflow:hidden">
+        <div style="background:linear-gradient(90deg,#6366f1,#a78bfa);height:100%;width:${pct}%;border-radius:20px;transition:width .4s"></div>
+      </div>
+      <div style="font-size:.78rem;color:var(--text-3);margin-bottom:${isS?'10px':'8px'}">${doneCount} من ${totalMembers} أعضاء أكملوا</div>
+      ${isS ? `<div>${memberRows}</div>` : ''}
+      ${!isS ? (myCompletion
+        ? `<div style="padding:8px;background:rgba(52,211,153,.1);border-radius:8px;font-size:.85rem;color:#34d399">✅ سجّلت إنجازك — ${myCompletion.pages_done} صفحة${myCompletion.notes?' · '+escapeHTML(myCompletion.notes):''}</div>`
+        : `<div id="rs-log-form" style="margin-top:4px">
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="rs-pages-done" class="field-input" type="number" min="0" max="${totalPages}" placeholder="الصفحات المراجَعة" style="width:140px">
+              <input id="rs-notes" class="field-input" placeholder="ملاحظة (اختياري)" style="flex:1">
+              <button class="btn btn-primary" id="btn-log-rs">تسجيل ✅</button>
+            </div>
+          </div>`)
+      : ''}
+    </div>`;
+
+    // Wire up member log button
+    if(!isS && !myCompletion){
+      const logBtn = el.querySelector('#btn-log-rs');
+      if(logBtn) logBtn.onclick = async ()=>{
+        const pages = +el.querySelector('#rs-pages-done')?.value||0;
+        const notes = (el.querySelector('#rs-notes')?.value||'').trim();
+        if(!pages) return toast('أدخل عدد الصفحات التي راجعتها','error');
+        const r2 = await Api.post('/channels/'+channelId+'/review-session/'+rs.id+'/log',{pages_done:pages,notes});
+        if(r2.ok){ toast('✅ تم تسجيل إنجازك!','success'); ChannelRoom.open(channelId); }
+        else toast('خطأ','error');
+      };
+    }
   },
 
   async loadInvites(id){

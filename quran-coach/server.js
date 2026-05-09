@@ -722,6 +722,7 @@ R('POST','/api/channels', async (req,res)=>{
     plan_override: null,
     plan_template: null,
     invite_tokens: [],
+    review_sessions: [],
     created_at: now(),
     last_message_at: null,
   };
@@ -799,6 +800,7 @@ R('GET','/api/channels/:id', async (req,res,p)=>{
     plan_override:ch.plan_override,
     plan_template:ch.plan_template||null,
     pending_invites:isS?(ch.invite_tokens||[]).filter(t=>!t.used_by).length:undefined,
+    active_review_session:(ch.review_sessions||[]).find(s=>s.is_active)||null,
   }});
 });
 
@@ -894,6 +896,62 @@ R('POST','/api/channels/:id/plan-template', async (req,res,p)=>{
     description: String(b.description||'').slice(0,500),
     updated_at: now(),
   };
+  persist(); send(res,200,{ok:true});
+});
+
+/* ── REVIEW SESSIONS ── */
+R('POST','/api/channels/:id/review-session', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const b = await readBody(req);
+  const title = String(b.title||'').slice(0,100); if(!title) return send(res,400,{error:'title_required'});
+  // Close any previous active session
+  if(!ch.review_sessions) ch.review_sessions=[];
+  ch.review_sessions.forEach(s=>{ if(s.is_active) s.is_active=false; });
+  const sid = uid();
+  const session = {
+    id: sid,
+    title,
+    from_page: Math.max(1, Math.min(+b.from_page||1, 604)),
+    to_page:   Math.max(1, Math.min(+b.to_page||10, 604)),
+    deadline:  String(b.deadline||'').slice(0,10)||null,
+    created_at: now(),
+    created_by: u.username,
+    is_active: true,
+    completions: {},
+  };
+  ch.review_sessions.push(session);
+  // Notify all members
+  ch.members.filter(m=>m!==u.username).forEach(m=>{
+    addNotif(m,'review_session',`📖 جلسة مراجعة جديدة في شُعبة "${ch.name}": ${title} (ص ${session.from_page}–${session.to_page})`,p.id);
+  });
+  persist(); send(res,200,{ok:true, session});
+});
+
+R('POST','/api/channels/:id/review-session/:sid/log', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
+  const session = (ch.review_sessions||[]).find(s=>s.id===p.sid && s.is_active);
+  if(!session) return send(res,404,{error:'session_not_found'});
+  const b = await readBody(req);
+  session.completions[u.username] = {
+    pages_done: Math.max(0, +b.pages_done||0),
+    notes: String(b.notes||'').slice(0,300),
+    completed_at: now(),
+  };
+  // Notify sheikh
+  addNotif(ch.sheikh_username,'review_log',`✅ @${u.username} سجّل إنجازه في جلسة "${session.title}"`,p.id);
+  persist(); send(res,200,{ok:true});
+});
+
+R('DELETE','/api/channels/:id/review-session/:sid', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const ch = DB.channels[p.id];
+  if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
+  const s = (ch.review_sessions||[]).find(x=>x.id===p.sid);
+  if(s) s.is_active=false;
   persist(); send(res,200,{ok:true});
 });
 
