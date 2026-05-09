@@ -23,7 +23,9 @@ const TECHS    = JSON.parse(fs.readFileSync(path.join(ROOT,'data','techniques.js
 
 /* ══ DB helpers (debounced write) ══ */
 let DB = JSON.parse(fs.readFileSync(DB_PATH));
-if(!DB.channels) DB.channels = {};
+if(!DB.channels)  DB.channels  = {};
+if(!DB.admin.sheikh_requests)    DB.admin.sheikh_requests    = {};
+if(!DB.admin.memorization_plans) DB.admin.memorization_plans = [];
 let writePending = false;
 function persist(){
   if (writePending) return;
@@ -107,6 +109,8 @@ R('POST','/api/auth/register', async (req,res)=>{
     created_at: now(), last_active: now(),
     avatar_color: '#'+((u.charCodeAt(0)*7919)%0xFFFFFF).toString(16).padStart(6,'0'),
     bio: '', is_banned: false,
+    sheikh_verified: false,
+    sheikh_requested: false,
     onboarding:{ completed:false },
     plan: null,
     progress:{ total_pages_memorized:0, total_sessions_completed:0, current_streak_days:0, longest_streak_days:0, last_session_date:null, juz_completed:[], current_juz:1, current_page_in_juz:1, total_absences:0, consecutive_absences:0 },
@@ -168,6 +172,9 @@ R('POST','/api/onboarding', async (req,res)=>{
 
 R('GET','/api/me', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  // Ensure new fields exist on old users
+  if(u.sheikh_verified===undefined) u.sheikh_verified=false;
+  if(u.sheikh_requested===undefined) u.sheikh_requested=false;
   send(res,200,{user:safeUser(u)});
 });
 
@@ -703,9 +710,160 @@ async function callAI(systemPrompt, userMsg){
   } catch(e){ console.error('AI error',e.message); return null; }
 }
 
+/* ── SHEIKH REQUESTS ── */
+R('POST','/api/sheikh-request', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  if(u.sheikh_verified) return send(res,409,{error:'already_sheikh'});
+  const b = await readBody(req);
+  const phone = String(b.phone||'').slice(0,50);
+  const bio   = String(b.bio||'').slice(0,500);
+  const time_pref = String(b.time_pref||'').slice(0,100);
+  if(!phone && !bio) return send(res,400,{error:'info_required'});
+  DB.admin.sheikh_requests[u.username] = {
+    username: u.username, display_name: u.display_name,
+    phone, bio, time_pref,
+    submitted_at: now(), status: 'pending',
+    pages: u.progress?.total_pages_memorized||0,
+    sessions: u.progress?.total_sessions_completed||0,
+  };
+  u.sheikh_requested = true;
+  persist();
+  send(res,200,{ok:true});
+});
+
+R('GET','/api/sheikh-request/status', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const req2 = DB.admin.sheikh_requests[u.username]||null;
+  send(res,200,{verified:u.sheikh_verified, requested:u.sheikh_requested, request:req2});
+});
+
+R('GET','/api/admin/sheikh-requests', async (req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  send(res,200,{requests: Object.values(DB.admin.sheikh_requests)});
+});
+
+R('POST','/api/admin/sheikh-requests/:username/approve', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const u = DB.users[p.username]; if(!u) return send(res,404,{error:'not_found'});
+  u.sheikh_verified = true;
+  u.sheikh_requested = false;
+  if(DB.admin.sheikh_requests[p.username]) DB.admin.sheikh_requests[p.username].status='approved';
+  addNotif(p.username,'sheikh_approved','🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.','view-channels');
+  persist(); send(res,200,{ok:true});
+});
+
+R('POST','/api/admin/sheikh-requests/:username/reject', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const u = DB.users[p.username];
+  if(u){ u.sheikh_requested = false; }
+  if(DB.admin.sheikh_requests[p.username]) DB.admin.sheikh_requests[p.username].status='rejected';
+  addNotif(p.username,'sheikh_rejected','❌ عذراً، لم تُوافَق على طلب الشيخ في هذه المرة. '+(b.reason||''),'view-support');
+  persist(); send(res,200,{ok:true});
+});
+
+/* ── MEMORIZATION PLANS (admin-created, public) ── */
+R('GET','/api/plans', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  send(res,200,{plans: (DB.admin.memorization_plans||[])});
+});
+
+R('POST','/api/admin/plans', async (req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const name = String(b.name||'').slice(0,80); if(!name) return send(res,400,{error:'name_required'});
+  const plan = {
+    id: uid(),
+    name,
+    daily_pages: Math.max(0.25, Math.min(+b.daily_pages||0.5, 10)),
+    mode: ['both','memorization_only','review_only'].includes(b.mode)?b.mode:'both',
+    description: String(b.description||'').slice(0,500),
+    target_level: String(b.target_level||'all').slice(0,20),
+    created_at: now(),
+  };
+  if(!DB.admin.memorization_plans) DB.admin.memorization_plans=[];
+  DB.admin.memorization_plans.push(plan);
+  persist(); send(res,200,{ok:true,plan});
+});
+
+R('DELETE','/api/admin/plans/:id', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  DB.admin.memorization_plans=(DB.admin.memorization_plans||[]).filter(x=>x.id!==p.id);
+  persist(); send(res,200,{ok:true});
+});
+
+/* ── AI PLAN GENERATOR ── */
+R('POST','/api/plan/generate', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const total_pages = Math.max(1, Math.min(+b.total_pages||20, 604));
+  const duration_days = Math.max(7, Math.min(+b.duration_days||30, 3650));
+  const from_page = Math.max(1, Math.min(+b.from_page||1, 604));
+  const daily_available_min = Math.max(5, +b.daily_minutes||30);
+
+  // Rule-based intelligent plan generation
+  // Step 1: raw daily target
+  const rawDaily = total_pages / duration_days;
+  // Step 2: round to nearest 0.25
+  const round025 = v => Math.round(v * 4) / 4;
+  const daily_mem = Math.max(0.25, round025(rawDaily));
+
+  // Step 3: Adjusted duration (accounting for review days)
+  // Every 10 pages memorized, add a 2-day review block
+  const review_blocks = Math.floor(total_pages / 10);
+  const effective_days = duration_days - (review_blocks * 2);
+  const daily_mem_adj = Math.max(0.25, round025(total_pages / Math.max(effective_days, duration_days * 0.7)));
+
+  // Step 4: Review plan — spaced repetition: review pages memorized in last 30 days daily
+  const daily_review = Math.max(0, round025(daily_available_min / 20 - daily_mem_adj));
+
+  // Step 5: Build 30-day preview
+  const preview = [];
+  let pagesMemorized = u.progress?.total_pages_memorized || 0;
+  let reviewBuffer = 0;
+  for(let day = 1; day <= 30; day++){
+    const isReviewDay = reviewBuffer >= 10;
+    if(isReviewDay){ preview.push({day, type:'مراجعة', pages: daily_review||0.5, cumulative: pagesMemorized}); reviewBuffer = 0; }
+    else { preview.push({day, type:'حفظ', pages: daily_mem_adj, cumulative: +(pagesMemorized + daily_mem_adj).toFixed(2)}); pagesMemorized = +(pagesMemorized + daily_mem_adj).toFixed(2); reviewBuffer += daily_mem_adj; }
+  }
+
+  // Determine mode
+  const mode = +b.review_also ? 'both' : 'memorization_only';
+
+  // Try AI enhancement
+  const aiNote = await callAI(
+    `أنت مخطط حفظ قرآني خبير. بناءً على بيانات المستخدم قدِّم ملاحظة تشجيعية واحدة (جملة واحدة) للخطة المُنشأة.`,
+    `المستخدم يريد حفظ ${total_pages} صفحة من الصفحة ${from_page} في ${duration_days} يوماً. الهدف اليومي: ${daily_mem_adj} صفحة.`
+  );
+
+  const generated = {
+    from_page, to_page: from_page + total_pages - 1,
+    total_pages, duration_days,
+    daily_memorization_pages: daily_mem_adj,
+    daily_review_pages: mode==='both' ? daily_review : 0,
+    review_days_every: 10,
+    mode, preview,
+    ai_note: aiNote || `خطة دقيقة ومتوازنة: ${daily_mem_adj} صفحة يومياً تُوصلك لهدفك في ${duration_days} يوماً بإذن الله.`,
+    generated_at: now(),
+  };
+
+  // Auto-apply to user plan if requested
+  if(b.apply){
+    if(!u.plan) u.plan = {};
+    u.plan.current_daily_pages = daily_mem_adj;
+    u.plan.manual_override = true;
+    u.plan.override_target = daily_mem_adj;
+    u.plan.generated_plan = generated;
+    if(mode) { if(!u.onboarding) u.onboarding={}; u.onboarding.plan_mode = mode; }
+    persist();
+  }
+  send(res,200,{ok:true, plan: generated});
+});
+
 /* ── CHANNELS (شعبة) ── */
 R('POST','/api/channels', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  if(!u.sheikh_verified) return send(res,403,{error:'not_verified_sheikh'});
   const b = await readBody(req);
   const name = String(b.name||'').trim().slice(0,50); if(!name) return send(res,400,{error:'name_required'});
   const id = uid();

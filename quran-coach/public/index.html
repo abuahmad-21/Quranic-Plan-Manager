@@ -201,6 +201,38 @@
         </div>
         <button class="btn btn-primary btn-full" id="btn-save-plan-mode" style="margin-top:10px">حفظ نوع الخطة</button>
       </div>
+
+      <!-- AI Plan Generator -->
+      <div class="glass-card pad" style="margin-top:10px;border:1px solid rgba(99,102,241,.3)">
+        <div style="font-size:.75rem;color:#a78bfa;margin-bottom:6px">🤖 توليد خطة مخصصة بالخوارزمية الذكية</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">من الصفحة</div>
+            <input id="gen-from-page" class="field-input" type="number" min="1" max="604" value="1">
+          </div>
+          <div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">عدد الصفحات المراد حفظها</div>
+            <input id="gen-total-pages" class="field-input" type="number" min="1" max="604" value="20">
+          </div>
+          <div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">المدة (أيام)</div>
+            <input id="gen-duration" class="field-input" type="number" min="7" max="3650" value="30">
+          </div>
+          <div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-bottom:3px">دقائق متاحة يومياً</div>
+            <input id="gen-minutes" class="field-input" type="number" min="5" max="240" value="30">
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;margin-bottom:10px;cursor:pointer">
+          <input type="checkbox" id="gen-review-also" checked> تضمين خطة مراجعة متوازية
+        </label>
+        <button class="btn btn-primary btn-full" id="btn-generate-plan">✨ توليد الخطة</button>
+        <div id="gen-plan-result" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <!-- Admin Plans Picker -->
+      <div id="admin-plans-section" style="margin-top:10px"></div>
+
       <h3 style="margin:14px 6px">معاينة 30 يوم</h3>
       <div class="glass-card pad" id="plan-preview" style="overflow-x:auto"></div>
       <h3 style="margin:14px 6px">المراجعة المتباعدة</h3>
@@ -374,6 +406,40 @@
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">الدعم الفني</h2>
+
+      <!-- Become Sheikh CTA (shown conditionally) -->
+      <div id="become-sheikh-cta" class="glass-card pad" style="display:none;margin-bottom:12px;border:1px solid rgba(250,204,21,.25)">
+        <div style="font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:6px">🏅 هل أنت مؤهل لتصبح شيخاً معتمداً؟</div>
+        <div style="font-size:.82rem;color:var(--text-2);margin-bottom:10px">الشيوخ المعتمدون يستطيعون إنشاء شُعب حفظ وإدارتها. اضغط الزر واحجز موعد مقابلة معنا.</div>
+        <button class="btn btn-primary" id="btn-become-sheikh">📅 أريد أن أصبح شيخاً</button>
+      </div>
+
+      <!-- Sheikh already requested -->
+      <div id="sheikh-pending-notice" style="display:none;margin-bottom:10px;padding:10px 14px;background:rgba(250,204,21,.08);border-radius:10px;border:1px solid rgba(250,204,21,.2)">
+        <div style="font-size:.85rem;color:var(--gold)">⏳ طلبك قيد المراجعة — سنتواصل معك قريباً</div>
+      </div>
+
+      <!-- Sheikh verified badge -->
+      <div id="sheikh-verified-badge" style="display:none;margin-bottom:10px;padding:10px 14px;background:rgba(52,211,153,.08);border-radius:10px;border:1px solid rgba(52,211,153,.2)">
+        <div style="font-size:.85rem;color:#34d399">✅ أنت شيخ معتمد — يمكنك إنشاء شُعب من قسم الشُّعب</div>
+      </div>
+
+      <!-- Sheikh Request Form (modal-like, hidden by default) -->
+      <div id="sheikh-request-form" class="glass-card pad" style="display:none;margin-bottom:12px;border:1px solid rgba(250,204,21,.3)">
+        <h3 style="margin:0 0 10px;color:var(--gold)">📅 حجز موعد مقابلة الشيخ</h3>
+        <div style="font-size:.82rem;color:var(--text-2);margin-bottom:12px">سنتواصل معك عبر الرقم أو الحساب للتحقق من أهليتك. المقابلة قصيرة وودية.</div>
+        <label class="field-label">رقم الواتساب / هاتفك</label>
+        <input id="sr-phone" class="field-input" placeholder="+966 5X XXX XXXX" style="margin-bottom:8px">
+        <label class="field-label">نبذة عن مؤهلاتك القرآنية</label>
+        <textarea id="sr-bio" class="field-input" rows="3" placeholder="مثال: حافظ للقرآن منذ 3 سنوات، درستُ على يد الشيخ..." style="margin-bottom:8px"></textarea>
+        <label class="field-label">الوقت المناسب للتواصل</label>
+        <input id="sr-time" class="field-input" placeholder="مثال: بعد الفجر يومياً، أو المساء" style="margin-bottom:10px">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btn-submit-sheikh-req">إرسال الطلب 📨</button>
+          <button class="btn btn-ghost" id="btn-cancel-sheikh-req">إلغاء</button>
+        </div>
+      </div>
+
       <div class="glass-card pad" id="support-messages" style="min-height:200px;max-height:50vh;overflow-y:auto"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
         <input id="support-input" class="field-input" placeholder="اكتب مشكلتك...">
@@ -399,7 +465,7 @@
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">لوحة الإدارة الكاملة</h2>
-      <div class="admin-tabs">
+      <div class="admin-tabs" style="display:flex;flex-wrap:wrap;gap:4px">
         <button class="tab-btn active" data-atab="overview">نظرة عامة</button>
         <button class="tab-btn" data-atab="users">المستخدمون</button>
         <button class="tab-btn" data-atab="posts">المنشورات</button>
@@ -408,15 +474,19 @@
         <button class="tab-btn" data-atab="broadcast">الإعلان</button>
         <button class="tab-btn" data-atab="weights">الخوارزميات</button>
         <button class="tab-btn" data-atab="channels">الشُّعب</button>
+        <button class="tab-btn" data-atab="sheikh-reqs">🏅 طلبات الشيخ</button>
+        <button class="tab-btn" data-atab="plans">📋 خطط الحفظ</button>
       </div>
-      <div id="atab-overview"  class="atab"></div>
-      <div id="atab-users"     class="atab hidden"></div>
-      <div id="atab-posts"     class="atab hidden"></div>
-      <div id="atab-chats"     class="atab hidden"></div>
-      <div id="atab-tickets"   class="atab hidden"></div>
-      <div id="atab-broadcast" class="atab hidden"></div>
-      <div id="atab-weights"   class="atab hidden"></div>
-      <div id="atab-channels"  class="atab hidden"></div>
+      <div id="atab-overview"    class="atab"></div>
+      <div id="atab-users"       class="atab hidden"></div>
+      <div id="atab-posts"       class="atab hidden"></div>
+      <div id="atab-chats"       class="atab hidden"></div>
+      <div id="atab-tickets"     class="atab hidden"></div>
+      <div id="atab-broadcast"   class="atab hidden"></div>
+      <div id="atab-weights"     class="atab hidden"></div>
+      <div id="atab-channels"    class="atab hidden"></div>
+      <div id="atab-sheikh-reqs" class="atab hidden"></div>
+      <div id="atab-plans"       class="atab hidden"></div>
     </div>
   </section>
 
@@ -443,16 +513,25 @@
           <button class="btn btn-primary" id="btn-join-channel">انضمام</button>
         </div>
         <hr style="border-color:rgba(255,255,255,.08);margin:10px 0">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <input id="channel-new-name" class="field-input" placeholder="اسم الشُّعبة الجديدة" style="flex:1;min-width:120px">
-          <input id="channel-new-desc" class="field-input" placeholder="وصف قصير (اختياري)" style="flex:1;min-width:100px">
-          <select id="channel-new-limit" class="field-input" style="flex:0 0 auto;width:auto">
-            <option value="50">50 عضو</option>
-            <option value="100">100 عضو</option>
-            <option value="200" selected>200 عضو</option>
-            <option value="500">500 عضو</option>
-          </select>
-          <button class="btn btn-secondary" id="btn-create-channel">إنشاء شُعبة</button>
+        <!-- Sheikh-only create section -->
+        <div id="channel-create-section" style="display:none">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="channel-new-name" class="field-input" placeholder="اسم الشُّعبة الجديدة" style="flex:1;min-width:120px">
+            <input id="channel-new-desc" class="field-input" placeholder="وصف قصير (اختياري)" style="flex:1;min-width:100px">
+            <select id="channel-new-limit" class="field-input" style="flex:0 0 auto;width:auto">
+              <option value="50">50 عضو</option>
+              <option value="100">100 عضو</option>
+              <option value="200" selected>200 عضو</option>
+              <option value="500">500 عضو</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-create-channel">إنشاء شُعبة</button>
+          </div>
+        </div>
+        <!-- Non-sheikh notice -->
+        <div id="channel-locked-notice" style="display:none;padding:10px;background:rgba(250,204,21,.06);border-radius:8px;border:1px solid rgba(250,204,21,.15)">
+          <div style="font-size:.82rem;color:var(--gold)">🔒 إنشاء الشُّعب مخصص للشيوخ المعتمدين فقط</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-top:3px">اذهب إلى <strong>الدعم</strong> وتقدّم بطلب الشيخ للحصول على الاعتماد</div>
+          <button class="btn btn-sm btn-ghost" data-go="view-support" style="margin-top:8px">التقدم بطلب الشيخ ←</button>
         </div>
       </div>
       <h3 style="margin:14px 6px 8px">شُعبي</h3>

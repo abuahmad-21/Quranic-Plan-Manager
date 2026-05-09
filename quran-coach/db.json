@@ -37,10 +37,43 @@
       }
     ],
     "stats": {
-      "total_users": 6,
+      "total_users": 7,
       "total_sessions_today": 1,
       "total_pages_memorized_alltime": 0.5
-    }
+    },
+    "sheikh_requests": {
+      "newsheikhtest99": {
+        "username": "newsheikhtest99",
+        "display_name": "Test",
+        "phone": "+966 50 111 2222",
+        "bio": "حافظ للقرآن منذ 10 سنوات",
+        "time_pref": "بعد الفجر يومياً",
+        "submitted_at": "2026-05-09T01:40:12.041Z",
+        "status": "approved",
+        "pages": 0,
+        "sessions": 0
+      }
+    },
+    "memorization_plans": [
+      {
+        "id": "40494b4d14c102d9",
+        "name": "خطة ربع الصفحة اليومي",
+        "daily_pages": 0.25,
+        "mode": "both",
+        "description": "مناسبة للمبتدئين - الهدف اليومي ربع صفحة",
+        "target_level": "all",
+        "created_at": "2026-05-09T01:40:38.056Z"
+      },
+      {
+        "id": "61fadfd455608c9d",
+        "name": "خطة نصف الصفحة",
+        "daily_pages": 0.5,
+        "mode": "memorization_only",
+        "description": "مناسبة للمتوسطين - تحت إشراف الشيخ",
+        "target_level": "all",
+        "created_at": "2026-05-09T01:40:38.103Z"
+      }
+    ]
   },
   "users": {
     "ali": {
@@ -572,6 +605,262 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "newsheikhtest99": {
+      "username": "newsheikhtest99",
+      "password_hash": "9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c",
+      "display_name": "Test",
+      "created_at": "2026-05-09T01:38:45.320Z",
+      "last_active": "2026-05-09T01:41:03.786Z",
+      "avatar_color": "#0d4ab2",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": true,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false,
+        "plan_mode": "both"
+      },
+      "plan": {
+        "current_daily_pages": 0.25,
+        "manual_override": true,
+        "override_target": 0.5,
+        "generated_plan": {
+          "from_page": 1,
+          "to_page": 30,
+          "total_pages": 30,
+          "duration_days": 60,
+          "daily_memorization_pages": 0.5,
+          "daily_review_pages": 1,
+          "review_days_every": 10,
+          "mode": "both",
+          "preview": [
+            {
+              "day": 1,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 0.5
+            },
+            {
+              "day": 2,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 1
+            },
+            {
+              "day": 3,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 1.5
+            },
+            {
+              "day": 4,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 2
+            },
+            {
+              "day": 5,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 2.5
+            },
+            {
+              "day": 6,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 3
+            },
+            {
+              "day": 7,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 3.5
+            },
+            {
+              "day": 8,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 4
+            },
+            {
+              "day": 9,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 4.5
+            },
+            {
+              "day": 10,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 5
+            },
+            {
+              "day": 11,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 5.5
+            },
+            {
+              "day": 12,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 6
+            },
+            {
+              "day": 13,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 6.5
+            },
+            {
+              "day": 14,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 7
+            },
+            {
+              "day": 15,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 7.5
+            },
+            {
+              "day": 16,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 8
+            },
+            {
+              "day": 17,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 8.5
+            },
+            {
+              "day": 18,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 9
+            },
+            {
+              "day": 19,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 9.5
+            },
+            {
+              "day": 20,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 10
+            },
+            {
+              "day": 21,
+              "type": "مراجعة",
+              "pages": 1,
+              "cumulative": 10
+            },
+            {
+              "day": 22,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 10.5
+            },
+            {
+              "day": 23,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 11
+            },
+            {
+              "day": 24,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 11.5
+            },
+            {
+              "day": 25,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 12
+            },
+            {
+              "day": 26,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 12.5
+            },
+            {
+              "day": 27,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 13
+            },
+            {
+              "day": 28,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 13.5
+            },
+            {
+              "day": 29,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 14
+            },
+            {
+              "day": 30,
+              "type": "حفظ",
+              "pages": 0.5,
+              "cumulative": 14.5
+            }
+          ],
+          "ai_note": "خطة دقيقة ومتوازنة: 0.5 صفحة يومياً تُوصلك لهدفك في 60 يوماً بإذن الله.",
+          "generated_at": "2026-05-09T01:40:38.769Z"
+        }
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "b37d9f9b4e1b16d2",
+          "type": "sheikh_approved",
+          "text": "🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.",
+          "ref": "view-channels",
+          "read": false,
+          "created_at": "2026-05-09T01:40:12.128Z"
+        }
+      ],
+      "posts": []
     }
   },
   "chats": {},
@@ -624,6 +913,26 @@
       ],
       "created_at": "2026-05-09T01:20:27.537Z",
       "last_message_at": "2026-05-09T01:20:58.365Z"
+    },
+    "a08b6b914be56f02": {
+      "id": "a08b6b914be56f02",
+      "name": "شعبة الفجر",
+      "description": "شعبة يومية",
+      "sheikh_username": "newsheikhtest99",
+      "join_code": "3FJD2M",
+      "max_members": 50,
+      "is_public": true,
+      "members": [
+        "newsheikhtest99"
+      ],
+      "announcements": [],
+      "messages": [],
+      "plan_override": null,
+      "plan_template": null,
+      "invite_tokens": [],
+      "review_sessions": [],
+      "created_at": "2026-05-09T01:40:12.200Z",
+      "last_message_at": null
     }
   }
 }

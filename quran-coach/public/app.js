@@ -345,6 +345,82 @@ const Plan = {
     document.getElementById('plan-sr').innerHTML = keys.length
       ? keys.map(k=>`<div class="card-row"><div class="card-row-left">جزء ${k}</div><div class="card-row-right mono">EF ${sr[k].ef} · فاصل ${sr[k].interval}ي · التالية ${(sr[k].next_review||'').slice(0,10)}</div></div>`).join('')
       : '<p style="color:var(--text-2)">ابدأ بجلسة لتفعيل المراجعة المتباعدة.</p>';
+
+    // Plan Generator
+    const genBtn = document.getElementById('btn-generate-plan');
+    const genResult = document.getElementById('gen-plan-result');
+    if(genBtn) genBtn.onclick = async ()=>{
+      const from_page  = +document.getElementById('gen-from-page')?.value||1;
+      const total_pages= +document.getElementById('gen-total-pages')?.value||20;
+      const duration   = +document.getElementById('gen-duration')?.value||30;
+      const minutes    = +document.getElementById('gen-minutes')?.value||30;
+      const review_also= document.getElementById('gen-review-also')?.checked?1:0;
+      if(total_pages<1||duration<7) return toast('بيانات غير صحيحة','error');
+      genBtn.disabled=true; genBtn.textContent='⏳ جاري التوليد...';
+      const res2 = await Api.post('/plan/generate',{from_page,total_pages,duration_days:duration,daily_minutes:minutes,review_also});
+      genBtn.disabled=false; genBtn.textContent='✨ توليد الخطة';
+      if(res2.error) return toast('خطأ','error');
+      const p2 = res2.plan;
+      if(genResult){
+        genResult.style.display='block';
+        const modeLabel={both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'}[p2.mode]||'حفظ ومراجعة';
+        genResult.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
+          <div style="font-size:.75rem;color:#a78bfa;margin-bottom:4px">✨ خطتك المخصصة</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+            <div style="text-align:center;padding:8px;background:rgba(255,255,255,.05);border-radius:8px">
+              <div class="mono" style="font-size:1.2rem;color:#34d399">${p2.daily_memorization_pages}</div>
+              <div style="font-size:.7rem;color:var(--text-3)">صفحة حفظ/يوم</div>
+            </div>
+            ${p2.daily_review_pages?`<div style="text-align:center;padding:8px;background:rgba(255,255,255,.05);border-radius:8px">
+              <div class="mono" style="font-size:1.2rem;color:#60a5fa">${p2.daily_review_pages}</div>
+              <div style="font-size:.7rem;color:var(--text-3)">صفحة مراجعة/يوم</div>
+            </div>`:''}
+            <div style="text-align:center;padding:8px;background:rgba(255,255,255,.05);border-radius:8px">
+              <div class="mono" style="font-size:1.2rem;color:#fbbf24">${p2.duration_days}</div>
+              <div style="font-size:.7rem;color:var(--text-3)">يوم</div>
+            </div>
+          </div>
+          <div style="font-size:.82rem;color:var(--text-2);margin-bottom:10px;padding:8px;background:rgba(167,139,250,.1);border-radius:8px">
+            💬 ${escapeHTML(p2.ai_note||'')}
+          </div>
+          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px">نوع الخطة: ${modeLabel} · صفحات ${p2.from_page}–${p2.to_page}</div>
+          <button class="btn btn-primary btn-full" id="btn-apply-gen-plan">✅ تطبيق هذه الخطة</button>
+        </div>`;
+        document.getElementById('btn-apply-gen-plan').onclick = async ()=>{
+          const res3 = await Api.post('/plan/generate',{from_page,total_pages,duration_days:duration,daily_minutes:minutes,review_also,apply:true});
+          if(res3.ok){ toast('✅ تُطبَّق خطتك الجديدة!','success',4000); const me=await Api.get('/me'); S.user=me.user; Plan.load(); }
+        };
+      }
+    };
+
+    // Admin Plans Picker
+    const adminPlansEl = document.getElementById('admin-plans-section');
+    if(adminPlansEl){
+      const plansResp = await Api.get('/plans');
+      const plans = plansResp.plans||[];
+      if(plans.length){
+        const modeMap={both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'};
+        adminPlansEl.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(52,211,153,.2)">
+          <div style="font-size:.75rem;color:#34d399;margin-bottom:8px">📋 خطط الحفظ المتاحة (من الإدارة)</div>
+          ${plans.map(pl=>`<div class="card-row" style="margin-bottom:6px;padding:8px;background:rgba(255,255,255,.04);border-radius:8px">
+            <div>
+              <strong style="font-size:.9rem">${escapeHTML(pl.name)}</strong>
+              <div style="font-size:.75rem;color:var(--text-2);">${pl.daily_pages} صفحة/يوم · ${modeMap[pl.mode]||pl.mode}${pl.description?' · '+escapeHTML(pl.description.slice(0,60)):''}</div>
+            </div>
+            <button class="btn btn-sm btn-secondary" data-apply-plan='${JSON.stringify({daily_pages:pl.daily_pages,mode:pl.mode})}'>تطبيق</button>
+          </div>`).join('')}
+        </div>`;
+        adminPlansEl.querySelectorAll('[data-apply-plan]').forEach(b=>b.onclick=async()=>{
+          const pl2=JSON.parse(b.dataset.applyPlan);
+          const r2=await Api.patch('/plan',{current_daily_pages:pl2.daily_pages,manual_override:true});
+          if(r2.ok){
+            if(pl2.mode){ await Api.patch('/me',{plan_mode:pl2.mode}); if(S.user?.onboarding) S.user.onboarding.plan_mode=pl2.mode; }
+            const me=await Api.get('/me'); S.user=me.user;
+            toast('✅ تم تطبيق الخطة!','success'); Plan.load();
+          }
+        });
+      } else adminPlansEl.innerHTML='';
+    }
   }
 };
 
@@ -728,13 +804,56 @@ const Leaderboard = {
 /* ══ SUPPORT ══ */
 const Support = {
   async load(){
+    // Sheikh status section
+    const status = await Api.get('/sheikh-request/status');
+    const ctaEl    = document.getElementById('become-sheikh-cta');
+    const pendEl   = document.getElementById('sheikh-pending-notice');
+    const verEl    = document.getElementById('sheikh-verified-badge');
+    if(status.verified){
+      if(ctaEl)  ctaEl.style.display='none';
+      if(pendEl) pendEl.style.display='none';
+      if(verEl)  verEl.style.display='block';
+    } else if(status.requested){
+      if(ctaEl)  ctaEl.style.display='none';
+      if(pendEl) pendEl.style.display='block';
+      if(verEl)  verEl.style.display='none';
+    } else {
+      if(ctaEl)  ctaEl.style.display='block';
+      if(pendEl) pendEl.style.display='none';
+      if(verEl)  verEl.style.display='none';
+    }
+
+    // Become sheikh button
+    const becomeBtn = document.getElementById('btn-become-sheikh');
+    const reqForm   = document.getElementById('sheikh-request-form');
+    if(becomeBtn) becomeBtn.onclick = ()=>{ if(reqForm){ reqForm.style.display='block'; if(ctaEl) ctaEl.style.display='none'; }};
+    const cancelBtn = document.getElementById('btn-cancel-sheikh-req');
+    if(cancelBtn) cancelBtn.onclick = ()=>{ if(reqForm) reqForm.style.display='none'; if(ctaEl&&!status.requested&&!status.verified) ctaEl.style.display='block'; };
+
+    const submitBtn = document.getElementById('btn-submit-sheikh-req');
+    if(submitBtn) submitBtn.onclick = async ()=>{
+      const phone    = (document.getElementById('sr-phone')?.value||'').trim();
+      const bio      = (document.getElementById('sr-bio')?.value||'').trim();
+      const time_pref= (document.getElementById('sr-time')?.value||'').trim();
+      if(!phone && !bio) return toast('يرجى ملء الرقم أو نبذتك على الأقل','error');
+      const r2 = await Api.post('/sheikh-request',{phone,bio,time_pref});
+      if(r2.ok){
+        toast('📨 أُرسل طلبك! سنتواصل معك قريباً','success',5000);
+        if(reqForm)  reqForm.style.display='none';
+        if(pendEl) pendEl.style.display='block';
+      } else toast(r2.error==='already_sheikh'?'أنت شيخ معتمد فعلاً':r2.error,'error');
+    };
+
+    // Support messages
     const r = await Api.get('/support');
     const box = document.getElementById('support-messages');
-    box.innerHTML = (r.ticket?.messages||[]).map(m=>{
-      const mine = m.from===S.username;
-      return `<div class="msg ${mine?'msg-mine':'msg-other'}"><strong style="font-size:.7rem">${m.from==='admin'?'الدعم':'أنت'}</strong><br>${escapeHTML(m.text)}<div class="msg-time">${fmtTime(m.timestamp)}</div></div>`;
-    }).join('') || '<p style="color:var(--text-2)">لا رسائل بعد. اكتب مشكلتك وسيرد عليك فريق الدعم.</p>';
-    box.scrollTop = box.scrollHeight;
+    if(box){
+      box.innerHTML = (r.ticket?.messages||[]).map(m=>{
+        const mine = m.from===S.username;
+        return `<div class="msg ${mine?'msg-mine':'msg-other'}"><strong style="font-size:.7rem">${m.from==='admin'?'الدعم':'أنت'}</strong><br>${escapeHTML(m.text)}<div class="msg-time">${fmtTime(m.timestamp)}</div></div>`;
+      }).join('') || '<p style="color:var(--text-2)">لا رسائل بعد. اكتب مشكلتك وسيرد عليك فريق الدعم.</p>';
+      box.scrollTop = box.scrollHeight;
+    }
     document.getElementById('btn-send-support').onclick = async ()=>{
       const t = document.getElementById('support-input').value.trim(); if (!t) return;
       await Api.post('/support',{text:t});
@@ -872,6 +991,86 @@ const Admin = {
         await Api.patch('/admin/weights', out, true); toast('حُفظت','success');
       };
     }
+    if (name==='sheikh-reqs'){
+      const r = await Api.get('/admin/sheikh-requests', true);
+      const reqs = r.requests||[];
+      const statusLabel={pending:'⏳ قيد المراجعة',approved:'✅ مُوافَق',rejected:'❌ مرفوض'};
+      document.getElementById('atab-sheikh-reqs').innerHTML = reqs.length ? `<div>
+        ${reqs.map(req=>`<div class="glass-card pad" style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <strong>@${escapeHTML(req.username)}</strong> — ${escapeHTML(req.display_name||'')}
+              <span class="plan-mode-badge" style="margin-right:6px;font-size:.7rem">${statusLabel[req.status]||req.status}</span>
+            </div>
+            <div style="font-size:.75rem;color:var(--text-3)">${fmtTime(req.submitted_at)}</div>
+          </div>
+          ${req.phone?`<div style="font-size:.82rem;margin-bottom:4px">📞 ${escapeHTML(req.phone)}</div>`:''}
+          ${req.bio?`<div style="font-size:.82rem;color:var(--text-2);margin-bottom:4px">${escapeHTML(req.bio)}</div>`:''}
+          ${req.time_pref?`<div style="font-size:.78rem;color:var(--text-3);margin-bottom:6px">⏰ ${escapeHTML(req.time_pref)}</div>`:''}
+          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px">الصفحات: ${req.pages} · الجلسات: ${req.sessions}</div>
+          ${req.status==='pending'?`<div style="display:flex;gap:6px">
+            <button class="btn btn-primary" data-approve-req="${req.username}">✅ موافقة — تعيين شيخاً</button>
+            <input class="field-input" id="reject-reason-${req.username}" placeholder="سبب الرفض (اختياري)" style="flex:1">
+            <button class="btn btn-danger" data-reject-req="${req.username}">❌ رفض</button>
+          </div>`:''}
+        </div>`).join('')}
+      </div>` : '<p style="color:var(--text-2);padding:20px 0;text-align:center">لا طلبات شيخ حالياً</p>';
+      document.querySelectorAll('[data-approve-req]').forEach(b=>b.onclick=async()=>{
+        if(!confirm(`تعيين @${b.dataset.approveReq} شيخاً معتمداً؟`)) return;
+        const r2=await Api.post('/admin/sheikh-requests/'+b.dataset.approveReq+'/approve',{},true);
+        if(r2.ok){ toast('✅ تم التعيين','success'); Admin.loadTab('sheikh-reqs'); } else toast('خطأ','error');
+      });
+      document.querySelectorAll('[data-reject-req]').forEach(b=>b.onclick=async()=>{
+        const reason=(document.getElementById('reject-reason-'+b.dataset.rejectReq)?.value||'').trim();
+        const r2=await Api.post('/admin/sheikh-requests/'+b.dataset.rejectReq+'/reject',{reason},true);
+        if(r2.ok){ toast('تم الرفض','info'); Admin.loadTab('sheikh-reqs'); }
+      });
+    }
+    if (name==='plans'){
+      const r = await Api.get('/admin/overview', true); // to get plans we use the plans api
+      const plansR = await Api.get('/plans');
+      const plans = plansR.plans||[];
+      const modeMap={both:'حفظ ومراجعة',memorization_only:'حفظ فقط',review_only:'مراجعة فقط'};
+      document.getElementById('atab-plans').innerHTML = `<div>
+        <!-- Add plan form -->
+        <div class="glass-card pad" style="margin-bottom:12px">
+          <h3 style="margin:0 0 10px">إضافة خطة حفظ جديدة</h3>
+          <input id="ap-name" class="field-input" placeholder="اسم الخطة (مثال: خطة ربع الصفحة اليومي)" style="margin-bottom:6px">
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input id="ap-pages" class="field-input" type="number" step="0.25" min="0.25" max="10" value="0.5" placeholder="صفحات/يوم" style="flex:1">
+            <select id="ap-mode" class="field-input" style="flex:1">
+              <option value="both">حفظ ومراجعة</option>
+              <option value="memorization_only">حفظ فقط</option>
+              <option value="review_only">مراجعة فقط</option>
+            </select>
+          </div>
+          <textarea id="ap-desc" class="field-input" rows="2" placeholder="وصف الخطة (اختياري)..." style="margin-bottom:6px"></textarea>
+          <button class="btn btn-primary" id="btn-add-plan">+ إضافة</button>
+        </div>
+        <!-- Plans list -->
+        <h3 style="margin:0 0 8px">الخطط الحالية (${plans.length})</h3>
+        ${plans.length ? plans.map(pl=>`<div class="card-row glass-card" style="margin-bottom:6px">
+          <div>
+            <strong>${escapeHTML(pl.name)}</strong>
+            <div style="font-size:.75rem;color:var(--text-2)">${pl.daily_pages} ص/يوم · ${modeMap[pl.mode]||pl.mode}${pl.description?' · '+escapeHTML(pl.description.slice(0,50)):''}</div>
+          </div>
+          <button class="btn btn-sm btn-danger" data-del-plan="${pl.id}">حذف</button>
+        </div>`).join('') : '<p style="color:var(--text-2)">لا خطط بعد</p>'}
+      </div>`;
+      document.getElementById('btn-add-plan').onclick = async ()=>{
+        const name=(document.getElementById('ap-name')?.value||'').trim();
+        const pages=+document.getElementById('ap-pages')?.value||0.5;
+        const mode=document.getElementById('ap-mode')?.value||'both';
+        const desc=(document.getElementById('ap-desc')?.value||'').trim();
+        if(!name) return toast('أدخل اسم الخطة','error');
+        const r2=await Api.post('/admin/plans',{name,daily_pages:pages,mode,description:desc},true);
+        if(r2.ok){ toast('✅ أُضيفت الخطة','success'); Admin.loadTab('plans'); } else toast('خطأ','error');
+      };
+      document.querySelectorAll('[data-del-plan]').forEach(b=>b.onclick=async()=>{
+        if(!confirm('حذف هذه الخطة؟')) return;
+        await Api.del('/admin/plans/'+b.dataset.delPlan,true); Admin.loadTab('plans');
+      });
+    }
   }
 };
 
@@ -908,6 +1107,13 @@ const Notifications = {
 /* ══ CHANNELS (شعبة) ══ */
 const Channels = {
   async load(){
+    // Show/hide create section based on sheikh status
+    const isSheikhVerified = S.user?.sheikh_verified || false;
+    const createSection = document.getElementById('channel-create-section');
+    const lockedNotice  = document.getElementById('channel-locked-notice');
+    if(createSection) createSection.style.display = isSheikhVerified ? 'block' : 'none';
+    if(lockedNotice)  lockedNotice.style.display  = isSheikhVerified ? 'none'  : 'block';
+
     const joinBtn = document.getElementById('btn-join-channel');
     if(joinBtn) joinBtn.onclick = async ()=>{
       const code = (document.getElementById('channel-join-code').value||'').trim().toUpperCase();
@@ -923,7 +1129,7 @@ const Channels = {
       const limit = +(document.getElementById('channel-new-limit').value||200);
       if(!name) return toast('أدخل اسم الشُّعبة','error');
       const r = await Api.post('/channels',{name, description:desc, max_members:limit});
-      if(r.error) return toast('خطأ','error');
+      if(r.error){ if(r.error==='not_verified_sheikh') return toast('يجب أن تكون شيخاً معتمداً لإنشاء شُعبة','error'); return toast('خطأ','error'); }
       toast('أُنشئت الشُّعبة','success'); document.getElementById('channel-new-name').value=''; Channels.load();
     };
     const r = await Api.get('/channels');
