@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 9,
-      "total_sessions_today": 1,
-      "total_pages_memorized_alltime": 0.5
+      "total_users": 11,
+      "total_sessions_today": 8,
+      "total_pages_memorized_alltime": 1.05
     },
     "sheikh_requests": {
       "455": {
@@ -1285,6 +1285,259 @@
           "created_at": "2026-05-09T01:47:31.769Z"
         }
       ],
+      "posts": []
+    },
+    "yghygg": {
+      "username": "yghygg",
+      "password_hash": "59f0b9494babf6c7611db30e1126b709b55f79766cb8c6f549326f1f07889267",
+      "display_name": "",
+      "created_at": "2026-05-09T03:07:08.830Z",
+      "last_active": "2026-05-09T03:19:03.836Z",
+      "avatar_color": "#0e9ef7",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-09T03:07:11.164Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-09T03:07:11.164Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.25,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-09",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-09T03:18:18.846Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 5.62,
+        "afi": 66,
+        "history": [
+          79,
+          83,
+          87,
+          91,
+          95,
+          98,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 2.6,
+          "interval": 1,
+          "reps": 1,
+          "next_review": "2026-05-10T03:18:18.846Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
+    },
+    "yghuhh": {
+      "username": "yghuhh",
+      "password_hash": "ed4d81882d2d2e6cd6508138cc840e2368f32620b3ed0d1615f35576c7d3ac14",
+      "display_name": "Hghhhhh",
+      "created_at": "2026-05-09T03:09:21.238Z",
+      "last_active": "2026-05-09T03:13:35.212Z",
+      "avatar_color": "#0e9ef7",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-09T03:09:23.635Z",
+        "current_daily_pages": 0.1,
+        "phase": "absence_soft_reset",
+        "phase_start_date": "2026-05-09T03:10:23.836Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.3,
+        "total_sessions_completed": 6,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-09",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-09T03:10:07.551Z",
+          "pages_done": 0.05,
+          "difficulty": "medium",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 4
+        },
+        {
+          "date": "2026-05-09T03:10:11.457Z",
+          "pages_done": 0.05,
+          "difficulty": "easy",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 10
+        },
+        {
+          "date": "2026-05-09T03:10:13.258Z",
+          "pages_done": 0.05,
+          "difficulty": "easy",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 8
+        },
+        {
+          "date": "2026-05-09T03:10:15.287Z",
+          "pages_done": 0.05,
+          "difficulty": "medium",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 6
+        },
+        {
+          "date": "2026-05-09T03:10:23.258Z",
+          "pages_done": 0.05,
+          "difficulty": "easy",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 8
+        },
+        {
+          "date": "2026-05-09T03:10:23.836Z",
+          "pages_done": 0.05,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 2
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 7.46,
+        "afi": 59,
+        "history": [
+          75,
+          79,
+          83,
+          87,
+          91,
+          94,
+          98,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 1.98,
+          "interval": 1,
+          "reps": 0,
+          "next_review": "2026-05-10T03:10:23.836Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
       "posts": []
     }
   },
