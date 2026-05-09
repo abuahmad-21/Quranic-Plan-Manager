@@ -37,11 +37,22 @@
       }
     ],
     "stats": {
-      "total_users": 8,
+      "total_users": 9,
       "total_sessions_today": 1,
       "total_pages_memorized_alltime": 0.5
     },
     "sheikh_requests": {
+      "455": {
+        "username": "455",
+        "display_name": "دلدل",
+        "phone": "0796675676",
+        "bio": "Tfghh",
+        "time_pref": "Ggg",
+        "submitted_at": "2026-05-09T02:47:27.213Z",
+        "status": "approved",
+        "pages": 0,
+        "sessions": 0
+      },
       "newsheikhtest99": {
         "username": "newsheikhtest99",
         "display_name": "Test",
@@ -87,6 +98,106 @@
     ]
   },
   "users": {
+    "455": {
+      "username": "455",
+      "password_hash": "ac5fab8ea229f21c5c5ec971c8094ea3cfa83297653d5ca221b25fe29e54928f",
+      "display_name": "دلدل",
+      "created_at": "2026-05-09T02:46:54.308Z",
+      "last_active": "2026-05-09T02:51:46.871Z",
+      "avatar_color": "#06488c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": true,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-09T02:46:56.281Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-09T02:46:56.281Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 5.51,
+        "afi": 72,
+        "history": [
+          91,
+          95,
+          99,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "40531e2330140776",
+          "type": "sheikh_approved",
+          "text": "🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.",
+          "ref": "view-channels",
+          "read": false,
+          "created_at": "2026-05-09T02:47:41.811Z"
+        }
+      ],
+      "posts": []
+    },
     "ali": {
       "username": "ali",
       "password_hash": "bd94dcda26fccb4e68d6a31f9b5aac0b571ae266d822620e901ef7ebe3a11d4f",

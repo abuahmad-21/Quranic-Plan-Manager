@@ -143,6 +143,8 @@ const App = {
     if (id==='view-notifications') Notifications.load();
     if (id==='view-channels') Channels.load();
     if (id==='view-channelroom' && !S.currentChannel) App.showView('view-channels');
+    if (id==='view-quran') QuranBrowser.load();
+    if (id==='view-studio') VoiceStudio.load();
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
@@ -555,6 +557,10 @@ const ChatRoom = {
     document.getElementById('btn-send-msg').onclick = ChatRoom.send;
     document.getElementById('chatroom-input').onkeydown = e=>{ if (e.key==='Enter') ChatRoom.send(); };
     document.getElementById('btn-rec-toggle').onclick = ChatRoom.toggleRec;
+    const emojiBtn=document.getElementById('btn-chatroom-emoji');
+    if(emojiBtn) emojiBtn.onclick=()=>EmojiPicker.toggle('chatroom-input',emojiBtn);
+    const callBtn=document.getElementById('btn-chatroom-call');
+    if(callBtn) callBtn.onclick=()=>VideoCall.open('chat-'+[S.username,other].sort().join('-'),`محادثة مع @${other}`);
   },
   async refresh(){
     if (!S.currentChat) return;
@@ -681,6 +687,10 @@ const GroupRoom = {
       await Api.post('/groups/'+id+'/message',{text:t});
       document.getElementById('grouproom-input').value=''; GroupRoom.open(id);
     };
+    const emojiBtn=document.getElementById('btn-grouproom-emoji');
+    if(emojiBtn) emojiBtn.onclick=()=>EmojiPicker.toggle('grouproom-input',emojiBtn);
+    const callBtn=document.getElementById('btn-grouproom-call');
+    if(callBtn) callBtn.onclick=()=>VideoCall.open('group-'+id, r.group?.name||'مجموعة');
     document.getElementById('btn-add-to-group').onclick = async ()=>{
       const u = document.getElementById('group-add-user').value.trim();
       const r = await Api.post('/groups/'+id+'/add',{username:u});
@@ -1337,6 +1347,10 @@ const ChannelRoom = {
       if(msgInput) msgInput.value=''; ChannelRoom.open(id);
     };
     if(msgInput) msgInput.onkeydown=e=>{ if(e.key==='Enter') sendBtn?.click(); };
+    const chEmojiBtn=document.getElementById('btn-channelroom-emoji');
+    if(chEmojiBtn) chEmojiBtn.onclick=()=>EmojiPicker.toggle('channelroom-input',chEmojiBtn);
+    const chVideoBtn=document.getElementById('btn-channelroom-video');
+    if(chVideoBtn) chVideoBtn.onclick=()=>VideoCall.open('channel-'+id, ch.name||'شُعبة');
 
     // Sheikh: Announce
     const annBtn=document.getElementById('btn-send-announce');
@@ -1561,6 +1575,8 @@ const Boot = {
     Onboarding.init();
     Session.init();
     Admin.init();
+    EmojiPicker.init();
+    VideoCall.initClose();
     document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click', ()=>App.showView(b.dataset.go)));
     UI.showApp();
     if (S.token && S.username) await Boot.afterLogin();
@@ -1579,3 +1595,393 @@ const Boot = {
 };
 
 document.addEventListener('DOMContentLoaded', Boot.start);
+
+/* ══════════════════════════════════════════════
+   EMOJI PICKER
+══════════════════════════════════════════════ */
+const EmojiPicker = {
+  EMOJIS: ['🌙','☪️','📖','🕌','🕋','🤲','🙏','✨','⭐','💫','🌟','🔥','❤️','💚','💙','💛','🎯','📚','✅','💪','🔑','🏆','👏','🌹','💐','🎓','😊','😄','🙂','👍','🤍','💎','🌈','🌿','🦋','🎵','🎶','😌','🤗','😇','💝','🌺','🌻','⚡','🌊','🏅','🎉','🎊','🙌','👑','🌱','🌸','🥰','❄️','🌙','🎁','💬','🖊️','📝','✏️'],
+  target: null,
+  init(){
+    const panel = document.getElementById('emoji-panel');
+    if (!panel) return;
+    panel.innerHTML = EmojiPicker.EMOJIS.map(e=>`<button class="emoji-btn">${e}</button>`).join('');
+    panel.querySelectorAll('.emoji-btn').forEach(b=>b.onclick=ev=>{
+      ev.stopPropagation();
+      if (EmojiPicker.target){
+        const pos = EmojiPicker.target.selectionStart ?? EmojiPicker.target.value.length;
+        const v = EmojiPicker.target.value;
+        EmojiPicker.target.value = v.slice(0,pos) + b.textContent + v.slice(pos);
+        EmojiPicker.target.focus();
+        const np = pos + b.textContent.length;
+        EmojiPicker.target.selectionStart = EmojiPicker.target.selectionEnd = np;
+      }
+      EmojiPicker.hide();
+    });
+    document.addEventListener('click', ev=>{
+      const panel2 = document.getElementById('emoji-panel');
+      if (panel2 && panel2.style.display==='flex' && !panel2.contains(ev.target) && !ev.target.closest('[data-emoji-for]') && !ev.target.closest('[id$="-emoji"]')) EmojiPicker.hide();
+    });
+  },
+  toggle(inputId, btnEl){
+    const panel = document.getElementById('emoji-panel');
+    if (!panel) return;
+    if (panel.style.display === 'flex'){ EmojiPicker.hide(); return; }
+    EmojiPicker.target = document.getElementById(inputId);
+    const rect = btnEl.getBoundingClientRect();
+    panel.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    panel.style.right = '10px';
+    panel.style.left = 'auto';
+    panel.style.display = 'flex';
+  },
+  hide(){ const p=document.getElementById('emoji-panel'); if(p) p.style.display='none'; }
+};
+
+/* ══════════════════════════════════════════════
+   VIDEO CALL  (Jitsi Meet — free, no server)
+══════════════════════════════════════════════ */
+const VideoCall = {
+  initClose(){
+    const btn = document.getElementById('btn-close-jitsi');
+    if (btn) btn.onclick = VideoCall.close;
+    const modal = document.getElementById('jitsi-modal');
+    if (modal) modal.addEventListener('click', ev=>{ if(ev.target===modal) VideoCall.close(); });
+  },
+  open(roomId, title){
+    const modal = document.getElementById('jitsi-modal');
+    const frame = document.getElementById('jitsi-frame');
+    const titleEl = document.getElementById('jitsi-title');
+    if (!modal || !frame) return;
+    const clean = 'qqc-' + (roomId||'room').replace(/[^a-zA-Z0-9]/g,'-').slice(0,40);
+    const name = encodeURIComponent(S.user?.display_name || S.username || 'ضيف');
+    frame.src = `https://meet.jit.si/${clean}#config.startWithVideoMuted=false&config.prejoinPageEnabled=false&userInfo.displayName=${name}`;
+    if (titleEl) titleEl.textContent = title || 'مكالمة فيديو';
+    modal.style.display = 'flex';
+  },
+  close(){
+    const modal = document.getElementById('jitsi-modal');
+    const frame = document.getElementById('jitsi-frame');
+    if (modal) modal.style.display = 'none';
+    if (frame) frame.src = '';
+  }
+};
+
+/* ══════════════════════════════════════════════
+   QURAN BROWSER  (alquran.cloud — free, no key)
+══════════════════════════════════════════════ */
+const QuranBrowser = {
+  surahs: [],
+  async loadSurahs(){
+    if (QuranBrowser.surahs.length) return QuranBrowser.surahs;
+    try {
+      const c = sessionStorage.getItem('qqc_surahs');
+      if (c){ QuranBrowser.surahs = JSON.parse(c); return QuranBrowser.surahs; }
+      const r = await fetch('https://api.alquran.cloud/v1/surah');
+      const d = await r.json();
+      QuranBrowser.surahs = d.data || [];
+      sessionStorage.setItem('qqc_surahs', JSON.stringify(QuranBrowser.surahs));
+    } catch(e){ QuranBrowser.surahs = []; }
+    return QuranBrowser.surahs;
+  },
+  async load(){
+    const surahs = await QuranBrowser.loadSurahs();
+    const sel = document.getElementById('quran-surah-select');
+    if (sel && sel.options.length <= 1 && surahs.length){
+      surahs.forEach(s=>{
+        const o = document.createElement('option');
+        o.value = s.number;
+        o.textContent = `${s.number}. ${s.name} — ${s.englishName} (${s.numberOfAyahs} آية)`;
+        sel.appendChild(o);
+      });
+    }
+    const loadBtn = document.getElementById('btn-load-surah');
+    if (loadBtn) loadBtn.onclick = QuranBrowser.loadSurah;
+    document.querySelectorAll('[data-qs]').forEach(b=>b.onclick=()=>{
+      const s2=document.getElementById('quran-surah-select');
+      if (s2) s2.value = b.dataset.qs;
+      QuranBrowser.loadSurah();
+    });
+  },
+  async loadSurah(){
+    const sel = document.getElementById('quran-surah-select');
+    const surahNum = +(sel?.value||0);
+    const ayahNum = +(document.getElementById('quran-ayah-num')?.value||0);
+    if (!surahNum) return toast('اختر سورة أولاً','error');
+    const display = document.getElementById('quran-display');
+    if (display) display.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-2)">⏳ جارٍ تحميل السورة…</div>';
+    try {
+      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const d = await r.json();
+      if (!d.data) throw new Error('no data');
+      const surah = d.data;
+      const ayahs = ayahNum ? surah.ayahs.filter(a=>a.numberInSurah===ayahNum) : surah.ayahs;
+      if (display) display.innerHTML = `
+        <div class="glass-card pad" style="margin-bottom:10px;text-align:center">
+          <div style="font-size:1.7rem;font-weight:900;color:var(--gold)">${surah.name}</div>
+          <div style="font-size:.82rem;color:var(--text-2);margin-top:4px">${surah.englishName} · ${surah.numberOfAyahs} آية · ${surah.revelationType==='Meccan'?'مكية':'مدنية'}</div>
+          ${surahNum!==1&&surahNum!==9?'<div style="font-size:1.05rem;color:var(--text-3);margin-top:8px;letter-spacing:.04em">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>':''}
+        </div>
+        ${ayahs.map(a=>QuranBrowser.renderAyah(a,surahNum,surah.name)).join('')}
+        ${ayahNum&&ayahs.length===0?'<p style="text-align:center;color:var(--text-2);padding:20px">رقم الآية خارج النطاق</p>':''}
+      `;
+      display.querySelectorAll('[data-play-ayah]').forEach(b=>b.onclick=()=>QuranBrowser.playAudio(+b.dataset.playAyah));
+      display.querySelectorAll('[data-practice-ayah]').forEach(b=>b.onclick=()=>{
+        const a=ayahs.find(x=>x.numberInSurah===+b.dataset.practiceAyah)||ayahs[0];
+        if(a){ VoiceStudio.setPracticeVerse(surahNum,a.numberInSurah,a.text,surah.name,a.number); App.showView('view-studio'); }
+      });
+    } catch(e){
+      if (display) display.innerHTML='<p style="color:#ef4444;text-align:center;padding:20px">⚠️ خطأ في التحميل — تحقق من الاتصال بالإنترنت</p>';
+    }
+  },
+  renderAyah(a, surahNum, surahName){
+    return `<div class="quran-ayah-card glass-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="quran-ayah-num">${a.numberInSurah}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-ghost" data-play-ayah="${a.number}">🔊 استمع</button>
+          <button class="btn btn-sm btn-secondary" data-practice-ayah="${a.numberInSurah}">🎤 تدرّب</button>
+        </div>
+      </div>
+      <div class="quran-text" dir="rtl">${escapeHTML(a.text)}</div>
+    </div>`;
+  },
+  playAudio(globalNum){
+    const prev = document.getElementById('qqc-audio-el');
+    if (prev){ prev.pause(); prev.remove(); }
+    const au = document.createElement('audio');
+    au.id = 'qqc-audio-el';
+    au.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNum}.mp3`;
+    au.style.display='none'; au.autoplay=true;
+    document.body.appendChild(au);
+    au.onerror = ()=>{ au.remove(); toast('تعذّر تحميل التلاوة','error'); };
+    au.onended = ()=>au.remove();
+    toast('🔊 جارٍ تشغيل التلاوة…','info',2000);
+  }
+};
+
+/* ══════════════════════════════════════════════
+   VOICE STUDIO  (Web Speech API + waveform canvas)
+══════════════════════════════════════════════ */
+const VoiceStudio = {
+  practiceVerse: null,
+  recorder: null,
+  chunks: [],
+  audioCtx: null,
+  analyser: null,
+  animFrame: null,
+  setPracticeVerse(surahNum, ayahNum, text, surahName, globalNum){
+    VoiceStudio.practiceVerse = { surahNum, ayahNum, text, surahName, globalNum: globalNum||null };
+  },
+  async load(){
+    const surahs = await QuranBrowser.loadSurahs();
+    const sel = document.getElementById('studio-surah');
+    if (sel && sel.options.length <= 1 && surahs.length){
+      surahs.forEach(s=>{
+        const o = document.createElement('option');
+        o.value = s.number; o.textContent = `${s.number}. ${s.name}`;
+        sel.appendChild(o);
+      });
+    }
+    const loadBtn = document.getElementById('btn-studio-load');
+    if (loadBtn) loadBtn.onclick = VoiceStudio.loadVerse;
+    const recBtn = document.getElementById('btn-studio-record');
+    if (recBtn) recBtn.onclick = VoiceStudio.toggleRecord;
+    if (VoiceStudio.practiceVerse) VoiceStudio.showVerse();
+    await VoiceStudio.loadRecordings();
+  },
+  async loadVerse(){
+    const surahNum = +(document.getElementById('studio-surah')?.value||0);
+    const ayahNum = +(document.getElementById('studio-ayah')?.value||1);
+    if (!surahNum) return toast('اختر سورة','error');
+    const st = document.getElementById('studio-rec-status');
+    if (st) st.textContent='⏳ جارٍ تحميل الآية…';
+    try {
+      const r = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}`);
+      const d = await r.json();
+      if (!d.data){ if(st) st.textContent=''; return toast('رقم الآية خارج النطاق','error'); }
+      const surah = QuranBrowser.surahs.find(s=>s.number===surahNum);
+      VoiceStudio.practiceVerse = { surahNum, ayahNum, text:d.data.text, surahName:surah?.name||`سورة ${surahNum}`, globalNum:d.data.number };
+      VoiceStudio.showVerse();
+      if (st) st.textContent='';
+    } catch(e){ if(st) st.textContent=''; toast('خطأ في تحميل الآية','error'); }
+  },
+  showVerse(){
+    const p = VoiceStudio.practiceVerse;
+    if (!p) return;
+    const el = document.getElementById('studio-verse-display');
+    const res = document.getElementById('studio-result');
+    if (el){
+      el.style.display='block';
+      el.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(52,211,153,.35);margin-bottom:4px">
+        <div style="font-size:.72rem;color:#34d399;margin-bottom:4px">🎯 الآية المستهدفة</div>
+        <div style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">${escapeHTML(p.surahName)} · الآية ${p.ayahNum}</div>
+        <div dir="rtl" style="font-size:1.5rem;line-height:2.2;text-align:center;color:var(--gold)">${escapeHTML(p.text)}</div>
+        ${p.globalNum?`<div style="margin-top:12px;text-align:center"><button class="btn btn-sm btn-ghost" onclick="QuranBrowser.playAudio(${p.globalNum})">🔊 استمع للنموذج</button></div>`:''}
+      </div>`;
+    }
+    if (res) res.style.display='none';
+    if (p.surahNum){ const s2=document.getElementById('studio-surah'); if(s2&&s2.options.length>1) s2.value=p.surahNum; }
+    if (p.ayahNum){ const ai=document.getElementById('studio-ayah'); if(ai) ai.value=p.ayahNum; }
+  },
+  async toggleRecord(){
+    if (VoiceStudio.recorder && VoiceStudio.recorder.state==='recording'){
+      VoiceStudio.recorder.stop(); VoiceStudio.stopWaveform(); return;
+    }
+    if (!VoiceStudio.practiceVerse) return toast('حدّد آية للتدرب عليها أولاً','error');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      VoiceStudio.chunks = [];
+      VoiceStudio.recorder = new MediaRecorder(stream);
+      VoiceStudio.recorder.ondataavailable = e=>VoiceStudio.chunks.push(e.data);
+      VoiceStudio.recorder.onstop = async()=>{ stream.getTracks().forEach(t=>t.stop()); await VoiceStudio.onRecordStop(); };
+      VoiceStudio.startWaveform(stream);
+      VoiceStudio.recorder.start();
+      const btn = document.getElementById('btn-studio-record');
+      if (btn){ btn.textContent='⏹️ إيقاف التسجيل'; btn.classList.add('recording'); }
+      const st = document.getElementById('studio-rec-status');
+      if (st) st.textContent='🔴 يسجّل... اتلُ الآية بوضوح';
+    } catch(e){ toast('لا يمكن الوصول للميكروفون — تحقق الإذن','error'); }
+  },
+  startWaveform(stream){
+    const canvas = document.getElementById('studio-waveform');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    try {
+      VoiceStudio.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      VoiceStudio.analyser = VoiceStudio.audioCtx.createAnalyser();
+      VoiceStudio.analyser.fftSize = 256;
+      const src = VoiceStudio.audioCtx.createMediaStreamSource(stream);
+      src.connect(VoiceStudio.analyser);
+      const bufLen = VoiceStudio.analyser.frequencyBinCount;
+      const data = new Uint8Array(bufLen);
+      function draw(){
+        VoiceStudio.animFrame = requestAnimationFrame(draw);
+        VoiceStudio.analyser.getByteFrequencyData(data);
+        const W = canvas.offsetWidth||800; const H = canvas.offsetHeight||80;
+        canvas.width=W; canvas.height=H;
+        ctx.clearRect(0,0,W,H);
+        const bw = W / bufLen * 2.2;
+        data.forEach((v,i)=>{
+          const h=(v/255)*H;
+          const hue = 180 + v/3;
+          ctx.fillStyle=`hsla(${hue},75%,58%,.9)`;
+          ctx.fillRect(i*bw, H-h, Math.max(1,bw-1), h);
+        });
+      }
+      draw();
+    } catch(e){ console.warn('Waveform unavailable',e); }
+  },
+  stopWaveform(){
+    if (VoiceStudio.animFrame){ cancelAnimationFrame(VoiceStudio.animFrame); VoiceStudio.animFrame=null; }
+    if (VoiceStudio.audioCtx){ VoiceStudio.audioCtx.close().catch(()=>{}); VoiceStudio.audioCtx=null; }
+    const canvas = document.getElementById('studio-waveform');
+    if (canvas){
+      const c=canvas.getContext('2d');
+      canvas.width=canvas.offsetWidth||800; canvas.height=canvas.offsetHeight||80;
+      c.clearRect(0,0,canvas.width,canvas.height);
+    }
+  },
+  async onRecordStop(){
+    const btn = document.getElementById('btn-studio-record');
+    if (btn){ btn.textContent='🎙️ ابدأ التسجيل'; btn.classList.remove('recording'); }
+    const st = document.getElementById('studio-rec-status');
+    if (st) st.textContent='';
+    if (!VoiceStudio.chunks.length) return;
+    const blob = new Blob(VoiceStudio.chunks,{type:'audio/webm'});
+    const p = VoiceStudio.practiceVerse;
+    const label = p ? `${p.surahName} · آية ${p.ayahNum}` : 'تسجيل';
+    await Library.saveAudio(blob, label);
+    const url = URL.createObjectURL(blob);
+    const res = document.getElementById('studio-result');
+    if (res){
+      res.style.display='block';
+      res.innerHTML=`<div class="glass-card pad studio-result-card">
+        <div style="font-size:.85rem;color:#34d399;margin-bottom:8px">✅ تسجيلك — استمع وقيّم نفسك</div>
+        <audio controls src="${url}" style="width:100%;border-radius:8px;margin-bottom:12px"></audio>
+        <div style="font-size:.82rem;color:var(--text-2);margin-bottom:8px">⭐ قيّم أداءك:</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+          ${[['5','ممتاز 🌟'],['4','جيد جداً ✅'],['3','جيد 👍'],['2','يحتاج تحسين 🔄'],['1','ابدأ من جديد ↩️']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost studio-self-score" data-score="${sc}">${lb}</button>`).join('')}
+        </div>
+        <div id="studio-feedback"></div>
+        <div id="studio-speech-area" style="margin-top:12px"></div>
+      </div>`;
+      res.querySelectorAll('.studio-self-score').forEach(b=>b.onclick=async()=>{
+        res.querySelectorAll('.studio-self-score').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        const score=+b.dataset.score;
+        const msgs={5:'رائع! احتفظ بهذا المستوى وانتقل للآية التالية 🌟',4:'جيد جداً! كرّر لتثبيت الحفظ ✅',3:'جيد! ركّز على مخارج الحروف 👍',2:'تحسّن — استمع للنموذج ثم أعد 🔄',1:'لا تيأس! استمع للآية مرات أولاً ↩️'};
+        const fb=document.getElementById('studio-feedback');
+        if (fb) fb.innerHTML=`<div style="padding:10px 12px;background:rgba(52,211,153,.1);border-radius:8px;color:#34d399;font-size:.88rem">${msgs[score]||''}</div>`;
+        if (p) Api.post('/session/complete',{pages_done:.05,difficulty:score>=4?'easy':score>=2?'medium':'hard',duration_minutes:1,technique_used:'recitation_studio',mood_score:Math.min(10,score*2)}).catch(()=>{});
+      });
+      VoiceStudio.addSpeechCheck(p);
+    }
+    await VoiceStudio.loadRecordings();
+  },
+  addSpeechCheck(p){
+    const area = document.getElementById('studio-speech-area');
+    if (!area || !p) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR){
+      area.innerHTML='<div style="font-size:.75rem;color:var(--text-3)">التحقق الصوتي غير مدعوم في هذا المتصفح — استخدم Chrome للميزة الكاملة</div>';
+      return;
+    }
+    area.innerHTML=`<button class="btn btn-sm btn-secondary" id="btn-speech-check">🤖 تحقق من التلاوة آلياً (اتلُ مجدداً)</button>
+      <div style="font-size:.72rem;color:var(--text-3);margin-top:4px">اضغط ثم اتلُ الآية للميكروفون — الذكاء الاصطناعي يحلّل دقتك</div>
+      <div id="speech-result"></div>`;
+    document.getElementById('btn-speech-check').onclick=()=>{
+      const btn=document.getElementById('btn-speech-check');
+      const resultEl=document.getElementById('speech-result');
+      const rec=new SR();
+      rec.lang='ar-SA'; rec.continuous=false; rec.interimResults=false;
+      btn.textContent='🔴 يستمع... اتلُ الآية الآن'; btn.disabled=true;
+      rec.onresult=ev=>{
+        const transcript=Array.from(ev.results).map(r=>r[0].transcript).join(' ').trim();
+        const pct=Math.round(VoiceStudio.similarity(transcript,p.text)*100);
+        const col=pct>=80?'#34d399':pct>=55?'#fbbf24':'#ef4444';
+        if (resultEl) resultEl.innerHTML=`<div style="margin-top:10px;padding:12px;background:rgba(0,0,0,.25);border-radius:10px">
+          <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px">ما فهمه الذكاء الاصطناعي:</div>
+          <div style="font-size:.85rem;color:var(--text-2);margin-bottom:10px;font-style:italic">"${escapeHTML(transcript)}"</div>
+          <div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden;margin-bottom:8px">
+            <div style="background:${col};height:100%;width:${pct}%;border-radius:20px;transition:width .6s ease"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:1.4rem;font-weight:900;color:${col}">${pct}%</span>
+            <span style="font-size:.82rem;color:var(--text-2)">${pct>=85?'✨ ممتاز!':pct>=70?'✅ جيد جداً':pct>=50?'👍 مقبول':'🔄 راجع وكرر'}</span>
+          </div>
+        </div>`;
+        btn.textContent='🤖 أعد التحقق'; btn.disabled=false;
+      };
+      rec.onerror=()=>{ btn.textContent='❌ فشل — حاول مجدداً'; btn.disabled=false; };
+      rec.onend=()=>{ if(btn.disabled){ btn.textContent='🤖 أعد التحقق'; btn.disabled=false; } };
+      rec.start();
+    };
+  },
+  similarity(a,b){
+    const norm=s=>s.replace(/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g,'').replace(/\s+/g,' ').trim();
+    a=norm(a); b=norm(b);
+    if (!a||!b) return 0;
+    const wa=a.split(' '); const wb=b.split(' ');
+    let hits=0;
+    wa.forEach(w=>{ if(wb.some(bw=>bw===w||bw.includes(w)||w.includes(bw))) hits++; });
+    return Math.min(1, hits/Math.max(wa.length,wb.length));
+  },
+  async loadRecordings(){
+    const el = document.getElementById('studio-recordings-list');
+    if (!el) return;
+    const audios = await Library.listAudio();
+    if (!audios.length){ el.innerHTML='<p style="color:var(--text-3);font-size:.85rem;padding:10px 0">لا تسجيلات تدريبية بعد — ابدأ التسجيل أعلاه!</p>'; return; }
+    el.innerHTML=audios.slice().reverse().slice(0,25).map(a=>{
+      const url=URL.createObjectURL(a.blob);
+      return `<div class="glass-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px">
+          <div style="font-size:.85rem;font-weight:600">${escapeHTML(a.label||'تسجيل')}</div>
+          <div style="font-size:.72rem;color:var(--text-3)">${new Date(a.created).toLocaleString('ar')}</div>
+        </div>
+        <audio controls src="${url}" style="height:34px;flex:1;min-width:150px;max-width:220px"></audio>
+        <button class="btn btn-sm btn-danger" data-da="${a.id}">✕</button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('[data-da]').forEach(b=>b.onclick=async()=>{ await Library.deleteAudio(+b.dataset.da); VoiceStudio.loadRecordings(); });
+  }
+};
