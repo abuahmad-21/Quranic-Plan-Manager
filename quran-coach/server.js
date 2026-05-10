@@ -1151,6 +1151,85 @@ R('POST','/api/ai-coach', async (req,res)=>{
   send(res,200,{reply:tips[Math.floor(Math.random()*tips.length)], source:'local'});
 });
 
+/* ── AI RECITATION EVALUATION ── */
+R('POST','/api/ai/evaluate-recitation', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const transcript  = String(b.transcript||'').slice(0,1000);
+  const targetVerse = String(b.target_verse||'').slice(0,500);
+  const surahName   = String(b.surah_name||'').slice(0,100);
+  const ayahNum     = +b.ayah_num || 0;
+  if (!transcript || !targetVerse) return send(res,400,{error:'missing fields'});
+
+  // Quick word-match score (fallback if AI unavailable)
+  const norm = s=>s.replace(/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g,'').replace(/\s+/g,' ').trim();
+  const wa = norm(transcript).split(' ');
+  const wb = norm(targetVerse).split(' ');
+  let hits=0; wa.forEach(w=>{ if(wb.some(bw=>bw===w||bw.includes(w)||w.includes(bw))) hits++; });
+  const quickScore = Math.round(Math.min(1, hits/Math.max(wa.length,wb.length))*100);
+
+  const sysPrompt = `أنت محكّم متخصص في تقييم تلاوة القرآن الكريم وأحكام التجويد. مهمتك مقارنة ما قاله المتدرب بالآية الأصلية وتقديم تقييم تفصيلي.
+
+قواعد الإجابة:
+1. ابدأ بنسبة التطابق (مثال: التطابق: 87%)
+2. اذكر الكلمات الصحيحة والخاطئة
+3. قدّم نصيحة تجويدية مختصرة (مخارج، مد، غنة)
+4. الإجابة بالعربية فقط، لا تتجاوز 5 أسطر`;
+
+  const userMsg = `السورة: ${surahName}، الآية: ${ayahNum}
+الآية الأصلية: ${targetVerse}
+ما قاله المتدرب: ${transcript}
+قيّم التلاوة وحدّد نسبة الصحة من 0 إلى 100.`;
+
+  try {
+    const reply = await callAI(sysPrompt, userMsg);
+    if (!reply) throw new Error('no reply');
+    // Extract score from reply if present
+    const scoreMatch = reply.match(/(\d{1,3})\s*%/);
+    const aiScore = scoreMatch ? Math.min(100, +scoreMatch[1]) : quickScore;
+    // Save as training data
+    if (!u.studio_history) u.studio_history = [];
+    u.studio_history.push({
+      surah_name:surahName, ayah_num:ayahNum,
+      transcript, target_verse:targetVerse,
+      ai_score:aiScore, timestamp:now()
+    });
+    if (u.studio_history.length > 200) u.studio_history = u.studio_history.slice(-200);
+    persist();
+    return send(res,200,{ evaluation:reply, score:aiScore, source:'ai' });
+  } catch(e){
+    return send(res,200,{
+      evaluation:`التطابق التقريبي: ${quickScore}%\nاستمر في التدريب والاستماع للشيخ لتحسين نطقك.`,
+      score: quickScore, source:'local'
+    });
+  }
+});
+
+/* ── STUDIO RECORDINGS (metadata + training data) ── */
+R('GET','/api/studio/recordings', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  send(res,200,{ recordings: (u.studio_history||[]).slice().reverse().slice(0,50) });
+});
+
+R('POST','/api/studio/recording', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  if (!u.studio_history) u.studio_history = [];
+  u.studio_history.push({
+    surah_name: String(b.surah_name||'').slice(0,100),
+    ayah_num: +b.ayah_num||0,
+    global_num: +b.global_num||0,
+    transcript: String(b.transcript||'').slice(0,500),
+    ai_score: +b.ai_score||null,
+    ai_feedback: String(b.ai_feedback||'').slice(0,500),
+    self_score: +b.self_score||null,
+    timestamp: now()
+  });
+  if (u.studio_history.length > 200) u.studio_history = u.studio_history.slice(-200);
+  persist();
+  send(res,200,{ok:true});
+});
+
 /* ── ADMIN CHANNELS ── */
 R('GET','/api/admin/channels', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});

@@ -685,24 +685,74 @@
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
       <h2 class="view-title">📖 القرآن الكريم</h2>
-      <div class="glass-card pad" style="margin-bottom:12px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="quran-surah-select" class="field-input" style="flex:1;min-width:160px">
-            <option value="">اختر سورة...</option>
-          </select>
-          <input id="quran-ayah-num" class="field-input" type="number" min="1" placeholder="رقم الآية (اختياري)" style="flex:0 0 130px">
-          <button class="btn btn-primary" id="btn-load-surah">تحميل</button>
+
+      <!-- Navigation tabs -->
+      <div class="glass-card pad" style="margin-bottom:10px">
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <button class="btn btn-sm btn-secondary quran-tab" data-tab="surah">📋 بالسورة</button>
+          <button class="btn btn-sm btn-ghost quran-tab" data-tab="page">📜 بالصفحة (مصحف)</button>
         </div>
-        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap" id="quran-quick-surahs">
-          <button class="btn btn-sm btn-ghost" data-qs="1">الفاتحة</button>
-          <button class="btn btn-sm btn-ghost" data-qs="2">البقرة</button>
-          <button class="btn btn-sm btn-ghost" data-qs="36">يس</button>
-          <button class="btn btn-sm btn-ghost" data-qs="55">الرحمن</button>
-          <button class="btn btn-sm btn-ghost" data-qs="67">الملك</button>
-          <button class="btn btn-sm btn-ghost" data-qs="78">النبأ</button>
-          <button class="btn btn-sm btn-ghost" data-qs="112">الإخلاص</button>
+
+        <!-- By Surah -->
+        <div id="quran-tab-surah">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <select id="quran-surah-select" class="field-input" style="flex:1;min-width:160px">
+              <option value="">اختر سورة...</option>
+            </select>
+            <input id="quran-from-ayah" class="field-input" type="number" min="1" placeholder="من آية" style="width:74px">
+            <input id="quran-to-ayah" class="field-input" type="number" min="1" placeholder="إلى آية" style="width:74px">
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-ghost" data-qs="1">الفاتحة</button>
+            <button class="btn btn-sm btn-ghost" data-qs="2">البقرة</button>
+            <button class="btn btn-sm btn-ghost" data-qs="36">يس</button>
+            <button class="btn btn-sm btn-ghost" data-qs="55">الرحمن</button>
+            <button class="btn btn-sm btn-ghost" data-qs="67">الملك</button>
+            <button class="btn btn-sm btn-ghost" data-qs="78">النبأ</button>
+            <button class="btn btn-sm btn-ghost" data-qs="112">الإخلاص</button>
+          </div>
+        </div>
+
+        <!-- By Page -->
+        <div id="quran-tab-page" style="display:none">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm btn-ghost" id="btn-quran-page-prev">◀</button>
+            <span style="font-size:.78rem;color:var(--text-3)">صفحة</span>
+            <input id="quran-page-num" class="field-input" type="number" min="1" max="604" value="1" style="width:66px;text-align:center">
+            <span style="font-size:.78rem;color:var(--text-3)">/ 604</span>
+            <button class="btn btn-sm btn-ghost" id="btn-quran-page-next">▶</button>
+          </div>
         </div>
       </div>
+
+      <!-- Sheikh + Playback controls -->
+      <div class="glass-card pad" style="margin-bottom:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+          <select id="quran-sheikh-select" class="field-input" style="flex:1;min-width:170px">
+            <option value="ar.alafasy">الشيخ مشاري راشد العفاسي</option>
+            <option value="ar.abdulbasitmurattal">الشيخ عبد الباسط (مرتل)</option>
+            <option value="ar.husary">الشيخ محمود خليل الحصري</option>
+            <option value="ar.mahermuaiqly">الشيخ ماهر المعيقلي</option>
+            <option value="ar.saudalshuraym">الشيخ سعود الشريم</option>
+          </select>
+          <select id="quran-loop-select" class="field-input" style="flex:0 0 120px">
+            <option value="1">تكرار مرة</option>
+            <option value="2">مرتين</option>
+            <option value="3">3 مرات</option>
+            <option value="5">5 مرات</option>
+            <option value="0">∞ لا نهاية</option>
+          </select>
+          <button class="btn btn-primary" id="btn-load-surah">تحميل</button>
+        </div>
+        <!-- Playback bar -->
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" id="btn-quran-play-all" disabled>▶ تشغيل الكل</button>
+          <button class="btn btn-ghost btn-sm" id="btn-quran-pause" disabled>⏸ إيقاف</button>
+          <button class="btn btn-ghost btn-sm" id="btn-quran-stop" disabled>⏹ توقف</button>
+          <div id="quran-playing-info" style="font-size:.78rem;color:var(--gold);flex:1;text-align:center"></div>
+        </div>
+      </div>
+
       <div id="quran-display"></div>
     </div>
   </section>

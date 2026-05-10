@@ -251,3 +251,55 @@ body.mode-reload    .top-bar{filter:saturate(.7)}
    SMALL BUTTONS in chat bars
 ══════════════════════════════════ */
 .btn.btn-sm{ padding:6px 10px; font-size:.8rem; }
+
+/* ══════════════════════════════════
+   MUSHAF / PAGE VIEW
+══════════════════════════════════ */
+.mushaf-surah-block{
+  margin-bottom:14px;
+}
+.mushaf-text{
+  font-family:'Tajawal','Amiri','Scheherazade New',serif;
+  font-size:1.45rem;
+  line-height:2.4;
+  text-align:justify;
+  direction:rtl;
+  color:rgba(255,255,255,.92);
+  letter-spacing:.03em;
+}
+.ayah-word{
+  display:inline;
+  cursor:default;
+  border-radius:4px;
+  padding:1px 2px;
+  transition:background .2s;
+}
+.ayah-word.playing{
+  background:rgba(245,158,11,.28);
+  color:var(--gold);
+  border-radius:6px;
+}
+.ayah-end-marker{
+  font-size:.82em;
+  color:var(--gold);
+  vertical-align:super;
+  margin:0 3px;
+  font-family:'Tajawal',sans-serif;
+}
+.quran-ayah-card.playing{
+  border-color:rgba(245,158,11,.5);
+  background:rgba(245,158,11,.06);
+  box-shadow:0 0 16px rgba(245,158,11,.12);
+}
+
+/* ══════════════════════════════════
+   AI EVALUATION RESULT
+══════════════════════════════════ */
+#ai-eval-result{
+  word-break:break-word;
+}
+textarea.field-input{
+  resize:vertical;
+  font-family:inherit;
+  line-height:1.6;
+}
