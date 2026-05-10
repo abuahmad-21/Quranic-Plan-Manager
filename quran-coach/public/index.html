@@ -836,6 +836,25 @@
       </div>
       <!-- Result -->
       <div id="studio-result" style="display:none"></div>
+      <!-- Range Recording (سورة/صفحة كاملة) -->
+      <div class="glass-card pad" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.2)">
+        <div style="font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:10px">📖 تسجيل نطاق كامل (سورة / صفحة / عدة آيات)</div>
+        <div style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">اختر سورة ونطاق الآيات، اتلُ كل النطاق وسيحلّله الذكاء الاصطناعي تلقائياً</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <select id="studio-range-surah" class="field-input" style="flex:2;min-width:150px">
+            <option value="">اختر سورة...</option>
+          </select>
+          <input id="studio-range-from" class="field-input" type="number" min="1" placeholder="من آية" style="width:80px">
+          <input id="studio-range-to"   class="field-input" type="number" min="1" placeholder="إلى آية" style="width:80px">
+          <button class="btn btn-secondary btn-sm" id="btn-studio-range-load">تحميل</button>
+        </div>
+        <div id="studio-range-display"></div>
+        <button class="btn btn-primary" id="btn-studio-range-record" style="display:none;margin-bottom:8px">🎙️ سجّل النطاق كاملاً</button>
+        <div id="studio-range-status" style="font-size:.82rem;color:var(--text-2);margin-top:4px"></div>
+        <canvas id="studio-range-waveform" height="60" style="width:100%;height:60px;display:none;border-radius:8px;background:rgba(0,0,0,.3);margin-top:8px"></canvas>
+        <div id="studio-range-result" style="margin-top:10px"></div>
+      </div>
+
       <!-- Past recordings -->
       <h3 style="margin:14px 6px 8px">🗂️ تسجيلاتي التدريبية</h3>
       <div id="studio-recordings-list"></div>

@@ -61,6 +61,14 @@ function readBody(req){
     req.on('error',reject);
   });
 }
+function readLargeBody(req, maxMB=20){
+  return new Promise((resolve,reject)=>{
+    const chunks=[]; let total=0; const max=maxMB*1024*1024;
+    req.on('data',c=>{ chunks.push(c); total+=c.length; if(total>max){ req.destroy(); reject(new Error('body too large')); }});
+    req.on('end',()=>{ try{ resolve(JSON.parse(Buffer.concat(chunks).toString())); }catch{ resolve({}); }});
+    req.on('error',reject);
+  });
+}
 
 /* ══ Auth helpers ══ */
 const SESSIONS = new Map(); // token → username
@@ -1203,6 +1211,31 @@ R('POST','/api/ai/evaluate-recitation', async (req,res)=>{
       score: quickScore, source:'local'
     });
   }
+});
+
+/* ── AI AUDIO TRANSCRIPTION (Whisper STT) ── */
+R('POST','/api/ai/transcribe', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  let bodyData;
+  try { bodyData = await readLargeBody(req, 20); } catch(e){ return send(res,413,{transcript:'',error:'audio too large'}); }
+  const audio_base64 = String(bodyData.audio_base64||'');
+  const mime_type    = String(bodyData.mime_type||'audio/webm');
+  if (!audio_base64) return send(res,400,{transcript:'',error:'no audio'});
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!baseUrl||!apiKey) return send(res,503,{transcript:'',error:'ai_not_configured'});
+  try {
+    const buf = Buffer.from(audio_base64,'base64');
+    const ext = mime_type.includes('mp4')||mime_type.includes('m4a') ? 'm4a' : mime_type.includes('ogg') ? 'ogg' : mime_type.includes('wav') ? 'wav' : 'webm';
+    const formData = new FormData();
+    formData.append('file', new Blob([buf],{type:mime_type}), `rec.${ext}`);
+    formData.append('model','whisper-1');
+    formData.append('language','ar');
+    const resp = await fetch(`${baseUrl}/audio/transcriptions`,{method:'POST',headers:{'Authorization':`Bearer ${apiKey}`},body:formData});
+    if (!resp.ok){ const t=await resp.text(); return send(res,200,{transcript:'',error:'whisper_error',detail:t.slice(0,300)}); }
+    const data = await resp.json();
+    return send(res,200,{transcript:data.text||'',ok:true});
+  } catch(e){ console.error('Transcribe error:',e.message); return send(res,200,{transcript:'',error:e.message}); }
 });
 
 /* ── STUDIO RECORDINGS (metadata + training data) ── */

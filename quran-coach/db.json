@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 15,
-      "total_sessions_today": 14,
-      "total_pages_memorized_alltime": 2.55
+      "total_users": 16,
+      "total_sessions_today": 15,
+      "total_pages_memorized_alltime": 2.6
     },
     "sheikh_requests": {
       "455": {
@@ -1955,6 +1955,125 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "gffg": {
+      "username": "gffg",
+      "password_hash": "d0e5be3468ecd58adcdf35381aef2ae2d4618f324363303c18e1c7804cdffaa3",
+      "display_name": "Gfggg",
+      "created_at": "2026-05-10T04:27:42.704Z",
+      "last_active": "2026-05-10T04:31:40.082Z",
+      "avatar_color": "#0c7229",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-10T04:27:44.851Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-10T04:27:44.851Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.05,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-10",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-10T04:28:57.912Z",
+          "pages_done": 0.05,
+          "difficulty": "medium",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 6
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 6.41,
+        "afi": 68,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          91,
+          98,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 2.36,
+          "interval": 1,
+          "reps": 1,
+          "next_review": "2026-05-11T04:28:57.912Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "studio_history": [
+        {
+          "surah_name": "سُورَةُ البَقَرَةِ",
+          "ayah_num": 1,
+          "global_num": 8,
+          "transcript": "بسم بالله الرحمن الرحين",
+          "ai_score": 20,
+          "ai_feedback": "التطابق التقريبي: 20%\nاستمر في التدريب والاستماع للشيخ لتحسين نطقك.",
+          "self_score": null,
+          "timestamp": "2026-05-10T04:28:45.187Z"
+        }
+      ]
     }
   },
   "chats": {},

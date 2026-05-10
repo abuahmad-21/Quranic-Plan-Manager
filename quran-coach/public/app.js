@@ -522,6 +522,14 @@ const Feed = {
 function readFileAsImage(file){
   return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=r.result; }; r.onerror=rej; r.readAsDataURL(file); });
 }
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result.split(',')[1]);
+    reader.onerror=reject;
+    reader.readAsDataURL(blob);
+  });
+}
 function compressImage(img, maxDim, quality=0.7){
   const ratio = Math.min(1, maxDim/Math.max(img.width,img.height));
   const w = Math.round(img.width*ratio), h = Math.round(img.height*ratio);
@@ -1857,7 +1865,7 @@ const QuranBrowser = {
             ${showBism ? '<div style="font-size:.92rem;color:var(--text-3);margin-top:6px">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : ''}
           </div>
           <div class="mushaf-text" dir="rtl">
-            ${grp.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${escapeHTML(a.text)}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
+            ${grp.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${a.text.split(' ').map((w,wi)=>`<span class="quran-word" data-global="${a.number}" data-wi="${wi}">${escapeHTML(w)}</span>`).join(' ')}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
             ${grp.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}">🔊 ${a.numberInSurah}</button> <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}" style="padding:2px 7px;font-size:.72rem">🎤</button>`).join('')}
@@ -1904,7 +1912,7 @@ const QuranBrowser = {
         </div>
         <div class="glass-card pad mushaf-surah-block" style="margin-bottom:10px">
           <div class="mushaf-text" dir="rtl">
-            ${ayahs.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${escapeHTML(a.text)}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
+            ${ayahs.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${a.text.split(' ').map((w,wi)=>`<span class="quran-word" data-global="${a.number}" data-wi="${wi}">${escapeHTML(w)}</span>`).join(' ')}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
             ${ayahs.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}">🔊 ${a.numberInSurah}</button> <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}" style="padding:2px 7px;font-size:.72rem">🎤</button>`).join('')}
@@ -1992,6 +2000,7 @@ const QuranBrowser = {
   highlightAyah(gNum){
     document.querySelectorAll('.ayah-word.playing').forEach(e=>e.classList.remove('playing'));
     document.querySelectorAll('.quran-ayah-card.playing').forEach(e=>e.classList.remove('playing'));
+    document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
     const word = document.querySelector(`.ayah-word[data-global="${gNum}"]`);
     if (word){ word.classList.add('playing'); word.scrollIntoView({block:'nearest',behavior:'smooth'}); }
     const card = document.getElementById(`ayah-card-${gNum}`);
@@ -2022,6 +2031,7 @@ const QuranBrowser = {
     if (QuranBrowser.audioEl){ QuranBrowser.audioEl.pause(); QuranBrowser.audioEl.src=''; QuranBrowser.audioEl=null; }
     document.querySelectorAll('.ayah-word.playing').forEach(e=>e.classList.remove('playing'));
     document.querySelectorAll('.quran-ayah-card.playing').forEach(e=>e.classList.remove('playing'));
+    document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
     const pauseBtn = document.getElementById('btn-quran-pause');
     if (pauseBtn){ pauseBtn.disabled=true; pauseBtn.textContent='⏸ إيقاف'; }
     const stopBtn = document.getElementById('btn-quran-stop');
@@ -2030,32 +2040,55 @@ const QuranBrowser = {
     if (info) info.textContent = '';
   },
 
+  SHEIKH_EVERYAYAH: {
+    'ar.alafasy':           'Alafasy_128kbps',
+    'ar.abdulbasitmurattal':'Abdul_Basit_Murattal_192kbps',
+    'ar.husary':            'Husary_128kbps',
+    'ar.mahermuaiqly':      'Maher_AlMuaiqly_128kbps',
+    'ar.saudalshuraym':     'Saud_Al-Shuraim_128kbps',
+  },
+
   playAudioSeq(gNum, onEnd){
     if (QuranBrowser.audioEl){ QuranBrowser.audioEl.pause(); QuranBrowser.audioEl.src=''; QuranBrowser.audioEl=null; }
+    document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
     const sheikh = QuranBrowser.sheikh;
-    // Show loading indicator on all matching play buttons
+    const info = QuranBrowser.ayahMap.get(gNum);
     document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b._origText=b.textContent; b.textContent='⏳'; b.disabled=true; });
     const resetBtns = ()=>document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b.textContent=b._origText||'🔊'; b.disabled=false; });
-    const primaryUrl = `https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`;
-    const fallbackUrl = `https://cdn.islamic.network/quran/audio/64/${sheikh}/${gNum}.mp3`;
-    const au = new Audio(primaryUrl);
+    // Build URL list: everyayah.com first (reliable), then cdn.islamic.network fallbacks
+    const evId = QuranBrowser.SHEIKH_EVERYAYAH[sheikh];
+    const sNum = String(info?.surahNum||1).padStart(3,'0');
+    const aNum = String(info?.ayahNum||gNum).padStart(3,'0');
+    const urls = [];
+    if (evId) urls.push(`https://everyayah.com/data/${evId}/${sNum}${aNum}.mp3`);
+    urls.push(`https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`);
+    urls.push(`https://cdn.islamic.network/quran/audio/64/${sheikh}/${gNum}.mp3`);
+    let urlIdx = 0;
+    const au = new Audio(urls[0]);
     au.preload = 'auto';
     QuranBrowser.audioEl = au;
-    let tried64 = false;
-    au.oncanplay = ()=>resetBtns();
-    au.onended = ()=>{ resetBtns(); if (!QuranBrowser.paused && onEnd) onEnd(); };
-    au.onerror = ()=>{
-      if (!tried64){
-        tried64 = true;
-        au.src = fallbackUrl;
-        au.play().catch(()=>{ resetBtns(); console.warn('Audio failed for ayah',gNum,'sheikh',sheikh); if (onEnd) onEnd(); });
-      } else {
-        resetBtns();
-        console.warn('Audio failed (both bitrates) for ayah',gNum,'sheikh',sheikh);
-        if (onEnd) onEnd();
-      }
+    const tryNext = ()=>{
+      urlIdx++;
+      if (urlIdx>=urls.length){ resetBtns(); if(onEnd) onEnd(); return; }
+      au.src = urls[urlIdx];
+      au.play().catch(()=>{ setTimeout(tryNext, 150); });
     };
-    au.play().catch(e=>{ resetBtns(); console.warn('Audio play() rejected',e); if (onEnd) onEnd(); });
+    au.oncanplay = ()=>resetBtns();
+    au.onended = ()=>{
+      resetBtns();
+      document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
+      if (!QuranBrowser.paused && onEnd) onEnd();
+    };
+    au.onerror = ()=>tryNext();
+    au.ontimeupdate = ()=>{
+      if (!au.duration||au.duration<=0) return;
+      const prog = au.currentTime/au.duration;
+      const words = document.querySelectorAll(`.quran-word[data-global="${gNum}"]`);
+      if (!words.length) return;
+      const idx = Math.min(Math.floor(prog*words.length), words.length-1);
+      words.forEach((w,i)=>w.classList.toggle('word-playing', i===idx));
+    };
+    au.play().catch(()=>tryNext());
   },
 
   playAudio(gNum){
@@ -2224,7 +2257,6 @@ const QuranBrowser = {
     if (p) await Library.saveAudio(blob, `${p.surahName} · آية ${p.ayahNum}`);
     const resEl = document.getElementById('qp-result');
     if (!resEl) return;
-    const transcript = (QuranBrowser._panelTranscript||'').trim();
     resEl.innerHTML=`<div style="margin-bottom:8px">
       <div style="font-size:.74rem;color:#34d399;margin-bottom:4px">✅ تسجيلك — استمع وقيّم:</div>
       <audio controls src="${url}" style="width:100%;height:36px;border-radius:8px;outline:none"></audio>
@@ -2233,7 +2265,7 @@ const QuranBrowser = {
       ${[['5','🌟 ممتاز'],['4','✅ جيد جداً'],['3','👍 مقبول'],['2','🔄 ضعيف'],['1','↩️ أعد']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost qp-score-btn" data-s="${sc}">${lb}</button>`).join('')}
     </div>
     <div id="qp-score-fb" style="font-size:.8rem;color:#34d399;min-height:18px"></div>
-    <div id="qp-auto-eval" style="margin-top:8px">${transcript ? '<div style="font-size:.78rem;color:var(--text-3);padding:6px 0">⏳ جارٍ التقييم الذكي تلقائياً...</div>' : ''}</div>`;
+    <div id="qp-auto-eval" style="margin-top:8px"><div style="font-size:.78rem;color:var(--text-3);padding:6px 0">⏳ جارٍ تحويل الصوت لنص (Whisper)...</div></div>`;
     resEl.querySelectorAll('.qp-score-btn').forEach(b=>b.onclick=()=>{
       resEl.querySelectorAll('.qp-score-btn').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
@@ -2246,7 +2278,15 @@ const QuranBrowser = {
         Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,self_score:sc}).catch(()=>{});
       }
     });
-    // Auto AI evaluation using speech transcript captured during recording
+    // Whisper STT transcription, then AI evaluation
+    let transcript = (QuranBrowser._panelTranscript||'').trim();
+    try {
+      if (blob.size < 15*1024*1024){
+        const audio_base64 = await blobToBase64(blob);
+        const tr = await Api.post('/ai/transcribe',{audio_base64, mime_type:recMime});
+        if (tr.transcript) transcript = tr.transcript;
+      }
+    } catch(e){}
     if (transcript && p) {
       try {
         const r = await Api.post('/ai/evaluate-recitation',{
@@ -2256,7 +2296,8 @@ const QuranBrowser = {
         const col = sc!=null ? (sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444') : '#34d399';
         const evalEl = document.getElementById('qp-auto-eval');
         if (evalEl) evalEl.innerHTML=`<div style="padding:10px 12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:10px">
-          <div style="font-size:.7rem;color:#34d399;margin-bottom:6px;font-weight:700;letter-spacing:.03em">🤖 تقييم ذكي تلقائي</div>
+          <div style="font-size:.7rem;color:#34d399;margin-bottom:6px;font-weight:700;letter-spacing:.03em">🤖 تقييم Whisper + GPT تلقائي</div>
+          <div style="font-size:.72rem;color:var(--text-3);margin-bottom:6px;font-style:italic">سُمع: "${escapeHTML((transcript||'').slice(0,100))}"</div>
           ${sc!=null?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
             <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:8px;overflow:hidden">
               <div style="background:${col};height:100%;width:${sc}%;border-radius:20px;transition:width .8s ease"></div>
@@ -2269,10 +2310,12 @@ const QuranBrowser = {
         Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
       } catch(e){
         const evalEl=document.getElementById('qp-auto-eval');
-        if (evalEl) evalEl.innerHTML='';
+        if (evalEl) evalEl.innerHTML='<p style="font-size:.78rem;color:var(--text-3)">تعذّر التقييم</p>';
       }
+    } else {
+      const evalEl=document.getElementById('qp-auto-eval');
+      if (evalEl) evalEl.innerHTML='<p style="font-size:.78rem;color:var(--text-3)">لم يُتعرَّف على الصوت — جرّب في مكان أهدأ</p>';
     }
-    // Always show the manual speech check option
     QuranBrowser.addPanelSpeechCheck(p);
   },
 
@@ -2332,10 +2375,21 @@ const VoiceStudio = {
         sel.appendChild(o);
       });
     }
+    // Populate range surah picker
+    const rangeSel = document.getElementById('studio-range-surah');
+    if (rangeSel && rangeSel.options.length <= 1 && surahs.length){
+      surahs.forEach(s=>{
+        const o = document.createElement('option');
+        o.value = s.number; o.textContent = `${s.number}. ${s.name}`;
+        rangeSel.appendChild(o);
+      });
+    }
     const loadBtn = document.getElementById('btn-studio-load');
     if (loadBtn) loadBtn.onclick = VoiceStudio.loadVerse;
     const recBtn = document.getElementById('btn-studio-record');
     if (recBtn) recBtn.onclick = VoiceStudio.toggleRecord;
+    document.getElementById('btn-studio-range-load')?.addEventListener('click', VoiceStudio.loadRange);
+    document.getElementById('btn-studio-range-record')?.addEventListener('click', VoiceStudio.toggleRangeRecord);
     if (VoiceStudio.practiceVerse) VoiceStudio.showVerse();
     await VoiceStudio.loadProgressChart();
     await VoiceStudio.loadRecordings();
@@ -2366,7 +2420,7 @@ const VoiceStudio = {
       el.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(52,211,153,.35);margin-bottom:4px">
         <div style="font-size:.72rem;color:#34d399;margin-bottom:4px">🎯 الآية المستهدفة</div>
         <div style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">${escapeHTML(p.surahName)} · الآية ${p.ayahNum}</div>
-        <div dir="rtl" style="font-size:1.5rem;line-height:2.2;text-align:center;color:var(--gold)">${escapeHTML(p.text)}</div>
+        <div dir="rtl" style="font-size:1.6rem;line-height:2.6;text-align:justify;color:var(--gold);font-family:'Amiri Quran','Amiri','Scheherazade New',serif">${escapeHTML(p.text)}</div>
         ${p.globalNum?`<div style="margin-top:12px;text-align:center"><button class="btn btn-sm btn-ghost" onclick="QuranBrowser.playAudio(${p.globalNum})">🔊 استمع للنموذج</button></div>`:''}
       </div>`;
     }
@@ -2462,7 +2516,6 @@ const VoiceStudio = {
     const label = p ? `${p.surahName} · آية ${p.ayahNum}` : 'تسجيل';
     await Library.saveAudio(blob, label);
     const url = URL.createObjectURL(blob);
-    const transcript = (VoiceStudio._speechTranscript||'').trim();
     const res = document.getElementById('studio-result');
     if (res){
       res.style.display='block';
@@ -2474,7 +2527,7 @@ const VoiceStudio = {
           ${[['5','ممتاز 🌟'],['4','جيد جداً ✅'],['3','جيد 👍'],['2','يحتاج تحسين 🔄'],['1','ابدأ من جديد ↩️']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost studio-self-score" data-score="${sc}">${lb}</button>`).join('')}
         </div>
         <div id="studio-feedback"></div>
-        <div id="studio-auto-eval" style="margin-top:12px">${transcript ? '<div style="font-size:.8rem;color:var(--text-3);padding:8px 0">⏳ جارٍ التقييم التلقائي بالذكاء الاصطناعي...</div>' : ''}</div>
+        <div id="studio-auto-eval" style="margin-top:12px"><div style="font-size:.8rem;color:var(--text-3);padding:8px 0">⏳ جارٍ تحويل صوتك لنص بدقة عالية (Whisper)...</div></div>
         <div id="studio-speech-area" style="margin-top:12px"></div>
       </div>`;
       res.querySelectorAll('.studio-self-score').forEach(b=>b.onclick=async()=>{
@@ -2486,7 +2539,15 @@ const VoiceStudio = {
         if (fb) fb.innerHTML=`<div style="padding:10px 12px;background:rgba(52,211,153,.1);border-radius:8px;color:#34d399;font-size:.88rem">${msgs[score]||''}</div>`;
         if (p) Api.post('/session/complete',{pages_done:.05,difficulty:score>=4?'easy':score>=2?'medium':'hard',duration_minutes:1,technique_used:'recitation_studio',mood_score:Math.min(10,score*2)}).catch(()=>{});
       });
-      // Auto AI evaluation using speech transcript captured during recording
+      // Whisper STT transcription, then AI evaluation
+      let transcript = (VoiceStudio._speechTranscript||'').trim();
+      try {
+        if (blob.size < 15*1024*1024){
+          const audio_base64 = await blobToBase64(blob);
+          const tr = await Api.post('/ai/transcribe',{audio_base64, mime_type:recMime});
+          if (tr.transcript) transcript = tr.transcript;
+        }
+      } catch(e){}
       if (transcript && p) {
         try {
           const r = await Api.post('/ai/evaluate-recitation',{
@@ -2496,7 +2557,8 @@ const VoiceStudio = {
           const col = sc!=null ? (sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444') : '#34d399';
           const autoEl = document.getElementById('studio-auto-eval');
           if (autoEl) autoEl.innerHTML=`<div style="padding:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:12px">
-            <div style="font-size:.72rem;color:#34d399;margin-bottom:10px;font-weight:700;letter-spacing:.03em">🤖 تقييم ذكي تلقائي</div>
+            <div style="font-size:.72rem;color:#34d399;margin-bottom:10px;font-weight:700;letter-spacing:.03em">🤖 تقييم ذكي تلقائي (Whisper + GPT)</div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-style:italic">سُمع: "${escapeHTML((transcript||'').slice(0,120))}"</div>
             ${sc!=null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
               <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">
                 <div style="background:${col};height:100%;width:${sc}%;border-radius:20px;transition:width .9s ease"></div>
@@ -2509,8 +2571,11 @@ const VoiceStudio = {
           Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
         } catch(e){
           const autoEl=document.getElementById('studio-auto-eval');
-          if (autoEl) autoEl.innerHTML='';
+          if (autoEl) autoEl.innerHTML='<p style="font-size:.82rem;color:var(--text-3)">تعذّر التقييم التلقائي</p>';
         }
+      } else {
+        const autoEl=document.getElementById('studio-auto-eval');
+        if (autoEl) autoEl.innerHTML='<p style="font-size:.82rem;color:var(--text-3)">لم يُتعرَّف على الصوت — جرّب في مكان أهدأ أو اضغط "تحقق صوتي" أدناه</p>';
       }
       VoiceStudio.addSpeechCheck(p);
     }
@@ -2687,6 +2752,135 @@ const VoiceStudio = {
       `<div class="progress-stat"><div class="progress-stat-val">${history.length}</div><div class="progress-stat-lbl">جلسة</div></div>`,
       trend?`<div class="progress-stat"><div class="progress-stat-val">${trend}</div><div class="progress-stat-lbl">الاتجاه</div></div>`:''
     ].join('');
+  },
+
+  // ── RANGE RECORDING (سورة/صفحة/نطاق كامل) ──
+  _rangeAyahs: [],
+  _rangeRecorder: null,
+  _rangeChunks: [],
+  _rangeSpeechRec: null,
+  _rangeSpeechTranscript: '',
+  _rangeAnimFrame: null,
+  _rangeAudioCtx: null,
+
+  async loadRange(){
+    const surahNum = +(document.getElementById('studio-range-surah')?.value||0);
+    const fromA = +(document.getElementById('studio-range-from')?.value||0);
+    const toA   = +(document.getElementById('studio-range-to')?.value||0);
+    if (!surahNum) return toast('اختر سورة','error');
+    const st   = document.getElementById('studio-range-status');
+    const disp = document.getElementById('studio-range-display');
+    if (st) st.textContent='⏳ جارٍ تحميل الآيات...';
+    try {
+      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const d = await r.json();
+      if (!d.data){ if(st) st.textContent=''; return toast('خطأ في التحميل','error'); }
+      let ayahs = d.data.ayahs;
+      if (fromA) ayahs = ayahs.filter(a=>a.numberInSurah>=fromA);
+      if (toA)   ayahs = ayahs.filter(a=>a.numberInSurah<=toA);
+      VoiceStudio._rangeAyahs = ayahs.map(a=>({...a, surahName:d.data.name}));
+      if (disp) disp.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(52,211,153,.3);margin-bottom:8px">
+        <div style="font-size:.75rem;color:#34d399;margin-bottom:6px">${d.data.name} · آيات ${ayahs[0]?.numberInSurah||1}–${ayahs[ayahs.length-1]?.numberInSurah||1} (${ayahs.length} آية)</div>
+        <div dir="rtl" style="font-family:'Amiri Quran','Amiri','Scheherazade New',serif;font-size:1.4rem;line-height:2.6;text-align:justify;color:var(--gold)">
+          ${ayahs.map(a=>`${escapeHTML(a.text)}<span style="font-size:.72em;color:rgba(245,158,11,.65);vertical-align:super;margin:0 4px">﴿${a.numberInSurah}﴾</span>`).join(' ')}
+        </div>
+      </div>`;
+      const recBtn=document.getElementById('btn-studio-range-record');
+      if (recBtn) recBtn.style.display='inline-flex';
+      if (st) st.textContent='';
+    } catch(e){ if(st) st.textContent='خطأ في التحميل'; }
+  },
+
+  async toggleRangeRecord(){
+    if (VoiceStudio._rangeRecorder && VoiceStudio._rangeRecorder.state==='recording'){
+      VoiceStudio._rangeRecorder.stop();
+      if (VoiceStudio._rangeSpeechRec){ try{VoiceStudio._rangeSpeechRec.stop();}catch(e){} VoiceStudio._rangeSpeechRec=null; }
+      return;
+    }
+    if (!VoiceStudio._rangeAyahs.length) return toast('حمّل آيات النطاق أولاً','error');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      VoiceStudio._rangeChunks=[];
+      VoiceStudio._rangeSpeechTranscript='';
+      const mimeType=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+      VoiceStudio._rangeRecorder = new MediaRecorder(stream, mimeType?{mimeType}:{});
+      VoiceStudio._rangeRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)VoiceStudio._rangeChunks.push(e.data);};
+      VoiceStudio._rangeRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());await VoiceStudio.onRangeRecordStop();};
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if (SR){ try{const sr=new SR();sr.lang='ar-SA';sr.continuous=true;sr.interimResults=false;sr.onresult=ev=>{VoiceStudio._rangeSpeechTranscript+=Array.from(ev.results).map(r=>r[0].transcript).join(' ')+' ';};sr.onerror=()=>{};sr.start();VoiceStudio._rangeSpeechRec=sr;}catch(e){} }
+      // Waveform
+      const canvas=document.getElementById('studio-range-waveform');
+      if (canvas){canvas.style.display='block';try{
+        VoiceStudio._rangeAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        const an=VoiceStudio._rangeAudioCtx.createAnalyser();an.fftSize=256;
+        VoiceStudio._rangeAudioCtx.createMediaStreamSource(stream).connect(an);
+        const buf=new Uint8Array(an.frequencyBinCount);
+        const ctx=canvas.getContext('2d');
+        (function draw(){VoiceStudio._rangeAnimFrame=requestAnimationFrame(draw);an.getByteFrequencyData(buf);const W=canvas.offsetWidth||400,H=60;canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);const bw=W/buf.length*2.2;buf.forEach((v,i)=>{const h=(v/255)*H;ctx.fillStyle=`hsla(${160+v/3},75%,58%,.9)`;ctx.fillRect(i*bw,H-h,Math.max(1,bw-1),h);});})();
+      }catch(e){}}
+      VoiceStudio._rangeRecorder.start(100);
+      const btn=document.getElementById('btn-studio-range-record');
+      if(btn){btn.textContent='⏹ إيقاف التسجيل';btn.style.background='rgba(239,68,68,.2)';btn.style.borderColor='#ef4444';}
+      const st=document.getElementById('studio-range-status');
+      if(st) st.textContent='🔴 يسجّل... اتلُ جميع الآيات بوضوح وترتيل';
+    } catch(e){ toast('لا يمكن الوصول للميكروفون','error'); }
+  },
+
+  async onRangeRecordStop(){
+    const btn=document.getElementById('btn-studio-range-record');
+    if(btn){btn.textContent='🎙️ سجّل النطاق كاملاً';btn.style.background='';btn.style.borderColor='';}
+    if(VoiceStudio._rangeAnimFrame){cancelAnimationFrame(VoiceStudio._rangeAnimFrame);VoiceStudio._rangeAnimFrame=null;}
+    if(VoiceStudio._rangeAudioCtx){VoiceStudio._rangeAudioCtx.close().catch(()=>{});VoiceStudio._rangeAudioCtx=null;}
+    const st=document.getElementById('studio-range-status');
+    if(st) st.textContent='';
+    if (!VoiceStudio._rangeChunks.length) return;
+    const recMime=VoiceStudio._rangeRecorder?.mimeType||'audio/webm';
+    const blob=new Blob(VoiceStudio._rangeChunks,{type:recMime});
+    const ayahs=VoiceStudio._rangeAyahs;
+    const fullText=ayahs.map(a=>a.text).join(' ');
+    const surahName=ayahs[0]?.surahName||'سورة';
+    const fromA=ayahs[0]?.numberInSurah||1;
+    const toA=ayahs[ayahs.length-1]?.numberInSurah||1;
+    const label=`${surahName} آيات ${fromA}–${toA}`;
+    await Library.saveAudio(blob, label);
+    const url=URL.createObjectURL(blob);
+    const resEl=document.getElementById('studio-range-result');
+    if(resEl) resEl.innerHTML=`<div class="glass-card pad studio-result-card">
+      <div style="font-size:.85rem;color:#34d399;margin-bottom:10px;font-weight:700">✅ تسجيل النطاق — ${escapeHTML(label)}</div>
+      <audio controls src="${url}" style="width:100%;border-radius:8px;margin-bottom:14px;outline:none"></audio>
+      <div id="range-auto-eval"><div style="font-size:.8rem;color:var(--text-3)">⏳ جارٍ تحويل الصوت لنص بدقة عالية (Whisper)...</div></div>
+    </div>`;
+    let transcript=(VoiceStudio._rangeSpeechTranscript||'').trim();
+    try {
+      if(blob.size<15*1024*1024){
+        const audio_base64=await blobToBase64(blob);
+        const tr=await Api.post('/ai/transcribe',{audio_base64,mime_type:recMime});
+        if(tr.transcript) transcript=tr.transcript;
+      }
+    }catch(e){}
+    const evalEl=document.getElementById('range-auto-eval');
+    if (!transcript){ if(evalEl) evalEl.innerHTML='<p style="color:var(--text-3);font-size:.82rem">لم يُتعرَّف على الصوت — جرّب في مكان أهدأ</p>'; await VoiceStudio.loadRecordings(); return; }
+    try {
+      const r=await Api.post('/ai/evaluate-recitation',{transcript,target_verse:fullText.slice(0,1000),surah_name:surahName,ayah_num:fromA});
+      const sc=r.score??null;
+      const col=sc!=null?(sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444'):'#34d399';
+      if(evalEl) evalEl.innerHTML=`<div style="padding:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:12px">
+        <div style="font-size:.72rem;color:#34d399;margin-bottom:10px;font-weight:700">🤖 تقييم ذكي للنطاق كاملاً (Whisper + GPT)</div>
+        <div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-style:italic">سُمع: "${escapeHTML((transcript||'').slice(0,150))}..."</div>
+        ${sc!=null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">
+            <div style="background:${col};height:100%;width:${sc}%;border-radius:20px;transition:width .9s ease"></div>
+          </div>
+          <span style="font-size:1.3rem;font-weight:900;color:${col}">${sc}%</span>
+          <span style="font-size:.8rem;color:var(--text-2)">${sc>=85?'✨ ممتاز!':sc>=70?'✅ جيد':sc>=50?'👍 مقبول':'🔄 راجع'}</span>
+        </div>`:''}
+        <div style="font-size:.88rem;color:var(--text-1);line-height:1.75;white-space:pre-wrap">${escapeHTML(r.evaluation||r.reply||'')}</div>
+      </div>`;
+      Api.post('/studio/recording',{surah_name:surahName,ayah_num:fromA,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
+    }catch(e){
+      if(evalEl) evalEl.innerHTML='<p style="color:#ef4444;font-size:.82rem">تعذّر التقييم، حاول مرة أخرى</p>';
+    }
+    await VoiceStudio.loadRecordings();
   },
 
   async loadRecordings(){
