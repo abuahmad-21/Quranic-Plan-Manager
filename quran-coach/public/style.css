@@ -205,20 +205,21 @@ body.mode-reload    .top-bar{filter:saturate(.7)}
 ══════════════════════════════════ */
 .quran-ayah-card{
   padding:14px 16px;margin-bottom:8px;
-  transition:background .2s;
+  transition:background .2s,border-color .2s;
 }
 .quran-ayah-card:hover{ background:rgba(255,255,255,.05); }
 .quran-ayah-num{
   display:inline-flex;align-items:center;justify-content:center;
-  width:32px;height:32px;border-radius:50%;
+  width:34px;height:34px;border-radius:50%;
   background:rgba(245,158,11,.18);color:var(--gold);
   font-size:.8rem;font-weight:700;flex-shrink:0;
+  border:1px solid rgba(245,158,11,.25);
 }
 .quran-text{
-  font-size:1.55rem;line-height:2.3;
+  font-size:1.65rem;line-height:2.5;
   text-align:right;direction:rtl;
-  color:rgba(255,255,255,.93);
-  font-family:'Tajawal','Amiri','Scheherazade New',serif;
+  color:rgba(255,255,255,.95);
+  font-family:'Amiri Quran','Amiri','Scheherazade New','Tajawal',serif;
   letter-spacing:.02em;
 }
 
@@ -259,12 +260,12 @@ body.mode-reload    .top-bar{filter:saturate(.7)}
   margin-bottom:14px;
 }
 .mushaf-text{
-  font-family:'Tajawal','Amiri','Scheherazade New',serif;
-  font-size:1.45rem;
-  line-height:2.4;
+  font-family:'Amiri Quran','Amiri','Scheherazade New','Tajawal',serif;
+  font-size:1.55rem;
+  line-height:2.6;
   text-align:justify;
   direction:rtl;
-  color:rgba(255,255,255,.92);
+  color:rgba(255,255,255,.95);
   letter-spacing:.03em;
 }
 .ayah-word{
@@ -367,11 +368,6 @@ textarea.field-input{
 }
 .mushaf-text{
   text-align:justify;
-}
-.quran-text{
-  font-family:'Tajawal','Amiri','Scheherazade New',serif;
-  font-size:1.35rem;
-  line-height:2.3;
 }
 
 /* ══════════════════════════════════

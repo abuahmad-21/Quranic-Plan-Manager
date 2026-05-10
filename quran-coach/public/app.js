@@ -2031,13 +2031,31 @@ const QuranBrowser = {
   },
 
   playAudioSeq(gNum, onEnd){
-    if (QuranBrowser.audioEl){ QuranBrowser.audioEl.pause(); QuranBrowser.audioEl.src=''; }
+    if (QuranBrowser.audioEl){ QuranBrowser.audioEl.pause(); QuranBrowser.audioEl.src=''; QuranBrowser.audioEl=null; }
     const sheikh = QuranBrowser.sheikh;
-    const au = new Audio(`https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`);
+    // Show loading indicator on all matching play buttons
+    document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b._origText=b.textContent; b.textContent='⏳'; b.disabled=true; });
+    const resetBtns = ()=>document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b.textContent=b._origText||'🔊'; b.disabled=false; });
+    const primaryUrl = `https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`;
+    const fallbackUrl = `https://cdn.islamic.network/quran/audio/64/${sheikh}/${gNum}.mp3`;
+    const au = new Audio(primaryUrl);
+    au.preload = 'auto';
     QuranBrowser.audioEl = au;
-    au.onended = ()=>{ if (!QuranBrowser.paused && onEnd) onEnd(); };
-    au.onerror = ()=>{ console.warn('Audio failed, skipping ayah', gNum); if (onEnd) onEnd(); };
-    au.play().catch(()=>{ if (onEnd) onEnd(); });
+    let tried64 = false;
+    au.oncanplay = ()=>resetBtns();
+    au.onended = ()=>{ resetBtns(); if (!QuranBrowser.paused && onEnd) onEnd(); };
+    au.onerror = ()=>{
+      if (!tried64){
+        tried64 = true;
+        au.src = fallbackUrl;
+        au.play().catch(()=>{ resetBtns(); console.warn('Audio failed for ayah',gNum,'sheikh',sheikh); if (onEnd) onEnd(); });
+      } else {
+        resetBtns();
+        console.warn('Audio failed (both bitrates) for ayah',gNum,'sheikh',sheikh);
+        if (onEnd) onEnd();
+      }
+    };
+    au.play().catch(e=>{ resetBtns(); console.warn('Audio play() rejected',e); if (onEnd) onEnd(); });
   },
 
   playAudio(gNum){
@@ -2114,15 +2132,20 @@ const QuranBrowser = {
 
   async togglePanelRecording(){
     if (QuranBrowser._panelRecorder && QuranBrowser._panelRecorder.state==='recording'){
-      QuranBrowser._panelRecorder.stop(); return;
+      QuranBrowser._panelRecorder.stop();
+      if (QuranBrowser._panelSpeechRec){ try{ QuranBrowser._panelSpeechRec.stop(); }catch(e){} QuranBrowser._panelSpeechRec=null; }
+      return;
     }
     const btn = document.getElementById('btn-qp-record');
     const st  = document.getElementById('qp-status');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({audio:true});
       QuranBrowser._panelChunks = [];
-      QuranBrowser._panelRecorder = new MediaRecorder(stream);
-      QuranBrowser._panelRecorder.ondataavailable = e=>QuranBrowser._panelChunks.push(e.data);
+      QuranBrowser._panelTranscript = '';
+      // Detect best supported MIME type
+      const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t)) || '';
+      QuranBrowser._panelRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : {});
+      QuranBrowser._panelRecorder.ondataavailable = e=>{ if(e.data && e.data.size>0) QuranBrowser._panelChunks.push(e.data); };
       QuranBrowser._panelRecorder.onstop = async()=>{
         stream.getTracks().forEach(t=>t.stop());
         QuranBrowser.stopPanelWaveform();
@@ -2130,8 +2153,21 @@ const QuranBrowser = {
         if (btn){ btn.textContent='🎙️ سجّل مجدداً'; btn.classList.remove('recording'); }
         if (st) st.textContent='';
       };
+      // Run SpeechRecognition simultaneously for auto-transcription
+      QuranBrowser._panelSpeechRec = null;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR && QuranBrowser._panelVerse){
+        try {
+          const sr = new SR();
+          sr.lang='ar-SA'; sr.continuous=true; sr.interimResults=false;
+          sr.onresult = ev=>{ QuranBrowser._panelTranscript += Array.from(ev.results).map(r=>r[0].transcript).join(' ') + ' '; };
+          sr.onerror = ()=>{};
+          sr.start();
+          QuranBrowser._panelSpeechRec = sr;
+        } catch(e){}
+      }
       QuranBrowser.startPanelWaveform(stream);
-      QuranBrowser._panelRecorder.start();
+      QuranBrowser._panelRecorder.start(100);
       if (btn){ btn.textContent='⏹ إيقاف التسجيل'; btn.classList.add('recording'); }
       if (st) st.textContent='🔴 يسجّل... اتلُ الآية بوضوح';
     } catch(e){ toast('تعذّر الوصول للميكروفون','error'); }
@@ -2181,20 +2217,23 @@ const QuranBrowser = {
 
   async onPanelRecordStop(){
     if (!QuranBrowser._panelChunks.length) return;
-    const blob = new Blob(QuranBrowser._panelChunks, {type:'audio/webm'});
+    const recMime = QuranBrowser._panelRecorder?.mimeType || 'audio/webm';
+    const blob = new Blob(QuranBrowser._panelChunks, {type: recMime});
     const p = QuranBrowser._panelVerse;
     const url = URL.createObjectURL(blob);
     if (p) await Library.saveAudio(blob, `${p.surahName} · آية ${p.ayahNum}`);
     const resEl = document.getElementById('qp-result');
     if (!resEl) return;
+    const transcript = (QuranBrowser._panelTranscript||'').trim();
     resEl.innerHTML=`<div style="margin-bottom:8px">
       <div style="font-size:.74rem;color:#34d399;margin-bottom:4px">✅ تسجيلك — استمع وقيّم:</div>
-      <audio controls src="${url}" style="width:100%;height:32px;border-radius:6px"></audio>
+      <audio controls src="${url}" style="width:100%;height:36px;border-radius:8px;outline:none"></audio>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
       ${[['5','🌟 ممتاز'],['4','✅ جيد جداً'],['3','👍 مقبول'],['2','🔄 ضعيف'],['1','↩️ أعد']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost qp-score-btn" data-s="${sc}">${lb}</button>`).join('')}
     </div>
-    <div id="qp-score-fb" style="font-size:.8rem;color:#34d399;min-height:18px"></div>`;
+    <div id="qp-score-fb" style="font-size:.8rem;color:#34d399;min-height:18px"></div>
+    <div id="qp-auto-eval" style="margin-top:8px">${transcript ? '<div style="font-size:.78rem;color:var(--text-3);padding:6px 0">⏳ جارٍ التقييم الذكي تلقائياً...</div>' : ''}</div>`;
     resEl.querySelectorAll('.qp-score-btn').forEach(b=>b.onclick=()=>{
       resEl.querySelectorAll('.qp-score-btn').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
@@ -2207,6 +2246,34 @@ const QuranBrowser = {
         Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,self_score:sc}).catch(()=>{});
       }
     });
+    // Auto AI evaluation using speech transcript captured during recording
+    if (transcript && p) {
+      try {
+        const r = await Api.post('/ai/evaluate-recitation',{
+          transcript, target_verse:p.text, surah_name:p.surahName, ayah_num:p.ayahNum
+        });
+        const sc = r.score ?? null;
+        const col = sc!=null ? (sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444') : '#34d399';
+        const evalEl = document.getElementById('qp-auto-eval');
+        if (evalEl) evalEl.innerHTML=`<div style="padding:10px 12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:10px">
+          <div style="font-size:.7rem;color:#34d399;margin-bottom:6px;font-weight:700;letter-spacing:.03em">🤖 تقييم ذكي تلقائي</div>
+          ${sc!=null?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:8px;overflow:hidden">
+              <div style="background:${col};height:100%;width:${sc}%;border-radius:20px;transition:width .8s ease"></div>
+            </div>
+            <span style="font-size:1.05rem;font-weight:900;color:${col};min-width:38px;text-align:center">${sc}%</span>
+            <span style="font-size:.72rem;color:var(--text-2)">${sc>=85?'✨ ممتاز':sc>=70?'✅ جيد':sc>=50?'👍 مقبول':'🔄 كرّر'}</span>
+          </div>`:''}
+          <div style="font-size:.82rem;color:var(--text-1);line-height:1.7;white-space:pre-wrap">${escapeHTML(r.evaluation||r.reply||'')}</div>
+        </div>`;
+        Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
+      } catch(e){
+        const evalEl=document.getElementById('qp-auto-eval');
+        if (evalEl) evalEl.innerHTML='';
+      }
+    }
+    // Always show the manual speech check option
+    QuranBrowser.addPanelSpeechCheck(p);
   },
 
   addPanelSpeechCheck(p){
@@ -2309,17 +2376,35 @@ const VoiceStudio = {
   },
   async toggleRecord(){
     if (VoiceStudio.recorder && VoiceStudio.recorder.state==='recording'){
-      VoiceStudio.recorder.stop(); VoiceStudio.stopWaveform(); return;
+      VoiceStudio.recorder.stop(); VoiceStudio.stopWaveform();
+      if (VoiceStudio._speechRec){ try{ VoiceStudio._speechRec.stop(); }catch(e){} VoiceStudio._speechRec=null; }
+      return;
     }
     if (!VoiceStudio.practiceVerse) return toast('حدّد آية للتدرب عليها أولاً','error');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({audio:true});
       VoiceStudio.chunks = [];
-      VoiceStudio.recorder = new MediaRecorder(stream);
-      VoiceStudio.recorder.ondataavailable = e=>VoiceStudio.chunks.push(e.data);
+      VoiceStudio._speechTranscript = '';
+      // Detect best supported MIME type
+      const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t)) || '';
+      VoiceStudio.recorder = new MediaRecorder(stream, mimeType ? {mimeType} : {});
+      VoiceStudio.recorder.ondataavailable = e=>{ if(e.data && e.data.size>0) VoiceStudio.chunks.push(e.data); };
       VoiceStudio.recorder.onstop = async()=>{ stream.getTracks().forEach(t=>t.stop()); await VoiceStudio.onRecordStop(); };
+      // Run SpeechRecognition simultaneously for auto-transcription
+      VoiceStudio._speechRec = null;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR && VoiceStudio.practiceVerse){
+        try {
+          const sr = new SR();
+          sr.lang='ar-SA'; sr.continuous=true; sr.interimResults=false;
+          sr.onresult = ev=>{ VoiceStudio._speechTranscript += Array.from(ev.results).map(r=>r[0].transcript).join(' ') + ' '; };
+          sr.onerror = ()=>{};
+          sr.start();
+          VoiceStudio._speechRec = sr;
+        } catch(e){}
+      }
       VoiceStudio.startWaveform(stream);
-      VoiceStudio.recorder.start();
+      VoiceStudio.recorder.start(100);
       const btn = document.getElementById('btn-studio-record');
       if (btn){ btn.textContent='⏹️ إيقاف التسجيل'; btn.classList.add('recording'); }
       const st = document.getElementById('studio-rec-status');
@@ -2371,22 +2456,25 @@ const VoiceStudio = {
     const st = document.getElementById('studio-rec-status');
     if (st) st.textContent='';
     if (!VoiceStudio.chunks.length) return;
-    const blob = new Blob(VoiceStudio.chunks,{type:'audio/webm'});
+    const recMime = VoiceStudio.recorder?.mimeType || 'audio/webm';
+    const blob = new Blob(VoiceStudio.chunks, {type: recMime});
     const p = VoiceStudio.practiceVerse;
     const label = p ? `${p.surahName} · آية ${p.ayahNum}` : 'تسجيل';
     await Library.saveAudio(blob, label);
     const url = URL.createObjectURL(blob);
+    const transcript = (VoiceStudio._speechTranscript||'').trim();
     const res = document.getElementById('studio-result');
     if (res){
       res.style.display='block';
       res.innerHTML=`<div class="glass-card pad studio-result-card">
-        <div style="font-size:.85rem;color:#34d399;margin-bottom:8px">✅ تسجيلك — استمع وقيّم نفسك</div>
-        <audio controls src="${url}" style="width:100%;border-radius:8px;margin-bottom:12px"></audio>
-        <div style="font-size:.82rem;color:var(--text-2);margin-bottom:8px">⭐ قيّم أداءك:</div>
+        <div style="font-size:.85rem;color:#34d399;margin-bottom:10px;font-weight:700">✅ تسجيلك — استمع وقيّم نفسك</div>
+        <audio controls src="${url}" style="width:100%;border-radius:8px;margin-bottom:14px;outline:none"></audio>
+        <div style="font-size:.82rem;color:var(--text-2);margin-bottom:8px">⭐ قيّم أداءك يدوياً:</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
           ${[['5','ممتاز 🌟'],['4','جيد جداً ✅'],['3','جيد 👍'],['2','يحتاج تحسين 🔄'],['1','ابدأ من جديد ↩️']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost studio-self-score" data-score="${sc}">${lb}</button>`).join('')}
         </div>
         <div id="studio-feedback"></div>
+        <div id="studio-auto-eval" style="margin-top:12px">${transcript ? '<div style="font-size:.8rem;color:var(--text-3);padding:8px 0">⏳ جارٍ التقييم التلقائي بالذكاء الاصطناعي...</div>' : ''}</div>
         <div id="studio-speech-area" style="margin-top:12px"></div>
       </div>`;
       res.querySelectorAll('.studio-self-score').forEach(b=>b.onclick=async()=>{
@@ -2398,6 +2486,32 @@ const VoiceStudio = {
         if (fb) fb.innerHTML=`<div style="padding:10px 12px;background:rgba(52,211,153,.1);border-radius:8px;color:#34d399;font-size:.88rem">${msgs[score]||''}</div>`;
         if (p) Api.post('/session/complete',{pages_done:.05,difficulty:score>=4?'easy':score>=2?'medium':'hard',duration_minutes:1,technique_used:'recitation_studio',mood_score:Math.min(10,score*2)}).catch(()=>{});
       });
+      // Auto AI evaluation using speech transcript captured during recording
+      if (transcript && p) {
+        try {
+          const r = await Api.post('/ai/evaluate-recitation',{
+            transcript, target_verse:p.text, surah_name:p.surahName, ayah_num:p.ayahNum
+          });
+          const sc = r.score ?? null;
+          const col = sc!=null ? (sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444') : '#34d399';
+          const autoEl = document.getElementById('studio-auto-eval');
+          if (autoEl) autoEl.innerHTML=`<div style="padding:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:12px">
+            <div style="font-size:.72rem;color:#34d399;margin-bottom:10px;font-weight:700;letter-spacing:.03em">🤖 تقييم ذكي تلقائي</div>
+            ${sc!=null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">
+                <div style="background:${col};height:100%;width:${sc}%;border-radius:20px;transition:width .9s ease"></div>
+              </div>
+              <span style="font-size:1.3rem;font-weight:900;color:${col};min-width:44px;text-align:center">${sc}%</span>
+              <span style="font-size:.8rem;color:var(--text-2)">${sc>=85?'✨ ممتاز!':sc>=70?'✅ جيد جداً':sc>=50?'👍 مقبول':'🔄 راجع وكرر'}</span>
+            </div>`:''}
+            <div style="font-size:.88rem;color:var(--text-1);line-height:1.75;white-space:pre-wrap">${escapeHTML(r.evaluation||r.reply||'')}</div>
+          </div>`;
+          Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
+        } catch(e){
+          const autoEl=document.getElementById('studio-auto-eval');
+          if (autoEl) autoEl.innerHTML='';
+        }
+      }
       VoiceStudio.addSpeechCheck(p);
     }
     await VoiceStudio.loadRecordings();
@@ -2406,17 +2520,20 @@ const VoiceStudio = {
     const area = document.getElementById('studio-speech-area');
     if (!area || !p) return;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
     area.innerHTML = `
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-        ${SR ? `<button class="btn btn-sm btn-secondary" id="btn-speech-check">🎤 تحقق صوتي آني (اتلُ مجدداً)</button>` : ''}
-        <button class="btn btn-sm btn-secondary" id="btn-ai-eval">🤖 تقييم ذكاء اصطناعي (اكتب ما تلوت)</button>
-      </div>
-      <div style="font-size:.72rem;color:var(--text-3);margin-bottom:8px">الزر الأول: تلاوة مباشرة للميكروفون. الثاني: تقييم عميق من الذكاء الاصطناعي.</div>
-      <div id="speech-result"></div>
-      <div id="ai-eval-area" style="display:none;margin-top:10px">
-        <textarea id="ai-eval-input" class="field-input" placeholder="اكتب أو الصق ما فهمه المتصفح من تلاوتك..." style="width:100%;min-height:60px;resize:vertical;margin-bottom:8px" dir="rtl"></textarea>
-        <button class="btn btn-sm btn-primary" id="btn-ai-eval-send">إرسال للتقييم</button>
-        <div id="ai-eval-result" style="margin-top:10px"></div>
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:8px">🎤 تحقق صوتي — اتلُ الآية مجدداً للمقارنة الفورية:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <button class="btn btn-sm btn-secondary" id="btn-speech-check">🎤 ابدأ التحقق الصوتي</button>
+        </div>
+        <div id="speech-result"></div>
+        <div id="ai-eval-area" style="margin-top:10px">
+          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:6px">أو أدخل النص يدوياً لتقييم ذكي إضافي:</div>
+          <textarea id="ai-eval-input" class="field-input" placeholder="الصق ما فهمه المتصفح من تلاوتك..." style="width:100%;min-height:55px;resize:vertical;margin-bottom:8px" dir="rtl"></textarea>
+          <button class="btn btn-sm btn-primary" id="btn-ai-eval-send">إرسال للتقييم</button>
+          <div id="ai-eval-result" style="margin-top:10px"></div>
+        </div>
       </div>`;
 
     if (SR){
@@ -2452,12 +2569,8 @@ const VoiceStudio = {
       };
     }
 
-    document.getElementById('btn-ai-eval').onclick=()=>{
-      const aiArea = document.getElementById('ai-eval-area');
-      if (aiArea) aiArea.style.display = aiArea.style.display==='none'?'block':'none';
-    };
-
-    document.getElementById('btn-ai-eval-send').onclick = async ()=>{
+    const aiEvalSendBtn = document.getElementById('btn-ai-eval-send');
+    if (aiEvalSendBtn) aiEvalSendBtn.onclick = async ()=>{
       const transcript = (document.getElementById('ai-eval-input')?.value||'').trim();
       if (!transcript) return toast('اكتب ما تلوته','error');
       const btn = document.getElementById('btn-ai-eval-send');
