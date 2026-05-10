@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 11,
-      "total_sessions_today": 8,
-      "total_pages_memorized_alltime": 1.05
+      "total_users": 12,
+      "total_sessions_today": 14,
+      "total_pages_memorized_alltime": 2.55
     },
     "sheikh_requests": {
       "455": {
@@ -71,6 +71,17 @@
         "bio": "Ughj",
         "time_pref": "Jhhhhh",
         "submitted_at": "2026-05-09T01:47:21.633Z",
+        "status": "approved",
+        "pages": 0,
+        "sessions": 0
+      },
+      "jdjd": {
+        "username": "jdjd",
+        "display_name": "Dhdhhd",
+        "phone": "Diud",
+        "bio": "Hddh",
+        "time_pref": "Hdhd",
+        "submitted_at": "2026-05-10T03:03:12.012Z",
         "status": "approved",
         "pages": 0,
         "sessions": 0
@@ -1539,6 +1550,162 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "jdjd": {
+      "username": "jdjd",
+      "password_hash": "748c6e76ef9a6703a9603b072d484961d583fb9d1bd16a4e38bcc0eefb938d8e",
+      "display_name": "Dhdhhd",
+      "created_at": "2026-05-10T03:00:30.704Z",
+      "last_active": "2026-05-10T03:19:42.546Z",
+      "avatar_color": "#0ccef6",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": true,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-10T03:00:32.957Z",
+        "current_daily_pages": 0.1,
+        "phase": "absence_soft_reset",
+        "phase_start_date": "2026-05-10T03:05:07.830Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 1.5,
+        "total_sessions_completed": 6,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-10",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-10T03:04:39.948Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-10T03:04:43.444Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-10T03:04:43.642Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-10T03:04:56.498Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-10T03:05:03.788Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-10T03:05:07.830Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 4.27,
+        "afi": 73,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 3.1,
+          "interval": 393,
+          "reps": 6,
+          "next_review": "2027-06-07T03:05:07.830Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "983483a59b3750ab",
+          "type": "sheikh_approved",
+          "text": "🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.",
+          "ref": "view-channels",
+          "read": true,
+          "created_at": "2026-05-10T03:03:50.724Z"
+        }
+      ],
+      "posts": []
     }
   },
   "chats": {},
@@ -1554,6 +1721,16 @@
         }
       ],
       "opened_at": "2026-05-08T06:02:24.254Z"
+    },
+    "jdjd": {
+      "messages": [
+        {
+          "from": "jdjd",
+          "text": "كيف حالكم",
+          "timestamp": "2026-05-10T03:05:42.464Z"
+        }
+      ],
+      "opened_at": "2026-05-10T03:05:42.464Z"
     }
   },
   "voice_permissions": {},

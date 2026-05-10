@@ -381,20 +381,34 @@
   <section id="view-library" class="view">
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
-      <h2 class="view-title">مكتبتي الصوتية والصورية</h2>
-      <div class="glass-card pad">
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary" id="btn-lib-record">🎙️ تسجيل آية</button>
-          <button class="btn btn-secondary" id="btn-lib-image">📷 صورة</button>
+      <h2 class="view-title">📚 مكتبتي</h2>
+      <!-- Actions bar -->
+      <div class="glass-card pad" style="margin-bottom:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="btn btn-primary btn-sm" id="btn-lib-record">🎙️ تسجيل جديد</button>
+          <button class="btn btn-secondary btn-sm" id="btn-lib-image">📷 إضافة صورة</button>
+          <button class="btn btn-ghost btn-sm" data-go="view-studio">🎤 استوديو التجويد ↗</button>
           <input type="file" id="lib-image-input" accept="image/*" style="display:none">
         </div>
-        <div id="lib-rec-status" style="margin-top:6px;color:var(--text-2);font-size:.85rem"></div>
-        <div class="field-hint">كل شي يُحفظ على جهازك فقط. السيرفر لا يستقبل أي بيانات صوتية أو صور كبيرة.</div>
+        <input id="lib-search" class="field-input" placeholder="🔍 بحث في التسجيلات..." style="margin-bottom:6px">
+        <div id="lib-rec-status" style="color:var(--text-2);font-size:.82rem"></div>
+        <div class="field-hint" style="margin-top:4px">🔒 كل شيء يُحفظ محلياً على جهازك.</div>
       </div>
-      <h3 style="margin:14px 6px">التسجيلات</h3>
-      <div id="lib-recordings"></div>
-      <h3 style="margin:14px 6px">الصور</h3>
-      <div id="lib-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="btn btn-sm btn-secondary lib-tab active" data-lt="recordings">🎙️ التسجيلات</button>
+        <button class="btn btn-sm btn-ghost lib-tab" data-lt="studio">📊 سجل التجويد</button>
+        <button class="btn btn-sm btn-ghost lib-tab" data-lt="images">🖼️ الصور</button>
+      </div>
+      <div id="lib-tab-recordings">
+        <div id="lib-recordings"></div>
+      </div>
+      <div id="lib-tab-studio" style="display:none">
+        <div id="lib-studio-history"></div>
+      </div>
+      <div id="lib-tab-images" style="display:none">
+        <div id="lib-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+      </div>
     </div>
   </section>
 
@@ -754,6 +768,31 @@
       </div>
 
       <div id="quran-display"></div>
+
+      <!-- ═══ INLINE PRACTICE PANEL ═══ -->
+      <div id="quran-practice-panel" class="glass-card" style="display:none;position:sticky;bottom:76px;z-index:200;margin-top:12px;border:1px solid rgba(52,211,153,.4)">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+          <div>
+            <div style="font-size:.72rem;color:#34d399;font-weight:700;letter-spacing:.03em">🎯 تدريب مباشر على الآية</div>
+            <div id="qp-info" style="font-size:.74rem;color:var(--text-3);margin-top:2px"></div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm btn-ghost" id="btn-qp-studio" title="فتح الاستوديو الكامل">↗ الاستوديو</button>
+            <button class="btn btn-sm btn-ghost" id="btn-qp-close">✕</button>
+          </div>
+        </div>
+        <div class="pad">
+          <div id="qp-verse" dir="rtl" style="font-size:1.3rem;line-height:2.2;text-align:center;color:var(--gold);padding:10px;background:rgba(245,158,11,.06);border-radius:8px;margin-bottom:10px;font-family:'Tajawal',serif"></div>
+          <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" id="btn-qp-record">🎙️ سجّل تلاوتك</button>
+            <button class="btn btn-ghost btn-sm" id="btn-qp-listen">🔊 استمع للنموذج</button>
+            <div id="qp-status" style="font-size:.78rem;color:var(--text-2);flex:1"></div>
+          </div>
+          <canvas id="qp-waveform" height="56" style="width:100%;height:56px;border-radius:8px;background:rgba(0,0,0,.3);display:block;margin-bottom:8px"></canvas>
+          <div id="qp-result"></div>
+          <div id="qp-speech-area" style="margin-top:8px"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -764,6 +803,15 @@
       <h2 class="view-title">🎤 استوديو التجويد</h2>
       <div style="font-size:.82rem;color:var(--text-2);margin-bottom:10px;padding:8px 12px;background:rgba(52,211,153,.06);border-radius:10px;border:1px solid rgba(52,211,153,.15)">
         سجّل تلاوتك، واستمع لنفسك، وقيّم أداءك. خوارزمياتنا تتعلم من تقييماتك لتحسين خطتك.
+      </div>
+      <!-- Recitation Progress Chart -->
+      <div id="studio-progress-wrap" class="glass-card pad" style="margin-bottom:12px;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:.9rem;font-weight:700">📊 مخطط تقدمي في التلاوة</span>
+          <span id="studio-progress-count" style="font-size:.75rem;color:var(--text-3)"></span>
+        </div>
+        <canvas id="studio-progress-chart" height="90" style="width:100%;height:90px;display:block;border-radius:8px;background:rgba(0,0,0,.2)"></canvas>
+        <div id="studio-progress-summary" style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"></div>
       </div>
       <!-- Verse picker -->
       <div class="glass-card pad" style="margin-bottom:12px">

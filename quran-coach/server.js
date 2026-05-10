@@ -1230,6 +1230,22 @@ R('POST','/api/studio/recording', async (req,res)=>{
   send(res,200,{ok:true});
 });
 
+/* ── STUDIO PROGRESS (chart data) ── */
+R('GET','/api/studio/progress', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const raw = (u.studio_history||[]);
+  // Normalize score field (ai_score OR score)
+  const history = raw.map(h=>({
+    surah_name: h.surah_name||'',
+    ayah_num:   h.ayah_num||0,
+    score:      h.ai_score ?? h.score ?? null,
+    ai_feedback:h.ai_feedback||'',
+    self_score: h.self_score||null,
+    timestamp:  h.timestamp||0
+  })).sort((a,b)=>a.timestamp-b.timestamp);
+  send(res,200,{ history, total:history.length });
+});
+
 /* ── ADMIN CHANNELS ── */
 R('GET','/api/admin/channels', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});

@@ -754,27 +754,94 @@ const Library = {
     const db=await this.open(); return new Promise(res=>{ const tx=db.transaction('images','readwrite'); tx.objectStore('images').delete(id); tx.oncomplete=res; });
   },
   async load(){
+    // Wire action buttons
     document.getElementById('btn-lib-record').onclick = Library.startRecording;
     document.getElementById('btn-lib-image').onclick = ()=>document.getElementById('lib-image-input').click();
     document.getElementById('lib-image-input').onchange = async e=>{
       const f = e.target.files[0]; if (!f) return;
-      await Library.saveImage(f); toast('حُفظت الصورة على جهازك','success'); Library.load();
+      await Library.saveImage(f); toast('حُفظت الصورة','success'); Library.renderImages();
     };
+
+    // Tab switching
+    document.querySelectorAll('.lib-tab').forEach(t=>t.onclick=()=>{
+      document.querySelectorAll('.lib-tab').forEach(x=>{ x.classList.remove('active','btn-secondary'); x.classList.add('btn-ghost'); });
+      t.classList.add('active','btn-secondary'); t.classList.remove('btn-ghost');
+      document.getElementById('lib-tab-recordings').style.display = t.dataset.lt==='recordings'?'block':'none';
+      document.getElementById('lib-tab-studio').style.display     = t.dataset.lt==='studio'?'block':'none';
+      document.getElementById('lib-tab-images').style.display     = t.dataset.lt==='images'?'block':'none';
+    });
+
+    // Search
+    document.getElementById('lib-search').oninput = Library.renderRecordings;
+
+    await Library.renderRecordings();
+    await Library.renderStudioHistory();
+    await Library.renderImages();
+  },
+
+  async renderRecordings(){
+    const el = document.getElementById('lib-recordings');
+    if (!el) return;
+    const query = (document.getElementById('lib-search')?.value||'').toLowerCase().trim();
     const audios = await Library.listAudio();
-    document.getElementById('lib-recordings').innerHTML = audios.length ? audios.map(a=>{
+    const filtered = query ? audios.filter(a=>(a.label||'').toLowerCase().includes(query)) : audios;
+    const sorted = filtered.slice().reverse();
+    if (!sorted.length){
+      el.innerHTML=`<div style="text-align:center;padding:30px;color:var(--text-3)">${query?'لا نتائج للبحث':'لا تسجيلات بعد — ابدأ التسجيل!'}</div>`;
+      return;
+    }
+    el.innerHTML = sorted.map(a=>{
       const url = URL.createObjectURL(a.blob);
-      return `<div class="card-row glass-card" style="margin-bottom:6px">
-        <div><div>${escapeHTML(a.label)}</div><div style="font-size:.75rem;color:var(--text-3)">${new Date(a.created).toLocaleString('ar')}</div></div>
-        <div class="card-row-right"><audio controls src="${url}" style="height:30px"></audio>
-        <button class="btn btn-sm btn-danger" data-da="${a.id}">حذف</button></div></div>`;
-    }).join('') : '<p style="color:var(--text-3)">لا تسجيلات</p>';
-    document.querySelectorAll('[data-da]').forEach(b=>b.onclick=async()=>{ await Library.deleteAudio(+b.dataset.da); Library.load(); });
+      return `<div class="glass-card lib-rec-card" style="padding:10px 14px;margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <div style="font-size:.88rem;font-weight:600">${escapeHTML(a.label||'تسجيل')}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">${new Date(a.created).toLocaleString('ar')}</div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm btn-ghost lib-practice-btn" data-label="${escapeHTML(a.label||'')}">🎤 تدرّب</button>
+            <button class="btn btn-sm btn-danger" data-da="${a.id}">✕</button>
+          </div>
+        </div>
+        <audio controls src="${url}" style="width:100%;height:32px;border-radius:6px"></audio>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('[data-da]').forEach(b=>b.onclick=async()=>{ await Library.deleteAudio(+b.dataset.da); Library.renderRecordings(); });
+    el.querySelectorAll('.lib-practice-btn').forEach(b=>b.onclick=()=>{ App.showView('view-studio'); toast('افتح الاستوديو واختر الآية للتدريب','info',2500); });
+  },
+
+  async renderStudioHistory(){
+    const el = document.getElementById('lib-studio-history');
+    if (!el) return;
+    let history = [];
+    try { const r = await Api.get('/studio/progress'); history = r.history||[]; } catch(e){}
+    if (!history.length){
+      el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-3)">لا سجل تجويد بعد — تدرّب على آية!</div>';
+      return;
+    }
+    el.innerHTML = history.slice().reverse().slice(0,50).map(h=>{
+      const score = h.score!=null ? h.score : h.ai_score;
+      const col = score!=null ? (score>=80?'#34d399':score>=55?'#fbbf24':'#ef4444') : 'var(--text-3)';
+      return `<div class="glass-card" style="padding:10px 14px;margin-bottom:7px;display:flex;gap:10px;align-items:center">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.85rem;font-weight:600">${escapeHTML(h.surah_name||'—')} · آية ${h.ayah_num||'—'}</div>
+          <div style="font-size:.72rem;color:var(--text-3)">${new Date(h.timestamp).toLocaleString('ar')}</div>
+          ${h.ai_feedback?`<div style="font-size:.72rem;color:var(--text-2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(h.ai_feedback.slice(0,60))}…</div>`:''}
+        </div>
+        ${score!=null?`<div style="font-size:1.4rem;font-weight:900;color:${col};min-width:44px;text-align:center">${score}%</div>`:''}
+      </div>`;
+    }).join('');
+  },
+
+  async renderImages(){
+    const el = document.getElementById('lib-images');
+    if (!el) return;
     const imgs = await Library.listImages();
-    document.getElementById('lib-images').innerHTML = imgs.length ? imgs.map(i=>{
+    el.innerHTML = imgs.length ? imgs.map(i=>{
       const url = URL.createObjectURL(i.blob);
       return `<div style="position:relative"><img src="${url}" style="width:100%;height:100px;object-fit:cover;border-radius:8px"><button class="btn btn-sm btn-danger" data-di="${i.id}" style="position:absolute;top:4px;left:4px;padding:2px 6px;font-size:.7rem">×</button></div>`;
-    }).join('') : '<p style="color:var(--text-3)">لا صور</p>';
-    document.querySelectorAll('[data-di]').forEach(b=>b.onclick=async()=>{ await Library.deleteImage(+b.dataset.di); Library.load(); });
+    }).join('') : '<p style="color:var(--text-3);text-align:center;padding:20px">لا صور</p>';
+    el.querySelectorAll('[data-di]').forEach(b=>b.onclick=async()=>{ await Library.deleteImage(+b.dataset.di); Library.renderImages(); });
   },
   async startRecording(){
     if (S.recorder && S.recorder.state==='recording'){ S.recorder.stop(); return; }
@@ -1679,8 +1746,11 @@ const QuranBrowser = {
   playIndex: 0,
   loopRemain: 0,
   audioEl: null,
+  ayahMap: new Map(),
 
   get sheikh(){ return document.getElementById('quran-sheikh-select')?.value || 'ar.alafasy'; },
+  /* Sheikh identifier map — CDN-validated identifiers */
+  SHEIKHS: ['ar.alafasy','ar.husary','ar.abdulbasitmurattal','ar.mahermuaiqly','ar.saudalshuraym'],
   get loop(){ return +(document.getElementById('quran-loop-select')?.value ?? 1); },
 
   async loadSurahs(){
@@ -1742,6 +1812,8 @@ const QuranBrowser = {
     document.getElementById('btn-quran-play-all')?.addEventListener('click', QuranBrowser.playAll);
     document.getElementById('btn-quran-pause')?.addEventListener('click', QuranBrowser.togglePause);
     document.getElementById('btn-quran-stop')?.addEventListener('click', QuranBrowser.stopAll);
+    // Inline practice panel
+    QuranBrowser.initPracticePanel();
   },
 
   async loadContent(){
@@ -1762,6 +1834,7 @@ const QuranBrowser = {
       if (!d.data?.ayahs) throw new Error('no data');
       const ayahs = d.data.ayahs;
       QuranBrowser.currentAyahs = ayahs;
+      ayahs.forEach(a=>{ QuranBrowser.ayahMap.set(a.number,{text:a.text,surahNum:a.surah.number,ayahNum:a.numberInSurah,surahName:a.surah.name,globalNum:a.number}); });
 
       const surahGroups = {};
       ayahs.forEach(a=>{
@@ -1787,7 +1860,7 @@ const QuranBrowser = {
             ${grp.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${escapeHTML(a.text)}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
-            ${grp.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}" data-local="${a.numberInSurah}" data-text="${escapeHTML(a.text)}" data-snum="${sNum}" data-sname="${escapeHTML(grp[0].surah.name)}">🔊 ${a.numberInSurah}</button>`).join('')}
+            ${grp.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}">🔊 ${a.numberInSurah}</button> <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}" style="padding:2px 7px;font-size:.72rem">🎤</button>`).join('')}
           </div>
         </div>`;
       });
@@ -1817,6 +1890,7 @@ const QuranBrowser = {
       if (toA)   ayahs = ayahs.filter(a=>a.numberInSurah <= toA);
       QuranBrowser.currentSurah = surah;
       QuranBrowser.currentAyahs = ayahs;
+      ayahs.forEach(a=>{ QuranBrowser.ayahMap.set(a.number,{text:a.text,surahNum,ayahNum:a.numberInSurah,surahName:surah.name,globalNum:a.number}); });
 
       const bism = surahNum!==1 && surahNum!==9
         ? '<div style="font-size:1.05rem;color:var(--text-3);margin-top:8px">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : '';
@@ -1833,7 +1907,7 @@ const QuranBrowser = {
             ${ayahs.map(a=>`<span class="ayah-word" data-global="${a.number}" data-local="${a.numberInSurah}">${escapeHTML(a.text)}<span class="ayah-end-marker">﴿${a.numberInSurah}﴾</span></span>`).join(' ')}
           </div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px">
-            ${ayahs.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}" data-local="${a.numberInSurah}" data-text="${escapeHTML(a.text)}" data-snum="${surahNum}" data-sname="${escapeHTML(surah.name)}">🔊 ${a.numberInSurah}</button>`).join('')}
+            ${ayahs.map(a=>`<button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}">🔊 ${a.numberInSurah}</button> <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}" style="padding:2px 7px;font-size:.72rem">🎤</button>`).join('')}
           </div>
         </div>
         ${ayahs.map(a=>QuranBrowser.renderCard(a, surahNum, surah.name)).join('')}
@@ -1851,11 +1925,11 @@ const QuranBrowser = {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div class="quran-ayah-num">${a.numberInSurah}</div>
         <div style="display:flex;gap:5px">
-          <button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}" data-local="${a.numberInSurah}" data-text="${escapeHTML(a.text)}" data-snum="${surahNum}" data-sname="${escapeHTML(surahName)}">🔊</button>
-          <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}" data-local="${a.numberInSurah}" data-text="${escapeHTML(a.text)}" data-snum="${surahNum}" data-sname="${escapeHTML(surahName)}">🎤 تدرّب</button>
+          <button class="btn btn-sm btn-ghost ayah-play-btn" data-play-ayah="${a.number}">🔊</button>
+          <button class="btn btn-sm btn-secondary ayah-practice-btn" data-global="${a.number}">🎤 تدرّب</button>
         </div>
       </div>
-      <div class="quran-text" dir="rtl">${escapeHTML(a.text)}</div>
+      <div class="quran-text" dir="rtl" style="unicode-bidi:embed">${escapeHTML(a.text)}</div>
     </div>`;
   },
 
@@ -1874,13 +1948,7 @@ const QuranBrowser = {
       document.getElementById('btn-quran-stop').disabled = false;
     });
     display.querySelectorAll('.ayah-practice-btn').forEach(b=>b.onclick=()=>{
-      const sNum = +b.dataset.snum;
-      const lNum = +b.dataset.local;
-      const gNum = +b.dataset.global;
-      const text = b.dataset.text || '';
-      const sName = b.dataset.sname || '';
-      VoiceStudio.setPracticeVerse(sNum, lNum, text, sName, gNum);
-      App.showView('view-studio');
+      QuranBrowser.showPracticePanel(+b.dataset.global);
     });
   },
 
@@ -1979,8 +2047,198 @@ const QuranBrowser = {
     QuranBrowser.playIndex = 0;
     QuranBrowser.playing = true;
     QuranBrowser.playNext();
-    document.getElementById('btn-quran-pause').disabled = false;
-    document.getElementById('btn-quran-stop').disabled = false;
+    const pBtn = document.getElementById('btn-quran-pause');
+    if (pBtn) pBtn.disabled = false;
+    const sBtn = document.getElementById('btn-quran-stop');
+    if (sBtn) sBtn.disabled = false;
+  },
+
+  /* ═══════════════════════════════════
+     INLINE PRACTICE PANEL
+  ═══════════════════════════════════ */
+  _panelVerse: null,
+  _panelRecorder: null,
+  _panelChunks: [],
+  _panelAudioCtx: null,
+  _panelAnalyser: null,
+  _panelAnimFrame: null,
+
+  initPracticePanel(){
+    document.getElementById('btn-qp-close')?.addEventListener('click', QuranBrowser.closePracticePanel);
+    document.getElementById('btn-qp-studio')?.addEventListener('click', ()=>{
+      const p = QuranBrowser._panelVerse;
+      if (p) VoiceStudio.setPracticeVerse(p.surahNum, p.ayahNum, p.text, p.surahName, p.globalNum);
+      App.showView('view-studio');
+    });
+    document.getElementById('btn-qp-listen')?.addEventListener('click', ()=>{
+      const p = QuranBrowser._panelVerse;
+      if (p) QuranBrowser.playAudio(p.globalNum);
+    });
+    document.getElementById('btn-qp-record')?.addEventListener('click', QuranBrowser.togglePanelRecording);
+  },
+
+  showPracticePanel(gNum){
+    const info = QuranBrowser.ayahMap.get(gNum);
+    if (!info) return toast('تعذّر تحميل بيانات الآية','error');
+    QuranBrowser._panelVerse = info;
+    const verseEl  = document.getElementById('qp-verse');
+    const infoEl   = document.getElementById('qp-info');
+    const resEl    = document.getElementById('qp-result');
+    const spEl     = document.getElementById('qp-speech-area');
+    const stEl     = document.getElementById('qp-status');
+    // Set Arabic text via textContent (no entity issues)
+    if (verseEl)  verseEl.textContent = info.text;
+    if (infoEl)   infoEl.textContent  = `${info.surahName} — آية ${info.ayahNum}`;
+    if (resEl)    resEl.innerHTML  = '';
+    if (spEl)     spEl.innerHTML   = '';
+    if (stEl)     stEl.textContent = '';
+    // Reset record button
+    const recBtn = document.getElementById('btn-qp-record');
+    if (recBtn){ recBtn.textContent='🎙️ سجّل تلاوتك'; recBtn.classList.remove('recording'); }
+    // Clear waveform
+    const cv = document.getElementById('qp-waveform');
+    if (cv){ const c=cv.getContext('2d'); cv.width=cv.offsetWidth||400; cv.height=56; c.clearRect(0,0,cv.width,56); }
+    // Show panel
+    const panel = document.getElementById('quran-practice-panel');
+    if (panel){ panel.style.display='block'; panel.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    // Quick speech check
+    QuranBrowser.addPanelSpeechCheck(info);
+  },
+
+  closePracticePanel(){
+    QuranBrowser.stopPanelRecording();
+    const panel = document.getElementById('quran-practice-panel');
+    if (panel) panel.style.display='none';
+    QuranBrowser._panelVerse = null;
+  },
+
+  async togglePanelRecording(){
+    if (QuranBrowser._panelRecorder && QuranBrowser._panelRecorder.state==='recording'){
+      QuranBrowser._panelRecorder.stop(); return;
+    }
+    const btn = document.getElementById('btn-qp-record');
+    const st  = document.getElementById('qp-status');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      QuranBrowser._panelChunks = [];
+      QuranBrowser._panelRecorder = new MediaRecorder(stream);
+      QuranBrowser._panelRecorder.ondataavailable = e=>QuranBrowser._panelChunks.push(e.data);
+      QuranBrowser._panelRecorder.onstop = async()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        QuranBrowser.stopPanelWaveform();
+        await QuranBrowser.onPanelRecordStop();
+        if (btn){ btn.textContent='🎙️ سجّل مجدداً'; btn.classList.remove('recording'); }
+        if (st) st.textContent='';
+      };
+      QuranBrowser.startPanelWaveform(stream);
+      QuranBrowser._panelRecorder.start();
+      if (btn){ btn.textContent='⏹ إيقاف التسجيل'; btn.classList.add('recording'); }
+      if (st) st.textContent='🔴 يسجّل... اتلُ الآية بوضوح';
+    } catch(e){ toast('تعذّر الوصول للميكروفون','error'); }
+  },
+
+  stopPanelRecording(){
+    if (QuranBrowser._panelRecorder && QuranBrowser._panelRecorder.state==='recording') QuranBrowser._panelRecorder.stop();
+    QuranBrowser.stopPanelWaveform();
+  },
+
+  startPanelWaveform(stream){
+    const canvas = document.getElementById('qp-waveform');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    try {
+      QuranBrowser._panelAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      QuranBrowser._panelAnalyser = QuranBrowser._panelAudioCtx.createAnalyser();
+      QuranBrowser._panelAnalyser.fftSize = 512;
+      const src = QuranBrowser._panelAudioCtx.createMediaStreamSource(stream);
+      src.connect(QuranBrowser._panelAnalyser);
+      const bufLen = QuranBrowser._panelAnalyser.frequencyBinCount;
+      const dataArr = new Uint8Array(bufLen);
+      const drawFrame = ()=>{
+        QuranBrowser._panelAnimFrame = requestAnimationFrame(drawFrame);
+        QuranBrowser._panelAnalyser.getByteFrequencyData(dataArr);
+        const W=canvas.offsetWidth||400; const H=56;
+        canvas.width=W; canvas.height=H;
+        ctx.clearRect(0,0,W,H);
+        const bw=W/bufLen*2;
+        dataArr.forEach((v,i)=>{
+          const h=(v/255)*H;
+          const hue=160+v/2;
+          ctx.fillStyle=`hsla(${hue},80%,58%,.92)`;
+          ctx.fillRect(i*bw,H-h,Math.max(1,bw-1),h);
+        });
+      };
+      drawFrame();
+    } catch(e){}
+  },
+
+  stopPanelWaveform(){
+    if (QuranBrowser._panelAnimFrame){ cancelAnimationFrame(QuranBrowser._panelAnimFrame); QuranBrowser._panelAnimFrame=null; }
+    if (QuranBrowser._panelAudioCtx){ QuranBrowser._panelAudioCtx.close().catch(()=>{}); QuranBrowser._panelAudioCtx=null; }
+    const canvas = document.getElementById('qp-waveform');
+    if (canvas){ const c=canvas.getContext('2d'); c.clearRect(0,0,canvas.width,canvas.height); }
+  },
+
+  async onPanelRecordStop(){
+    if (!QuranBrowser._panelChunks.length) return;
+    const blob = new Blob(QuranBrowser._panelChunks, {type:'audio/webm'});
+    const p = QuranBrowser._panelVerse;
+    const url = URL.createObjectURL(blob);
+    if (p) await Library.saveAudio(blob, `${p.surahName} · آية ${p.ayahNum}`);
+    const resEl = document.getElementById('qp-result');
+    if (!resEl) return;
+    resEl.innerHTML=`<div style="margin-bottom:8px">
+      <div style="font-size:.74rem;color:#34d399;margin-bottom:4px">✅ تسجيلك — استمع وقيّم:</div>
+      <audio controls src="${url}" style="width:100%;height:32px;border-radius:6px"></audio>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px">
+      ${[['5','🌟 ممتاز'],['4','✅ جيد جداً'],['3','👍 مقبول'],['2','🔄 ضعيف'],['1','↩️ أعد']].map(([sc,lb])=>`<button class="btn btn-sm btn-ghost qp-score-btn" data-s="${sc}">${lb}</button>`).join('')}
+    </div>
+    <div id="qp-score-fb" style="font-size:.8rem;color:#34d399;min-height:18px"></div>`;
+    resEl.querySelectorAll('.qp-score-btn').forEach(b=>b.onclick=()=>{
+      resEl.querySelectorAll('.qp-score-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const msgs={5:'رائع! انتقل للآية التالية 🌟',4:'جيد جداً! كرّر للتثبيت ✅',3:'جيد! ركّز على المخارج 👍',2:'استمع للنموذج ثم أعد 🔄',1:'استمع أولاً ثم ابدأ من جديد ↩️'};
+      const fb=document.getElementById('qp-score-fb');
+      if (fb) fb.textContent=msgs[b.dataset.s]||'';
+      const sc=+b.dataset.s;
+      if (p) {
+        Api.post('/session/complete',{pages_done:.05,difficulty:sc>=4?'easy':sc>=2?'medium':'hard',duration_minutes:1,technique_used:'inline_practice',mood_score:Math.min(10,sc*2)}).catch(()=>{});
+        Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,self_score:sc}).catch(()=>{});
+      }
+    });
+  },
+
+  addPanelSpeechCheck(p){
+    const area = document.getElementById('qp-speech-area');
+    if (!area || !p) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    area.innerHTML=`<button class="btn btn-xs btn-ghost" id="btn-qp-speech" style="font-size:.74rem;padding:3px 9px">🎤 تحقق آني (اتلُ → ميكروفون)</button>
+      <div id="qp-speech-result" style="margin-top:5px"></div>`;
+    document.getElementById('btn-qp-speech').onclick=()=>{
+      const btn=document.getElementById('btn-qp-speech');
+      const res=document.getElementById('qp-speech-result');
+      const rec=new SR();
+      rec.lang='ar-SA'; rec.continuous=false; rec.interimResults=false;
+      btn.textContent='🔴 يستمع...'; btn.disabled=true;
+      rec.onresult=ev=>{
+        const t=Array.from(ev.results).map(r=>r[0].transcript).join(' ').trim();
+        const pct=Math.round(VoiceStudio.similarity(t,p.text)*100);
+        const col=pct>=80?'#34d399':pct>=55?'#fbbf24':'#ef4444';
+        if (res) res.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(0,0,0,.3);border-radius:8px">
+          <div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:7px;overflow:hidden">
+            <div style="background:${col};height:100%;width:${pct}%;border-radius:20px;transition:width .6s"></div>
+          </div>
+          <span style="font-size:1.15rem;font-weight:900;color:${col};min-width:40px">${pct}%</span>
+          <span style="font-size:.72rem;color:var(--text-2)">${pct>=85?'✨ ممتاز':pct>=70?'✅ جيد':pct>=50?'👍 مقبول':'🔄 كرّر'}</span>
+        </div>`;
+        btn.textContent='🎤 أعد التحقق'; btn.disabled=false;
+      };
+      rec.onerror=()=>{ btn.textContent='❌ فشل — أعد'; btn.disabled=false; };
+      rec.onend=()=>{ if(btn.disabled){ btn.textContent='🎤 تحقق آني'; btn.disabled=false; } };
+      rec.start();
+    };
   }
 };
 
@@ -2012,6 +2270,7 @@ const VoiceStudio = {
     const recBtn = document.getElementById('btn-studio-record');
     if (recBtn) recBtn.onclick = VoiceStudio.toggleRecord;
     if (VoiceStudio.practiceVerse) VoiceStudio.showVerse();
+    await VoiceStudio.loadProgressChart();
     await VoiceStudio.loadRecordings();
   },
   async loadVerse(){
@@ -2243,6 +2502,80 @@ const VoiceStudio = {
     wa.forEach(w=>{ if(wb.some(bw=>bw===w||bw.includes(w)||w.includes(bw))) hits++; });
     return Math.min(1, hits/Math.max(wa.length,wb.length));
   },
+  async loadProgressChart(){
+    // Fetch studio history from server
+    let history = [];
+    try { const r = await Api.get('/studio/progress'); history = r.history || []; } catch(e){}
+    const wrap = document.getElementById('studio-progress-wrap');
+    if (!history.length){ if(wrap) wrap.style.display='none'; return; }
+    if (wrap) wrap.style.display='block';
+    const countEl = document.getElementById('studio-progress-count');
+    if (countEl) countEl.textContent = `${history.length} جلسة تدريبية`;
+
+    // Draw chart on canvas
+    const canvas = document.getElementById('studio-progress-chart');
+    if (!canvas) return;
+    const W = canvas.offsetWidth||400; const H = 90;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+
+    // Background grid
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+    [0,25,50,75,100].forEach(v=>{
+      const y=H-(v/100)*H*0.9-4;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+      if(v>0){ ctx.fillStyle='rgba(255,255,255,.18)'; ctx.font='9px Tajawal,sans-serif'; ctx.fillText(`${v}%`,W-24,y-2); }
+    });
+
+    // Smooth line
+    const pts = history.filter(h=>h.score!=null).slice(-40);
+    if (pts.length>=2){
+      const xStep = W/(pts.length-1);
+      const toY = s=>H-(s/100)*H*0.9-4;
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0,'rgba(52,211,153,.35)');
+      grad.addColorStop(1,'rgba(52,211,153,0)');
+      ctx.beginPath();
+      ctx.moveTo(0,toY(pts[0].score));
+      for(let i=1;i<pts.length;i++){
+        const cpx=(i-.5)*xStep;
+        ctx.bezierCurveTo(cpx,toY(pts[i-1].score),(i-.5)*xStep,toY(pts[i].score),i*xStep,toY(pts[i].score));
+      }
+      ctx.lineTo((pts.length-1)*xStep,H); ctx.lineTo(0,H); ctx.closePath();
+      ctx.fillStyle=grad; ctx.fill();
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(0,toY(pts[0].score));
+      for(let i=1;i<pts.length;i++){
+        const cpx=(i-.5)*xStep;
+        ctx.bezierCurveTo(cpx,toY(pts[i-1].score),(i-.5)*xStep,toY(pts[i].score),i*xStep,toY(pts[i].score));
+      }
+      ctx.strokeStyle='#34d399'; ctx.lineWidth=2.2; ctx.stroke();
+      // Dots
+      pts.forEach((pt,i)=>{
+        const x=i*xStep; const y=toY(pt.score);
+        ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+        ctx.fillStyle=pt.score>=80?'#34d399':pt.score>=55?'#fbbf24':'#ef4444'; ctx.fill();
+      });
+    }
+
+    // Summary stats
+    const scores = history.filter(h=>h.score!=null).map(h=>h.score);
+    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+    const best = scores.length ? Math.max(...scores) : 0;
+    const recent = scores.slice(-5);
+    const trend = recent.length>1 ? (recent[recent.length-1]-recent[0]>0?'📈 تحسّن':recent[recent.length-1]-recent[0]<0?'📉 راجع':'➡️ ثابت') : '';
+    const sumEl = document.getElementById('studio-progress-summary');
+    if (sumEl) sumEl.innerHTML=[
+      `<div class="progress-stat"><div class="progress-stat-val">${avg}%</div><div class="progress-stat-lbl">متوسط الدقة</div></div>`,
+      `<div class="progress-stat"><div class="progress-stat-val" style="color:#fbbf24">${best}%</div><div class="progress-stat-lbl">أفضل نتيجة</div></div>`,
+      `<div class="progress-stat"><div class="progress-stat-val">${history.length}</div><div class="progress-stat-lbl">جلسة</div></div>`,
+      trend?`<div class="progress-stat"><div class="progress-stat-val">${trend}</div><div class="progress-stat-lbl">الاتجاه</div></div>`:''
+    ].join('');
+  },
+
   async loadRecordings(){
     const el = document.getElementById('studio-recordings-list');
     if (!el) return;
@@ -2250,13 +2583,15 @@ const VoiceStudio = {
     if (!audios.length){ el.innerHTML='<p style="color:var(--text-3);font-size:.85rem;padding:10px 0">لا تسجيلات تدريبية بعد — ابدأ التسجيل أعلاه!</p>'; return; }
     el.innerHTML=audios.slice().reverse().slice(0,25).map(a=>{
       const url=URL.createObjectURL(a.blob);
-      return `<div class="glass-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:120px">
-          <div style="font-size:.85rem;font-weight:600">${escapeHTML(a.label||'تسجيل')}</div>
-          <div style="font-size:.72rem;color:var(--text-3)">${new Date(a.created).toLocaleString('ar')}</div>
+      return `<div class="glass-card studio-rec-item" style="padding:10px 14px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <div>
+            <div style="font-size:.85rem;font-weight:600">${escapeHTML(a.label||'تسجيل')}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">${new Date(a.created).toLocaleString('ar')}</div>
+          </div>
+          <button class="btn btn-sm btn-danger" data-da="${a.id}">✕</button>
         </div>
-        <audio controls src="${url}" style="height:34px;flex:1;min-width:150px;max-width:220px"></audio>
-        <button class="btn btn-sm btn-danger" data-da="${a.id}">✕</button>
+        <audio controls src="${url}" style="width:100%;height:32px;border-radius:6px"></audio>
       </div>`;
     }).join('');
     el.querySelectorAll('[data-da]').forEach(b=>b.onclick=async()=>{ await Library.deleteAudio(+b.dataset.da); VoiceStudio.loadRecordings(); });
