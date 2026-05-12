@@ -145,6 +145,7 @@ const App = {
     if (id==='view-channelroom' && !S.currentChannel) App.showView('view-channels');
     if (id==='view-quran') QuranBrowser.load();
     if (id==='view-studio') VoiceStudio.load();
+    if (id==='view-tarteel') TarteelMode.load();
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
@@ -1823,6 +1824,7 @@ const Boot = {
     Sensors.init();
     if(S.token) Notifications.startPolling();
   },
+  _tarteelLoaded: false,
   async afterLogin(){
     const r = await Api.get('/me');
     if (r.error){ localStorage.clear(); App.showView('view-auth'); return; }
@@ -3126,4 +3128,553 @@ const VoiceStudio = {
     }).join('');
     el.querySelectorAll('[data-da]').forEach(b=>b.onclick=async()=>{ await Library.deleteAudio(+b.dataset.da); VoiceStudio.loadRecordings(); });
   }
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   المصنف الذكي — TarteelMode
+   ─────────────────────────────────────────────────────────────────
+   Word-by-word Arabic recitation checker with real-time feedback.
+   Levenshtein-based phoneme matching · Memorization mode (fade-in) ·
+   Haptic errors · Full ai_core.js integration via /api/tarteel/log
+══════════════════════════════════════════════════════════════════ */
+const TarteelMode = {
+  /* ── State ── */
+  ayahs: [],          // [{numberInSurah, text, globalNum, surahName}]
+  words: [],          // [{raw, norm, state:'pending'|'correct'|'error', ayahIdx}]
+  cursor: 0,          // next expected word index
+  mode: 'practice',   // 'practice' | 'memorize'
+  active: false,
+  startedAt: 0,
+  correct: 0,
+  errors: 0,
+  srec: null,
+  mediaRec: null,
+  mediaChunks: [],
+  audioCtx: null,
+  analyser: null,
+  animFrame: null,
+  _interimBuf: '',    // accumulated interim transcript
+  _totalTranscript: '',
+
+  /* ── Arabic normalisation (strip diacritics + tatweel) ── */
+  norm(s){
+    return s
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g,'')
+      .replace(/\u0640/g,'')                            // tatweel
+      .replace(/[أإآا]/g,'ا').replace(/[ىي]/g,'ي')
+      .replace(/[ةه]/g,'ه').replace(/ؤو/g,'و')
+      .replace(/\s+/g,' ').trim();
+  },
+
+  /* ── Levenshtein distance (character-level) ── */
+  lev(a, b){
+    if (!a) return b.length; if (!b) return a.length;
+    const m=a.length, n=b.length;
+    const dp = Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+    for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[m][n];
+  },
+
+  /* ── Word similarity 0-1 ── */
+  wordSim(a, b){
+    a = TarteelMode.norm(a); b = TarteelMode.norm(b);
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    const maxLen = Math.max(a.length, b.length);
+    if (maxLen === 0) return 1;
+    return 1 - TarteelMode.lev(a,b)/maxLen;
+  },
+
+  /* ── Build flat word list from ayahs ── */
+  buildWords(){
+    TarteelMode.words = [];
+    TarteelMode.ayahs.forEach((ay, ai)=>{
+      ay.text.split(/\s+/).filter(Boolean).forEach(w=>{
+        TarteelMode.words.push({ raw:w, norm:TarteelMode.norm(w), state:'pending', ayahIdx:ai });
+      });
+    });
+  },
+
+  /* ── Load: populate surah dropdowns ── */
+  async load(){
+    const surahs = await QuranBrowser.loadSurahs();
+    const sel = document.getElementById('tarteel-surah');
+    if (sel && sel.options.length <= 1 && surahs.length){
+      surahs.forEach(s=>{
+        const o = document.createElement('option');
+        o.value = s.number; o.textContent = `${s.number}. ${s.name}`;
+        sel.appendChild(o);
+      });
+    }
+    document.getElementById('btn-tarteel-load')?.addEventListener('click', TarteelMode.loadAyahs);
+    document.querySelectorAll('[data-tqs]').forEach(b=>b.onclick=()=>{
+      const s2 = document.getElementById('tarteel-surah');
+      if (s2) s2.value = b.dataset.tqs;
+      TarteelMode.loadAyahs();
+    });
+    document.getElementById('btn-mode-practice')?.addEventListener('click', ()=>TarteelMode.setMode('practice'));
+    document.getElementById('btn-mode-memorize')?.addEventListener('click', ()=>TarteelMode.setMode('memorize'));
+    document.getElementById('btn-tarteel-record')?.addEventListener('click', TarteelMode.toggleRecord);
+    document.getElementById('btn-tarteel-reset')?.addEventListener('click', TarteelMode.resetSession);
+    document.getElementById('btn-tarteel-listen')?.addEventListener('click', TarteelMode.listenToAyah);
+    document.getElementById('btn-tarteel-tts')?.addEventListener('click', ()=>{
+      const text = TarteelMode.ayahs.map(a=>a.text).join(' ');
+      if (text) VoiceStudio._ttsSpeak(text, 'btn-tarteel-tts');
+    });
+    TarteelMode.loadHistory();
+  },
+
+  setMode(m){
+    TarteelMode.mode = m;
+    const pBtn = document.getElementById('btn-mode-practice');
+    const mBtn = document.getElementById('btn-mode-memorize');
+    if (pBtn){ pBtn.classList.toggle('btn-secondary', m==='practice'); pBtn.classList.toggle('btn-ghost', m!=='practice'); }
+    if (mBtn){ mBtn.classList.toggle('btn-secondary', m==='memorize'); mBtn.classList.toggle('btn-ghost', m!=='memorize'); }
+    TarteelMode.renderWords(); // re-render applying hidden/visible
+  },
+
+  /* ── Fetch ayahs from alquran.cloud ── */
+  async loadAyahs(){
+    const surahNum = +(document.getElementById('tarteel-surah')?.value||0);
+    const fromA = +(document.getElementById('tarteel-from')?.value||0);
+    const toA   = +(document.getElementById('tarteel-to')?.value||0);
+    if (!surahNum) return toast('اختر سورة أولاً','error');
+    const btn = document.getElementById('btn-tarteel-load');
+    if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ التحميل…'; }
+    try {
+      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const d = await r.json();
+      if (!d.data) throw new Error('no data');
+      const surah = d.data;
+      let ayahs = surah.ayahs;
+      if (fromA) ayahs = ayahs.filter(a=>a.numberInSurah>=fromA);
+      if (toA)   ayahs = ayahs.filter(a=>a.numberInSurah<=toA);
+      if (!ayahs.length){ toast('لا آيات في هذا النطاق','error'); return; }
+      TarteelMode.ayahs = ayahs.map(a=>({
+        numberInSurah: a.numberInSurah,
+        text: a.text,
+        globalNum: a.number,
+        surahName: surah.name,
+        surahNum: surah.number,
+      }));
+      TarteelMode.buildWords();
+      TarteelMode.cursor = 0;
+      TarteelMode.correct = 0;
+      TarteelMode.errors  = 0;
+      TarteelMode.active  = false;
+      TarteelMode._totalTranscript = '';
+      // Update UI
+      const lbl = document.getElementById('tarteel-surah-label');
+      const rng = document.getElementById('tarteel-ayah-range');
+      if (lbl) lbl.textContent = surah.name;
+      if (rng) rng.textContent = `آيات ${ayahs[0].numberInSurah}${ayahs.length>1?'–'+ayahs[ayahs.length-1].numberInSurah:''}`;
+      document.getElementById('tarteel-verse-wrap')?.style.setProperty('display','block');
+      document.getElementById('tarteel-rec-area')?.style.setProperty('display','block');
+      document.getElementById('tarteel-controls')?.style.setProperty('display','block');
+      document.getElementById('tarteel-result')?.style.setProperty('display','none');
+      document.getElementById('tarteel-ai-feedback')?.style.setProperty('display','none');
+      TarteelMode.renderWords();
+      TarteelMode.updateProgress();
+      toast(`تم تحميل ${ayahs.length} آية — اضغط 🎙️ للبدء`,'success',2500);
+    } catch(e){ toast('خطأ في تحميل الآيات','error'); }
+    finally { if (btn){ btn.disabled=false; btn.textContent='تحميل'; } }
+  },
+
+  /* ── Render the word spans ── */
+  renderWords(){
+    const el = document.getElementById('tarteel-text');
+    if (!el) return;
+    const memMode = TarteelMode.mode === 'memorize';
+    let html = '';
+    let prevAyah = -1;
+    TarteelMode.words.forEach((w, i)=>{
+      if (w.ayahIdx !== prevAyah && prevAyah !== -1){
+        const aNum = TarteelMode.ayahs[w.ayahIdx]?.numberInSurah;
+        html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em;margin:0 5px">﴿${TarteelMode.ayahs[w.ayahIdx-1]?.numberInSurah||''}﴾</span> `;
+      }
+      prevAyah = w.ayahIdx;
+      const isActive = (i === TarteelMode.cursor && TarteelMode.active);
+      let cls = 'tarteel-word tw-' + w.state;
+      if (isActive) cls += ' tw-active';
+      if (memMode && w.state === 'pending') cls += ' tw-hidden';
+      html += `<span class="${cls}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
+    });
+    // Last ayah marker
+    if (TarteelMode.ayahs.length){
+      const last = TarteelMode.ayahs[TarteelMode.ayahs.length-1];
+      html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em">﴿${last.numberInSurah}﴾</span>`;
+    }
+    el.innerHTML = html;
+  },
+
+  updateProgress(){
+    const total = TarteelMode.words.length;
+    const done  = TarteelMode.words.filter(w=>w.state!=='pending').length;
+    const fill  = document.getElementById('tarteel-progress-fill');
+    const lbl   = document.getElementById('tarteel-progress-label');
+    if (fill) fill.style.width = (total ? (done/total*100) : 0) + '%';
+    if (lbl)  lbl.textContent  = `${done} / ${total}`;
+  },
+
+  resetSession(){
+    TarteelMode.stopRecord();
+    TarteelMode.words.forEach(w=>w.state='pending');
+    TarteelMode.cursor = 0;
+    TarteelMode.correct = 0;
+    TarteelMode.errors  = 0;
+    TarteelMode.active  = false;
+    TarteelMode._totalTranscript = '';
+    TarteelMode._interimBuf = '';
+    document.getElementById('tarteel-result')?.style.setProperty('display','none');
+    document.getElementById('tarteel-ai-feedback')?.style.setProperty('display','none');
+    TarteelMode.renderWords();
+    TarteelMode.updateProgress();
+    const btn = document.getElementById('btn-tarteel-record');
+    if (btn){ btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
+    const st = document.getElementById('tarteel-rec-status');
+    if (st) st.textContent='';
+    const live = document.getElementById('tarteel-live-transcript');
+    if (live) live.style.display='none';
+    toast('تمت إعادة الضبط','info',1500);
+  },
+
+  listenToAyah(){
+    const ayahs = TarteelMode.ayahs;
+    if (!ayahs.length) return;
+    QuranBrowser.stopAll();
+    const queue = ayahs.map(a=>a.globalNum).filter(Boolean);
+    if (queue.length){
+      QuranBrowser.playQueue = queue;
+      QuranBrowser.loopRemain = 1; QuranBrowser.playIndex = 0;
+      QuranBrowser.playing = true; QuranBrowser.paused = false;
+      QuranBrowser.ayahRepeatRemain = 1;
+      QuranBrowser.playNext();
+    }
+  },
+
+  /* ── Toggle recording ── */
+  async toggleRecord(){
+    if (TarteelMode.active){
+      TarteelMode.stopRecord();
+    } else {
+      await TarteelMode.startRecord();
+    }
+  },
+
+  async startRecord(){
+    if (!TarteelMode.words.length) return toast('حمّل آيات أولاً','error');
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return toast('المتصفح لا يدعم التعرف على الصوت — جرّب Chrome','error');
+    TarteelMode.active = true;
+    TarteelMode.startedAt = Date.now();
+    TarteelMode._interimBuf = '';
+    // Activate first word
+    if (TarteelMode.cursor === 0) TarteelMode.words.forEach(w=>w.state='pending');
+    try {
+      /* MediaRecorder for waveform + audio save */
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      TarteelMode.mediaChunks = [];
+      const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+      TarteelMode.mediaRec = new MediaRecorder(stream, mimeType?{mimeType}:{});
+      TarteelMode.mediaRec.ondataavailable = e=>{ if(e.data&&e.data.size>0) TarteelMode.mediaChunks.push(e.data); };
+      TarteelMode.mediaRec.onstop = ()=>stream.getTracks().forEach(t=>t.stop());
+      TarteelMode.mediaRec.start(200);
+      TarteelMode.startWaveform(stream);
+      /* SpeechRecognition continuous */
+      const sr = new SR();
+      sr.lang = 'ar-SA'; sr.continuous = true; sr.interimResults = true;
+      sr.onresult = ev=>{
+        let interim='', final='';
+        for(let i=ev.resultIndex;i<ev.results.length;i++){
+          if (ev.results[i].isFinal) final += ev.results[i][0].transcript + ' ';
+          else interim += ev.results[i][0].transcript;
+        }
+        if (final){ TarteelMode._totalTranscript += final; TarteelMode.processChunk(final.trim()); }
+        // Show live interim
+        const live = document.getElementById('tarteel-live-transcript');
+        if (live){ live.style.display='block'; live.textContent = '🎤 ' + interim; }
+      };
+      sr.onerror = ev=>{ if(ev.error!=='no-speech') toast('خطأ في التعرف على الصوت: '+ev.error,'error',2000); };
+      sr.onend = ()=>{
+        // Restart if session still active (browser auto-stops SR after silence)
+        if (TarteelMode.active) try{ sr.start(); }catch(e){}
+      };
+      sr.start();
+      TarteelMode.srec = sr;
+    } catch(e){ toast('لا يمكن الوصول للميكروفون','error'); TarteelMode.active=false; return; }
+    const btn = document.getElementById('btn-tarteel-record');
+    if (btn){ btn.textContent='⏹ إيقاف التلاوة'; btn.classList.add('btn-recording'); }
+    const st = document.getElementById('tarteel-rec-status');
+    if (st) st.textContent='🔴 يستمع... اتلُ كلمةً كلمة بوضوح';
+    TarteelMode.renderWords();
+  },
+
+  stopRecord(){
+    TarteelMode.active = false;
+    if (TarteelMode.srec){ try{ TarteelMode.srec.stop(); }catch(e){} TarteelMode.srec=null; }
+    if (TarteelMode.mediaRec && TarteelMode.mediaRec.state==='recording') TarteelMode.mediaRec.stop();
+    TarteelMode.stopWaveform();
+    const btn = document.getElementById('btn-tarteel-record');
+    if (btn){ btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
+    const st = document.getElementById('tarteel-rec-status');
+    if (st) st.textContent='';
+    const live = document.getElementById('tarteel-live-transcript');
+    if (live) live.style.display='none';
+    TarteelMode.renderWords();
+    // Show results if something was attempted
+    if (TarteelMode.correct + TarteelMode.errors > 0) TarteelMode.endSession();
+  },
+
+  /* ── Process a transcript chunk against expected words ── */
+  processChunk(transcript){
+    if (!transcript || !TarteelMode.active) return;
+    const spokenWords = transcript.trim().split(/\s+/).filter(Boolean);
+    spokenWords.forEach(sw=>{
+      if (TarteelMode.cursor >= TarteelMode.words.length) return;
+      const expected = TarteelMode.words[TarteelMode.cursor];
+      const sim = TarteelMode.wordSim(sw, expected.raw);
+      if (sim >= 0.80){
+        expected.state = 'correct';
+        TarteelMode.correct++;
+        TarteelMode.cursor++;
+        // Auto-advance through remaining if all done
+        if (TarteelMode.cursor >= TarteelMode.words.length){
+          TarteelMode.stopRecord();
+          toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500);
+        }
+      } else if (sim < 0.50){
+        // Not matching — mark error, vibrate, but don't advance
+        expected.state = 'error';
+        TarteelMode.errors++;
+        if (navigator.vibrate) navigator.vibrate([60,40,60]);
+        // After 2 errors on same word, skip
+        if (TarteelMode.words.filter((w,i)=>i===TarteelMode.cursor&&w.state==='error').length>=2){
+          TarteelMode.cursor++;
+        }
+      }
+      // else: partial match — keep trying
+    });
+    TarteelMode.renderWords();
+    TarteelMode.updateProgress();
+    // Scroll active word into view
+    const activeEl = document.querySelector('.tarteel-word.tw-active');
+    if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+  },
+
+  /* ── End session: calculate score, sync with ai_core.js ── */
+  async endSession(){
+    const total   = TarteelMode.words.length;
+    const correct = TarteelMode.words.filter(w=>w.state==='correct').length;
+    const errors  = TarteelMode.words.filter(w=>w.state==='error').length;
+    const score   = total > 0 ? Math.round(correct / total * 100) : 0;
+    const durationMs = Date.now() - TarteelMode.startedAt;
+    const durationMin = Math.max(1, Math.round(durationMs/60000));
+    const difficulty = score>=85?'easy':score>=60?'medium':'hard';
+    const ayahCount  = TarteelMode.ayahs.length;
+    const pagesEst   = +(ayahCount * 0.025).toFixed(3); // rough 15 ayahs per page
+
+    // Show local result card immediately
+    const col = score>=80?'#34d399':score>=55?'#fbbf24':'#ef4444';
+    const resEl = document.getElementById('tarteel-result');
+    if (resEl){
+      resEl.style.display='block';
+      resEl.innerHTML=`<div class="glass-card pad" style="border:1px solid ${col}40">
+        <div style="font-size:.8rem;font-weight:700;color:${col};margin-bottom:12px">📊 نتيجة الجلسة</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="text-align:center;flex:1;min-width:70px">
+            <div class="mono" style="font-size:2rem;font-weight:900;color:${col}">${score}%</div>
+            <div style="font-size:.72rem;color:var(--text-3)">الدقة</div>
+          </div>
+          <div style="text-align:center;flex:1;min-width:70px">
+            <div class="mono" style="font-size:1.6rem;font-weight:700;color:#34d399">${correct}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">كلمة صحيحة</div>
+          </div>
+          <div style="text-align:center;flex:1;min-width:70px">
+            <div class="mono" style="font-size:1.6rem;font-weight:700;color:#ef4444">${errors}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">كلمة خطأ</div>
+          </div>
+          <div style="text-align:center;flex:1;min-width:70px">
+            <div class="mono" style="font-size:1.6rem;font-weight:700;color:#93c5fd">${durationMin}د</div>
+            <div style="font-size:.72rem;color:var(--text-3)">المدة</div>
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:.72rem;color:var(--text-3)">دقة التلاوة</span>
+            <span style="font-size:.72rem;color:${col}">${score}%</span>
+          </div>
+          <div style="background:rgba(255,255,255,.08);border-radius:20px;height:8px;overflow:hidden">
+            <div style="background:${col};height:100%;width:${score}%;border-radius:20px;transition:width 1s ease"></div>
+          </div>
+        </div>
+        <div id="tarteel-ai-result-inline" style="font-size:.82rem;color:var(--text-3)">⏳ جارٍ تحليل الأداء بالذكاء الاصطناعي...</div>
+      </div>`;
+    }
+
+    /* ── Report to server → ai_core.js ── */
+    try {
+      const surahName = TarteelMode.ayahs[0]?.surahName || 'سورة';
+      const fromA = TarteelMode.ayahs[0]?.numberInSurah || 1;
+      const toA   = TarteelMode.ayahs[TarteelMode.ayahs.length-1]?.numberInSurah || 1;
+      // 1. Log Tarteel session (gets ai_core decision back)
+      const logRes = await Api.post('/tarteel/log', {
+        surah_name: surahName,
+        from_ayah: fromA,
+        to_ayah: toA,
+        word_count: total,
+        correct_words: correct,
+        error_words: errors,
+        score,
+        duration_minutes: durationMin,
+        mode: TarteelMode.mode,
+        transcript: TarteelMode._totalTranscript.trim().slice(0,500),
+      });
+      // 2. Also record as a memorization session so ai_core trains on it
+      Api.post('/session/complete',{
+        pages_done: pagesEst,
+        difficulty,
+        duration_minutes: durationMin,
+        mood_score: Math.round(score/10),
+        technique_used: 'tarteel_smart_classifier',
+      }).catch(()=>{});
+      // 3. Show AI decision
+      if (logRes && !logRes.error) TarteelMode.showAIDecision(logRes, score);
+    } catch(e){
+      const inl = document.getElementById('tarteel-ai-result-inline');
+      if (inl) inl.textContent = 'تعذّر التواصل مع نظام الذكاء الاصطناعي.';
+    }
+    // Save audio
+    if (TarteelMode.mediaChunks.length){
+      try {
+        const recMime = TarteelMode.mediaRec?.mimeType || 'audio/webm';
+        const blob = new Blob(TarteelMode.mediaChunks, {type:recMime});
+        const surahName2 = TarteelMode.ayahs[0]?.surahName || 'تلاوة';
+        await Library.saveAudio(blob, `🎯 ${surahName2} — ${score}% دقة`);
+      } catch(e){}
+    }
+    TarteelMode.loadHistory();
+  },
+
+  /* ── Render AI core decision ── */
+  showAIDecision(r, score){
+    const mode = r.mode || 'NORMAL_MODE';
+    const energy = r.energy ?? 75;
+    const afi = r.afi ?? 100;
+    const alert = r.alert;
+    const intervention = r.intervention;
+    const plan = r.plan_recommendation;
+    // Update AI bar
+    const modeMap = {
+      NORMAL_MODE:    {cls:'tarteel-mode-normal',    lbl:'NORMAL MODE',    icon:'🌙'},
+      CHALLENGE_MODE: {cls:'tarteel-mode-challenge', lbl:'CHALLENGE MODE', icon:'⚡'},
+      RELOAD_MODE:    {cls:'tarteel-mode-reload',    lbl:'RELOAD MODE',    icon:'🌿'},
+      PATTERN_INTERRUPT:{cls:'tarteel-mode-interrupt',lbl:'PATTERN INTERRUPT',icon:'⚠️'},
+    };
+    const md = modeMap[mode] || modeMap.NORMAL_MODE;
+    const badge = document.getElementById('tarteel-mode-badge');
+    if (badge){ badge.className=`tarteel-ai-badge ${md.cls}`; badge.textContent=`${md.icon} ${md.lbl}`; }
+    const enEl = document.getElementById('tarteel-energy-val');
+    if (enEl) enEl.textContent = energy;
+    const afiEl = document.getElementById('tarteel-afi-val');
+    if (afiEl) afiEl.textContent = afi;
+    // Inline result message
+    const inl = document.getElementById('tarteel-ai-result-inline');
+    const scoreMsg = score>=85
+      ? 'أداء ممتاز! الذكاء الاصطناعي رصد مستوى طاقة عالياً وقد يرفع صعوبة خطتك.'
+      : score>=65
+      ? 'أداء جيد. واصل الجهد والخوارزمية ستضبط سرعة الحفظ.'
+      : 'هناك كلمات تحتاج مراجعة. الخوارزمية خففت الهدف اليومي لمساعدتك.';
+    if (inl) inl.innerHTML=`<div style="color:var(--text-2);line-height:1.7">${scoreMsg}</div>`;
+    // AI feedback panel
+    const fbEl = document.getElementById('tarteel-ai-feedback');
+    if (!fbEl) return;
+    fbEl.style.display='block';
+    const alertHtml = alert
+      ? `<div style="padding:10px 12px;background:rgba(99,102,241,.1);border-radius:8px;font-size:.85rem;line-height:1.7;margin-bottom:8px">${escapeHTML(alert.text_ar||alert.text||'')}</div>`
+      : '';
+    const interHtml = intervention
+      ? `<div style="padding:10px 12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;font-size:.85rem;color:#fca5a5;margin-bottom:8px">⚠️ ${escapeHTML(intervention.message_ar||'')}</div>`
+      : '';
+    const planHtml = plan
+      ? `<div style="font-size:.78rem;color:var(--text-3)">الهدف اليومي المُعدَّل: <span class="mono" style="color:#93c5fd">${plan.target} صفحة</span> <span style="font-size:.72rem;color:var(--text-3)">(${plan.reason})</span></div>`
+      : '';
+    fbEl.innerHTML=`<div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
+      <div style="font-size:.8rem;font-weight:700;color:#a5b4fc;margin-bottom:10px">🤖 تحليل الذكاء الاصطناعي — ai_core.js</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="text-align:center;flex:1;padding:8px;background:rgba(255,255,255,.04);border-radius:8px">
+          <div class="mono" style="font-size:1.4rem;color:#93c5fd">${energy}</div>
+          <div style="font-size:.68rem;color:var(--text-3)">الطاقة</div>
+        </div>
+        <div style="text-align:center;flex:1;padding:8px;background:rgba(255,255,255,.04);border-radius:8px">
+          <div class="mono" style="font-size:1.4rem;color:#34d399">${afi}</div>
+          <div style="font-size:.68rem;color:var(--text-3)">AFI مؤشر التكيّف</div>
+        </div>
+        <div style="text-align:center;flex:1;padding:8px;background:rgba(255,255,255,.04);border-radius:8px">
+          <div class="tarteel-ai-badge ${md.cls}" style="justify-content:center">${md.icon} ${md.lbl}</div>
+          <div style="font-size:.68rem;color:var(--text-3);margin-top:4px">الوضع المُختار</div>
+        </div>
+      </div>
+      ${alertHtml}${interHtml}${planHtml}
+    </div>`;
+    // Also update main dashboard AI island energy
+    UI.applyDecision(r);
+  },
+
+  /* ── Waveform helpers ── */
+  startWaveform(stream){
+    const canvas = document.getElementById('tarteel-waveform');
+    if (!canvas) return;
+    try {
+      TarteelMode.audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      TarteelMode.analyser = TarteelMode.audioCtx.createAnalyser();
+      TarteelMode.analyser.fftSize = 256;
+      TarteelMode.audioCtx.createMediaStreamSource(stream).connect(TarteelMode.analyser);
+      const buf = new Uint8Array(TarteelMode.analyser.frequencyBinCount);
+      const ctx = canvas.getContext('2d');
+      (function draw(){
+        TarteelMode.animFrame = requestAnimationFrame(draw);
+        TarteelMode.analyser.getByteFrequencyData(buf);
+        const W=canvas.offsetWidth||400, H=56;
+        canvas.width=W; canvas.height=H;
+        ctx.clearRect(0,0,W,H);
+        const bw=W/buf.length*2;
+        buf.forEach((v,i)=>{
+          const h=(v/255)*H;
+          ctx.fillStyle=`hsla(${230+v/3},75%,62%,.9)`;
+          ctx.fillRect(i*bw,H-h,Math.max(1,bw-1),h);
+        });
+      })();
+    } catch(e){}
+  },
+  stopWaveform(){
+    if (TarteelMode.animFrame){ cancelAnimationFrame(TarteelMode.animFrame); TarteelMode.animFrame=null; }
+    if (TarteelMode.audioCtx){ TarteelMode.audioCtx.close().catch(()=>{}); TarteelMode.audioCtx=null; }
+    const cv = document.getElementById('tarteel-waveform');
+    if (cv){ const c=cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); }
+  },
+
+  /* ── Session history from server ── */
+  async loadHistory(){
+    try {
+      const r = await Api.get('/tarteel/history');
+      const list = r.history || [];
+      const wrap = document.getElementById('tarteel-history-wrap');
+      const el   = document.getElementById('tarteel-history-list');
+      if (!list.length){ if(wrap) wrap.style.display='none'; return; }
+      if (wrap) wrap.style.display='block';
+      if (!el) return;
+      el.innerHTML = list.slice().reverse().slice(0,15).map(h=>{
+        const col=h.score>=80?'#34d399':h.score>=55?'#fbbf24':'#ef4444';
+        return `<div class="glass-card" style="padding:10px 14px;margin-bottom:6px;display:flex;gap:12px;align-items:center">
+          <div class="mono" style="font-size:1.4rem;font-weight:900;color:${col};min-width:52px">${h.score}%</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.85rem;font-weight:600">${escapeHTML(h.surah_name||'')}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">آيات ${h.from_ayah||1}–${h.to_ayah||1} · ${h.correct_words||0} صواب · ${h.error_words||0} خطأ · ${h.duration_minutes||1}د</div>
+          </div>
+          <div style="font-size:.68rem;color:var(--text-3);text-align:left">${fmtRel(h.created_at)}</div>
+        </div>`;
+      }).join('');
+    } catch(e){}
+  },
 };

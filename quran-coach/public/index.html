@@ -121,6 +121,7 @@
       <span style="position:relative;display:inline-flex"><button class="icon-btn" data-go="view-notifications" title="الإشعارات">🔔</button><span id="notif-badge" class="notif-badge hidden">0</span></span>
       <button class="icon-btn" data-go="view-quran" title="القرآن الكريم">📖</button>
       <button class="icon-btn" data-go="view-studio" title="استوديو التجويد">🎤</button>
+      <button class="icon-btn" data-go="view-tarteel" title="المصنف الذكي">🎯</button>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
     </div>
@@ -883,7 +884,112 @@
     </div>
   </section>
 
-</div>
+  <!-- ═══════════════════════════════════════════════════════════
+       المصنف الذكي — Tarteel Mode (Word-by-Word + AI Adaptation)
+  ════════════════════════════════════════════════════════════ -->
+  <section id="view-tarteel" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <h2 class="view-title">🎯 المصنف الذكي</h2>
+      <div style="font-size:.82rem;color:var(--text-2);margin-bottom:14px;padding:8px 14px;background:rgba(99,102,241,.07);border-radius:10px;border:1px solid rgba(99,102,241,.2)">
+        اتلُ كلمةً كلمة — الذكاء الاصطناعي يتابعك لحظياً ويكشف الأخطاء، ثم يُعدّل خطتك بناءً على أدائك.
+      </div>
+
+      <!-- Selector -->
+      <div class="glass-card pad" style="margin-bottom:12px">
+        <div style="font-size:.85rem;color:var(--text-2);margin-bottom:10px;font-weight:600">📖 اختر السورة والآيات</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <select id="tarteel-surah" class="field-input" style="flex:2;min-width:160px">
+            <option value="">اختر سورة...</option>
+          </select>
+          <input id="tarteel-from" class="field-input" type="number" min="1" placeholder="من آية" style="width:82px">
+          <input id="tarteel-to"   class="field-input" type="number" min="1" placeholder="إلى آية" style="width:82px">
+          <button class="btn btn-secondary" id="btn-tarteel-load">تحميل</button>
+        </div>
+        <!-- Quick Surahs -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-xs btn-ghost" data-tqs="1">الفاتحة</button>
+          <button class="btn btn-xs btn-ghost" data-tqs="112">الإخلاص</button>
+          <button class="btn btn-xs btn-ghost" data-tqs="113">الفلق</button>
+          <button class="btn btn-xs btn-ghost" data-tqs="114">الناس</button>
+          <button class="btn btn-xs btn-ghost" data-tqs="67">الملك</button>
+          <button class="btn btn-xs btn-ghost" data-tqs="55">الرحمن</button>
+        </div>
+      </div>
+
+      <!-- Mode Toggle -->
+      <div class="glass-card pad" style="margin-bottom:12px;display:none" id="tarteel-controls">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+          <div style="font-size:.85rem;color:var(--text-2);font-weight:600">وضع التدريب:</div>
+          <button class="btn btn-sm btn-secondary active" id="btn-mode-practice">🔍 مراجعة (نص ظاهر)</button>
+          <button class="btn btn-sm btn-ghost" id="btn-mode-memorize">🧠 تسميع (نص مخفي)</button>
+        </div>
+        <!-- AI State Bar -->
+        <div id="tarteel-ai-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:rgba(99,102,241,.07);border-radius:10px;border:1px solid rgba(99,102,241,.15)">
+          <span style="font-size:.75rem;color:var(--text-3)">الذكاء الاصطناعي:</span>
+          <span id="tarteel-mode-badge" class="tarteel-ai-badge tarteel-mode-normal">NORMAL MODE</span>
+          <span style="font-size:.72rem;color:var(--text-3)">طاقة:</span>
+          <span id="tarteel-energy-val" class="mono" style="font-size:.85rem;color:#93c5fd">75</span>
+          <span style="font-size:.72rem;color:var(--text-3)">AFI:</span>
+          <span id="tarteel-afi-val" class="mono" style="font-size:.85rem;color:#34d399">—</span>
+        </div>
+      </div>
+
+      <!-- Verse Display -->
+      <div id="tarteel-verse-wrap" style="display:none;margin-bottom:12px">
+        <div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+            <div>
+              <div id="tarteel-surah-label" style="font-size:.72rem;color:#a5b4fc;font-weight:700"></div>
+              <div id="tarteel-ayah-range" style="font-size:.68rem;color:var(--text-3);margin-top:2px"></div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-xs btn-ghost" id="btn-tarteel-listen">🔊 استمع</button>
+              <button class="btn btn-xs btn-ghost" id="btn-tarteel-tts">🤖 AI صوت</button>
+              <button class="btn btn-xs btn-ghost" id="btn-tarteel-reset">↺ إعادة</button>
+            </div>
+          </div>
+          <!-- Word-by-Word Text -->
+          <div id="tarteel-text" class="tarteel-text" dir="rtl"></div>
+          <!-- Progress Bar -->
+          <div style="margin-top:14px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:.72rem;color:var(--text-3)">التقدم</span>
+              <span id="tarteel-progress-label" style="font-size:.72rem;color:#a5b4fc">0 / 0</span>
+            </div>
+            <div class="tarteel-progress-bar">
+              <div id="tarteel-progress-fill" class="tarteel-progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording Controls -->
+      <div id="tarteel-rec-area" style="display:none;margin-bottom:12px">
+        <div class="glass-card pad">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+            <button class="btn btn-primary" id="btn-tarteel-record">🎙️ ابدأ التلاوة</button>
+            <div id="tarteel-rec-status" style="font-size:.82rem;color:var(--text-2)"></div>
+          </div>
+          <canvas id="tarteel-waveform" height="56" style="width:100%;height:56px;border-radius:8px;background:rgba(0,0,0,.3);display:block"></canvas>
+          <!-- Live transcript -->
+          <div id="tarteel-live-transcript" style="margin-top:8px;min-height:28px;font-size:.78rem;color:#a5b4fc;padding:6px 8px;background:rgba(99,102,241,.07);border-radius:8px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- Session Result (shown after session ends) -->
+      <div id="tarteel-result" style="display:none;margin-bottom:12px"></div>
+
+      <!-- AI Feedback Panel -->
+      <div id="tarteel-ai-feedback" style="display:none;margin-bottom:12px"></div>
+
+      <!-- History -->
+      <div id="tarteel-history-wrap" style="display:none">
+        <h3 style="margin:14px 6px 8px">📊 سجل جلسات التلاوة</h3>
+        <div id="tarteel-history-list"></div>
+      </div>
+    </div>
+  </section>
 
 <!-- JITSI VIDEO CALL MODAL -->
 <div id="jitsi-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.92);flex-direction:column">

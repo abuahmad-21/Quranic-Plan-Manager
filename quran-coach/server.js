@@ -1555,3 +1555,98 @@ server.listen(PORT, ()=>{
   setTimeout(runAiOptimizer, 2*60*1000);           // first run: 2 min after start
   setInterval(runAiOptimizer, 4*60*60*1000);        // then every 4 hours
 });
+
+/* ══════════════════════════════════════════════════════════════
+   المصنف الذكي — TARTEEL SMART CLASSIFIER API
+   ─────────────────────────────────────────────────────────────
+   Receives word-by-word recitation results, feeds them into
+   ai_core.js decide(), and returns the full AI decision so the
+   frontend can adapt the UX in real-time.
+══════════════════════════════════════════════════════════════ */
+
+/* POST /api/tarteel/log — save session + run ai_core.decide() */
+R('POST','/api/tarteel/log', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const score         = Math.max(0, Math.min(100, +b.score||0));
+  const correctWords  = Math.max(0, +b.correct_words||0);
+  const errorWords    = Math.max(0, +b.error_words||0);
+  const wordCount     = Math.max(1, +b.word_count||1);
+  const durationMin   = Math.max(1, +b.duration_minutes||1);
+  const surahName     = String(b.surah_name||'سورة').slice(0,50);
+  const fromAyah      = +b.from_ayah||1;
+  const toAyah        = +b.to_ayah||1;
+  const mode          = ['practice','memorize'].includes(b.mode)?b.mode:'practice';
+  const transcript    = String(b.transcript||'').slice(0,500);
+
+  // Persist tarteel history on user
+  if(!u.tarteel_history) u.tarteel_history=[];
+  u.tarteel_history.push({
+    surah_name: surahName, from_ayah: fromAyah, to_ayah: toAyah,
+    word_count: wordCount, correct_words: correctWords, error_words: errorWords,
+    score, duration_minutes: durationMin, mode, transcript,
+    created_at: now(),
+  });
+  // Keep last 100 entries
+  if(u.tarteel_history.length>100) u.tarteel_history=u.tarteel_history.slice(-100);
+
+  // Update user progress stats (recitation practice pages)
+  const pagesEst = +(Math.max(wordCount,1)*0.002).toFixed(3); // ~500 words/page
+  if(!u.progress) u.progress={};
+  u.progress.total_pages_memorized=(u.progress.total_pages_memorized||0)+pagesEst;
+
+  // Build sensor payload from recitation quality
+  // High error rate → high hesitation/erratic signal; high accuracy → calm focus
+  const errRate = errorWords/wordCount;
+  const sensors = {
+    trigger:          'tarteel_session',
+    focusSeconds:     durationMin*60,
+    hiddenSeconds:    0,
+    hesitationMs:     Math.round(errRate*8000),     // errors proxy for hesitation
+    mouseErratics:    Math.round(errRate*30),
+    touchErratics:    0,
+    exitAttempts:     score<40?2:0,
+    scrollSpeed:      0,
+    scrolledToBottom: true,
+    chaosRhythm:      0,
+    streak:           u.progress.current_streak_days||0,
+    // Provide a supervised label for online ML training (0-1 normalised score)
+    label:            score/100,
+  };
+
+  // Run ai_core.decide()
+  const decision = AI.decide(u, sensors, ALERTS);
+
+  // Persist updated ML weights back to user
+  if(decision.ml_state) u.ml_state = decision.ml_state;
+
+  // Update energy
+  if(!u.energy) u.energy={};
+  u.energy.score  = decision.energy;
+  u.energy.friction = decision.friction;
+  if(!u.energy.history) u.energy.history=[];
+  u.energy.history.push(decision.energy);
+  if(u.energy.history.length>50) u.energy.history=u.energy.history.slice(-50);
+
+  persist();
+  send(res,200,{
+    ok: true,
+    score,
+    mode:              decision.mode,
+    energy:            decision.energy,
+    afi:               decision.afi,
+    friction:          decision.friction,
+    procrastination:   decision.procrastination,
+    target_pages:      decision.target_pages,
+    plan_recommendation: decision.plan_recommendation,
+    alert:             decision.alert,
+    intervention:      decision.intervention,
+    circadian_multiplier: decision.circadian_multiplier,
+  });
+});
+
+/* GET /api/tarteel/history — return user's recitation history */
+R('GET','/api/tarteel/history', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  send(res,200,{history: (u.tarteel_history||[]).slice().reverse().slice(0,50)});
+});
