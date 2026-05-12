@@ -72,11 +72,65 @@ function readLargeBody(req, maxMB=20){
   });
 }
 
+/* ══ Persistent sessions ══ */
+if (!DB.sessions) DB.sessions = {};
+const SESSIONS = new Map(); // token → username (hot cache)
+// Load valid sessions from DB into memory on startup
+(()=>{
+  const cutoff = Date.now();
+  let cleaned = 0;
+  for (const [tok, s] of Object.entries(DB.sessions)) {
+    if (s.expires > cutoff) { SESSIONS.set(tok, s.username); }
+    else { delete DB.sessions[tok]; cleaned++; }
+  }
+  if (cleaned) persist();
+})();
+// Cleanup expired sessions every 30 min
+setInterval(()=>{
+  const cutoff = Date.now(); let changed = false;
+  for (const [tok, s] of Object.entries(DB.sessions)) {
+    if (s.expires <= cutoff) { delete DB.sessions[tok]; SESSIONS.delete(tok); changed = true; }
+  }
+  if (changed) persist();
+}, 30 * 60 * 1000);
+
+function createSession(username, rememberMe=false){
+  const tok = token();
+  const ttl = rememberMe ? 30*24*3600*1000 : 24*3600*1000;
+  SESSIONS.set(tok, username);
+  DB.sessions[tok] = { username, expires: Date.now()+ttl, created_at: now() };
+  persist();
+  return tok;
+}
+function deleteSession(tok){
+  SESSIONS.delete(tok);
+  if (tok && DB.sessions[tok]) { delete DB.sessions[tok]; persist(); }
+}
+
+/* ══ Rate limiting (in-memory) ══ */
+const LOGIN_FAILS = new Map(); // username → {count, lockedUntil}
+function rateLimitCheck(username){
+  const e = LOGIN_FAILS.get(username);
+  if (!e) return null;
+  if (e.lockedUntil && Date.now() < e.lockedUntil)
+    return `الحساب مقفل — انتظر ${Math.ceil((e.lockedUntil-Date.now())/60000)} دقيقة`;
+  return null;
+}
+function recordFail(username){
+  const e = LOGIN_FAILS.get(username) || {count:0, lockedUntil:0};
+  e.count++;
+  if (e.count >= 5){ e.lockedUntil = Date.now()+15*60*1000; e.count=0; }
+  LOGIN_FAILS.set(username, e);
+}
+function clearFails(username){ LOGIN_FAILS.delete(username); }
+
 /* ══ Auth helpers ══ */
-const SESSIONS = new Map(); // token → username
 function authUser(req){
   const t = req.headers['x-token'], u = req.headers['x-username'];
   if (!t || !u) return null;
+  // Check session is valid and not expired
+  const sess = DB.sessions[t];
+  if (!sess || sess.username !== u || sess.expires <= Date.now()){ SESSIONS.delete(t); return null; }
   if (SESSIONS.get(t) !== u) return null;
   return DB.users[u] || null;
 }
@@ -122,6 +176,7 @@ R('POST','/api/auth/register', async (req,res)=>{
   const p = String(b.password||'');
   if (!/^[a-z0-9_]{3,20}$/.test(u) || p.length<4) return send(res,400,{error:'invalid_input'});
   if (DB.users[u]) return send(res,409,{error:'username_taken'});
+  const rememberMe = !!b.remember_me;
   DB.users[u] = {
     username:u, password_hash:sha(p),
     display_name: b.display_name || u,
@@ -139,29 +194,43 @@ R('POST','/api/auth/register', async (req,res)=>{
     sr_state:{},
     ml_state:null,
     friends:[], friend_requests_sent:[], friend_requests_received:[],
-    voice_permissions_granted:[], // usernames I allow to send me voice
+    voice_permissions_granted:[],
     notifications:[],
-    posts:[],   // user posts (text/image refs only — actual blobs in client)
+    posts:[],
+    login_history:[],
   };
   DB.admin.stats.total_users = Object.keys(DB.users).length;
-  persist();
-  const tok = token(); SESSIONS.set(tok,u);
-  send(res,200,{ok:true, token:tok, username:u});
+  const tok = createSession(u, rememberMe);
+  send(res,200,{ok:true, token:tok, username:u, remember_me:rememberMe});
 });
 
 R('POST','/api/auth/login', async (req,res)=>{
   const b = await readBody(req);
   const u = String(b.username||'').toLowerCase().trim();
+  // Rate limit check
+  const lockMsg = rateLimitCheck(u);
+  if (lockMsg) return send(res,429,{error:'rate_limited', message:lockMsg});
   const user = DB.users[u];
-  if (!user || user.password_hash !== sha(String(b.password||''))) return send(res,401,{error:'bad_credentials'});
+  if (!user || user.password_hash !== sha(String(b.password||''))){
+    recordFail(u);
+    const fails = LOGIN_FAILS.get(u);
+    const remaining = fails ? Math.max(0, 5 - fails.count) : 4;
+    return send(res,401,{error:'bad_credentials', attempts_remaining: remaining});
+  }
   if (user.is_banned) return send(res,403,{error:'banned'});
-  user.last_active = now(); persist();
-  const tok = token(); SESSIONS.set(tok,u);
-  send(res,200,{ok:true, token:tok, username:u});
+  clearFails(u);
+  const rememberMe = !!b.remember_me;
+  user.last_active = now();
+  // Save login history (keep last 10)
+  if (!user.login_history) user.login_history = [];
+  user.login_history.push({ at: now(), remember_me: rememberMe });
+  if (user.login_history.length > 10) user.login_history = user.login_history.slice(-10);
+  const tok = createSession(u, rememberMe);
+  send(res,200,{ok:true, token:tok, username:u, remember_me:rememberMe, last_login: user.login_history.slice(-2)[0]?.at || null});
 });
 
 R('POST','/api/auth/logout', async (req,res)=>{
-  const t = req.headers['x-token']; if (t) SESSIONS.delete(t);
+  const t = req.headers['x-token']; if (t) deleteSession(t);
   send(res,200,{ok:true});
 });
 

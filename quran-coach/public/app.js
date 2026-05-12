@@ -8,9 +8,17 @@
 
 const API = '/api';
 
+/* Safe localStorage wrapper — handles iOS Safari private mode */
+const LS = {
+  get(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(_){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(_){} },
+  clear(){ try{ localStorage.clear(); }catch(_){} },
+};
+
 const S = {
-  token:    localStorage.getItem('qqc_token') || null,
-  username: localStorage.getItem('qqc_user')  || null,
+  token:    LS.get('qqc_token') || null,
+  username: LS.get('qqc_user')  || null,
   adminPw:  null,
   user:     null,
   mode:     'NORMAL_MODE',
@@ -209,6 +217,14 @@ const Auth = {
       Auth.showErr('login-error',''); Auth.showErr('reg-error','');
     }));
 
+    /* Remember-me default: restore saved preference */
+    const savedRemember = LS.get('qqc_remember') !== 'false';
+    const remCb = document.getElementById('login-remember');
+    if (remCb) remCb.checked = savedRemember;
+
+    /* Password strength meter */
+    document.getElementById('reg-password')?.addEventListener('input', Auth.updateStrength);
+
     /* Allow Enter key in login fields */
     ['login-username','login-password'].forEach(id=>{
       document.getElementById(id)?.addEventListener('keydown', e=>{ if(e.key==='Enter') Auth.doLogin(); });
@@ -226,25 +242,56 @@ const Auth = {
     /* Logout */
     document.getElementById('btn-logout')?.addEventListener('click', async ()=>{
       await Api.post('/auth/logout').catch(()=>{});
-      localStorage.clear(); location.reload();
+      LS.clear(); location.reload();
     });
+  },
+
+  updateStrength(){
+    const pw = document.getElementById('reg-password')?.value||'';
+    const bar = document.getElementById('pw-strength-bar');
+    const lbl = document.getElementById('pw-strength-lbl');
+    if (!bar||!lbl) return;
+    let score=0;
+    if (pw.length>=4) score++;
+    if (pw.length>=8) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[a-zA-Z]/.test(pw)&&/[^a-zA-Z0-9]/.test(pw)) score++;
+    const levels=[
+      {w:'0%',c:'#ef4444',t:''},
+      {w:'25%',c:'#ef4444',t:'ضعيفة'},
+      {w:'50%',c:'#f59e0b',t:'مقبولة'},
+      {w:'75%',c:'#3b82f6',t:'جيدة'},
+      {w:'100%',c:'#10b981',t:'قوية جداً'},
+    ];
+    const lv=levels[score]||levels[0];
+    bar.style.width=lv.w; bar.style.background=lv.c;
+    lbl.textContent=lv.t; lbl.style.color=lv.c;
   },
 
   async doLogin(){
     const username = (document.getElementById('login-username')?.value||'').trim().toLowerCase();
     const password = document.getElementById('login-password')?.value||'';
+    const rememberMe = document.getElementById('login-remember')?.checked !== false;
     Auth.showErr('login-error','');
     if (!username) return Auth.showErr('login-error','أدخل اسم المستخدم');
     if (!password) return Auth.showErr('login-error','أدخل كلمة المرور');
+    LS.set('qqc_remember', rememberMe ? 'true' : 'false');
     const btn = document.getElementById('btn-do-login');
     if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ الدخول…'; }
     try {
-      const r = await Api.post('/auth/login',{username, password});
+      const r = await Api.post('/auth/login',{username, password, remember_me: rememberMe});
       if (r.error){
-        const msgs = {bad_credentials:'اسم المستخدم أو كلمة المرور غير صحيحة',banned:'هذا الحساب موقوف'};
+        const msgs = {
+          bad_credentials: r.attempts_remaining!=null
+            ? `كلمة المرور خاطئة — ${r.attempts_remaining} محاولات متبقية قبل الإيقاف المؤقت`
+            : 'اسم المستخدم أو كلمة المرور غير صحيحة',
+          banned:'هذا الحساب موقوف',
+          rate_limited: r.message||'محاولات كثيرة — انتظر قليلاً',
+        };
         Auth.showErr('login-error', msgs[r.error]||'خطأ: '+r.error);
       } else {
-        Auth.onLogin(r);
+        if (r.last_login) toast(`آخر دخول: ${fmtRel(r.last_login)}`,'info',3000);
+        Auth.onLogin(r, rememberMe);
       }
     } catch(e){
       Auth.showErr('login-error','تعذّر الاتصال بالخادم — تحقق من الإنترنت');
@@ -257,6 +304,7 @@ const Auth = {
     const username = (document.getElementById('reg-username')?.value||'').trim().toLowerCase();
     const display  = (document.getElementById('reg-display')?.value||'').trim();
     const password = document.getElementById('reg-password')?.value||'';
+    const rememberMe = true; // new accounts always remembered
     Auth.showErr('reg-error','');
     if (!username) return Auth.showErr('reg-error','أدخل اسم المستخدم');
     if (!/^[a-z0-9_]{3,20}$/.test(username)) return Auth.showErr('reg-error','اسم المستخدم: حروف إنجليزية صغيرة وأرقام فقط، 3-20 حرف');
@@ -265,12 +313,12 @@ const Auth = {
     const btn = document.getElementById('btn-do-register');
     if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ الإنشاء…'; }
     try {
-      const r = await Api.post('/auth/register',{username, password, display_name:display});
+      const r = await Api.post('/auth/register',{username, password, display_name:display, remember_me:rememberMe});
       if (r.error){
-        const msgs = {invalid_input:'اسم المستخدم غير صالح أو كلمة المرور قصيرة جداً',taken:'اسم المستخدم مأخوذ — اختر اسماً آخر'};
+        const msgs = {invalid_input:'اسم المستخدم غير صالح أو كلمة المرور قصيرة جداً',username_taken:'اسم المستخدم مأخوذ — اختر اسماً آخر'};
         Auth.showErr('reg-error', msgs[r.error]||'خطأ: '+r.error);
       } else {
-        Auth.onLogin(r);
+        Auth.onLogin(r, rememberMe);
       }
     } catch(e){
       Auth.showErr('reg-error','تعذّر الاتصال بالخادم — تحقق من الإنترنت');
@@ -279,9 +327,11 @@ const Auth = {
     }
   },
 
-  onLogin(r){
+  onLogin(r, rememberMe=true){
     S.token=r.token; S.username=r.username;
-    try { localStorage.setItem('qqc_token',r.token); localStorage.setItem('qqc_user',r.username); } catch(_){}
+    LS.set('qqc_token', r.token);
+    LS.set('qqc_user', r.username);
+    LS.set('qqc_remember', rememberMe ? 'true' : 'false');
     Boot.afterLogin();
     Notifications.startPolling();
   }
@@ -611,7 +661,7 @@ const Profile = {
       if (r2.error) return toast(r2.error==='username_taken'?'اسم المستخدم محجوز':'خطأ في الحفظ','error');
       if (r2.username_changed){
         S.username = r2.new_username;
-        localStorage.setItem('qqc_username', r2.new_username);
+        LS.set('qqc_user', r2.new_username);
         toast('تم تغيير اسم المستخدم ✅','success');
       } else {
         toast('تم الحفظ ✅','success');
@@ -1883,11 +1933,21 @@ const Boot = {
   },
   _tarteelLoaded: false,
   async afterLogin(){
-    const r = await Api.get('/me');
-    if (r.error){ localStorage.clear(); App.showView('view-auth'); return; }
-    S.user = r.user;
-    if (!S.user.onboarding?.completed) App.showView('view-onboarding');
-    else App.showView('view-dashboard');
+    try {
+      const r = await Api.get('/me');
+      if (r.error){
+        // Clear only auth tokens, not all localStorage data
+        LS.del('qqc_token'); LS.del('qqc_user');
+        S.token=null; S.username=null;
+        App.showView('view-auth'); return;
+      }
+      S.user = r.user;
+      if (!S.user.onboarding?.completed) App.showView('view-onboarding');
+      else App.showView('view-dashboard');
+    } catch(e){
+      // Network error — show auth
+      App.showView('view-auth');
+    }
   }
 };
 
@@ -1992,13 +2052,13 @@ const QuranBrowser = {
       loop:   document.getElementById('quran-loop-select')?.value   || '1',
       ayah_repeat: document.getElementById('quran-ayah-repeat-select')?.value || '1',
     };
-    localStorage.setItem(`qqc_quran_${S.username}`, JSON.stringify(settings));
+    LS.set(`qqc_quran_${S.username}`, JSON.stringify(settings));
   },
 
   loadSettings(){
     if (!S.username) return;
     try {
-      const saved = JSON.parse(localStorage.getItem(`qqc_quran_${S.username}`) || 'null');
+      const saved = JSON.parse(LS.get(`qqc_quran_${S.username}`) || 'null');
       if (!saved) return;
       const sheikh = document.getElementById('quran-sheikh-select');
       const loop   = document.getElementById('quran-loop-select');

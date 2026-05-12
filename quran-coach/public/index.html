@@ -42,6 +42,10 @@
         <div class="field-group"><label class="field-label">كلمة المرور</label>
           <input class="field-input" id="login-password" type="password" autocomplete="current-password" placeholder="••••••"></div>
         <div id="login-error" style="display:none;color:#fca5a5;font-size:.82rem;padding:6px 10px;background:rgba(239,68,68,.1);border-radius:8px;margin-bottom:8px"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-2);margin-bottom:12px;cursor:pointer">
+          <input type="checkbox" id="login-remember" checked style="width:16px;height:16px;accent-color:var(--gold)">
+          تذكّرني لمدة 30 يوم
+        </label>
         <button class="btn btn-primary btn-full btn-lg" id="btn-do-login">دخول</button>
       </div>
       <div class="auth-form glass-card hidden" id="form-register">
@@ -51,7 +55,14 @@
         <div class="field-group"><label class="field-label">الاسم الظاهر</label>
           <input class="field-input" id="reg-display" placeholder="اسمك"></div>
         <div class="field-group"><label class="field-label">كلمة المرور</label>
-          <input class="field-input" id="reg-password" type="password" autocomplete="new-password" placeholder="4 أحرف على الأقل"></div>
+          <input class="field-input" id="reg-password" type="password" autocomplete="new-password" placeholder="4 أحرف على الأقل">
+          <div style="margin-top:6px">
+            <div style="background:rgba(255,255,255,.1);border-radius:4px;height:4px;overflow:hidden">
+              <div id="pw-strength-bar" style="height:100%;width:0%;border-radius:4px;transition:width .3s,background .3s"></div>
+            </div>
+            <span id="pw-strength-lbl" style="font-size:.72rem;display:block;margin-top:3px;min-height:1em"></span>
+          </div>
+        </div>
         <div id="reg-error" style="display:none;color:#fca5a5;font-size:.82rem;padding:6px 10px;background:rgba(239,68,68,.1);border-radius:8px;margin-bottom:8px"></div>
         <button class="btn btn-primary btn-full btn-lg" id="btn-do-register">إنشاء الحساب</button>
       </div>

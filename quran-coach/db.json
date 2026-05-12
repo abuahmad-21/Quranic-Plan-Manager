@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 24,
+      "total_users": 25,
       "total_sessions_today": 15,
       "total_pages_memorized_alltime": 2.6
     },
@@ -2759,6 +2759,60 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "testuser99": {
+      "username": "testuser99",
+      "password_hash": "bd94dcda26fccb4e68d6a31f9b5aac0b571ae266d822620e901ef7ebe3a11d4f",
+      "display_name": "Test",
+      "created_at": "2026-05-12T04:56:11.390Z",
+      "last_active": "2026-05-12T05:00:23.705Z",
+      "avatar_color": "#0e044c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [
+        {
+          "at": "2026-05-12T05:00:23.705Z",
+          "remember_me": true
+        }
+      ]
     }
   },
   "chats": {},
@@ -2853,6 +2907,13 @@
       "review_sessions": [],
       "created_at": "2026-05-09T01:40:12.200Z",
       "last_message_at": null
+    }
+  },
+  "sessions": {
+    "1bbbb49d9605c87baff22d7ca9ac92b27b74c2e88ae13ce9": {
+      "username": "testuser99",
+      "expires": 1781154023705,
+      "created_at": "2026-05-12T05:00:23.705Z"
     }
   }
 }
