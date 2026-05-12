@@ -36,23 +36,25 @@
         <button class="tab-btn active" data-tab="login">دخول</button>
         <button class="tab-btn" data-tab="register">حساب جديد</button>
       </div>
-      <form class="auth-form glass-card" id="form-login">
+      <div class="auth-form glass-card" id="form-login">
         <div class="field-group"><label class="field-label">اسم المستخدم</label>
-          <input class="field-input" name="username" autocomplete="username" required></div>
+          <input class="field-input" id="login-username" autocomplete="username" placeholder="username"></div>
         <div class="field-group"><label class="field-label">كلمة المرور</label>
-          <input class="field-input" type="password" name="password" autocomplete="current-password" required></div>
-        <button type="submit" class="btn btn-primary btn-full btn-lg">دخول</button>
-      </form>
-      <form class="auth-form glass-card hidden" id="form-register">
+          <input class="field-input" id="login-password" type="password" autocomplete="current-password" placeholder="••••••"></div>
+        <div id="login-error" style="display:none;color:#fca5a5;font-size:.82rem;padding:6px 10px;background:rgba(239,68,68,.1);border-radius:8px;margin-bottom:8px"></div>
+        <button class="btn btn-primary btn-full btn-lg" id="btn-do-login">دخول</button>
+      </div>
+      <div class="auth-form glass-card hidden" id="form-register">
         <div class="field-group"><label class="field-label">اسم المستخدم</label>
-          <input class="field-input" name="username" required pattern="[a-z0-9_]{3,20}">
-          <span class="field-hint">حروف صغيرة وأرقام فقط (3-20)</span></div>
+          <input class="field-input" id="reg-username" autocomplete="username" placeholder="my_username">
+          <span class="field-hint">حروف إنجليزية صغيرة وأرقام فقط (3-20 حرف)</span></div>
         <div class="field-group"><label class="field-label">الاسم الظاهر</label>
-          <input class="field-input" name="display_name" required></div>
+          <input class="field-input" id="reg-display" placeholder="اسمك"></div>
         <div class="field-group"><label class="field-label">كلمة المرور</label>
-          <input class="field-input" type="password" name="password" required minlength="4"></div>
-        <button type="submit" class="btn btn-primary btn-full btn-lg">إنشاء الحساب</button>
-      </form>
+          <input class="field-input" id="reg-password" type="password" autocomplete="new-password" placeholder="4 أحرف على الأقل"></div>
+        <div id="reg-error" style="display:none;color:#fca5a5;font-size:.82rem;padding:6px 10px;background:rgba(239,68,68,.1);border-radius:8px;margin-bottom:8px"></div>
+        <button class="btn btn-primary btn-full btn-lg" id="btn-do-register">إنشاء الحساب</button>
+      </div>
     </div>
   </section>
 

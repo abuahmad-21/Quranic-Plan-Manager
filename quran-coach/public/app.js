@@ -197,34 +197,91 @@ function fmtRel(iso){
 
 /* ══ AUTH ══ */
 const Auth = {
+  showErr(id, msg){ const el=document.getElementById(id); if(el){el.textContent=msg;el.style.display=msg?'block':'none';} },
   init(){
+    /* Tab switching */
     document.querySelectorAll('.auth-tabs .tab-btn').forEach(b=>b.addEventListener('click',()=>{
       document.querySelectorAll('.auth-tabs .tab-btn').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
       const t=b.dataset.tab;
       document.getElementById('form-login').classList.toggle('hidden', t!=='login');
       document.getElementById('form-register').classList.toggle('hidden', t!=='register');
+      Auth.showErr('login-error',''); Auth.showErr('reg-error','');
     }));
-    document.getElementById('form-login').addEventListener('submit', async e=>{
-      e.preventDefault(); const fd=new FormData(e.target);
-      const r = await Api.post('/auth/login',{username:fd.get('username'),password:fd.get('password')});
-      if (r.error) return toast('خطأ: '+r.error,'error');
-      Auth.onLogin(r);
+
+    /* Allow Enter key in login fields */
+    ['login-username','login-password'].forEach(id=>{
+      document.getElementById(id)?.addEventListener('keydown', e=>{ if(e.key==='Enter') Auth.doLogin(); });
     });
-    document.getElementById('form-register').addEventListener('submit', async e=>{
-      e.preventDefault(); const fd=new FormData(e.target);
-      const r = await Api.post('/auth/register',{username:fd.get('username'),password:fd.get('password'),display_name:fd.get('display_name')});
-      if (r.error) return toast('خطأ: '+r.error,'error');
-      Auth.onLogin(r);
+    ['reg-username','reg-display','reg-password'].forEach(id=>{
+      document.getElementById(id)?.addEventListener('keydown', e=>{ if(e.key==='Enter') Auth.doRegister(); });
     });
-    document.getElementById('btn-logout').addEventListener('click', async ()=>{
-      await Api.post('/auth/logout');
+
+    /* Login button */
+    document.getElementById('btn-do-login')?.addEventListener('click', Auth.doLogin);
+
+    /* Register button */
+    document.getElementById('btn-do-register')?.addEventListener('click', Auth.doRegister);
+
+    /* Logout */
+    document.getElementById('btn-logout')?.addEventListener('click', async ()=>{
+      await Api.post('/auth/logout').catch(()=>{});
       localStorage.clear(); location.reload();
     });
   },
+
+  async doLogin(){
+    const username = (document.getElementById('login-username')?.value||'').trim().toLowerCase();
+    const password = document.getElementById('login-password')?.value||'';
+    Auth.showErr('login-error','');
+    if (!username) return Auth.showErr('login-error','أدخل اسم المستخدم');
+    if (!password) return Auth.showErr('login-error','أدخل كلمة المرور');
+    const btn = document.getElementById('btn-do-login');
+    if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ الدخول…'; }
+    try {
+      const r = await Api.post('/auth/login',{username, password});
+      if (r.error){
+        const msgs = {bad_credentials:'اسم المستخدم أو كلمة المرور غير صحيحة',banned:'هذا الحساب موقوف'};
+        Auth.showErr('login-error', msgs[r.error]||'خطأ: '+r.error);
+      } else {
+        Auth.onLogin(r);
+      }
+    } catch(e){
+      Auth.showErr('login-error','تعذّر الاتصال بالخادم — تحقق من الإنترنت');
+    } finally {
+      if (btn){ btn.disabled=false; btn.textContent='دخول'; }
+    }
+  },
+
+  async doRegister(){
+    const username = (document.getElementById('reg-username')?.value||'').trim().toLowerCase();
+    const display  = (document.getElementById('reg-display')?.value||'').trim();
+    const password = document.getElementById('reg-password')?.value||'';
+    Auth.showErr('reg-error','');
+    if (!username) return Auth.showErr('reg-error','أدخل اسم المستخدم');
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) return Auth.showErr('reg-error','اسم المستخدم: حروف إنجليزية صغيرة وأرقام فقط، 3-20 حرف');
+    if (!display)  return Auth.showErr('reg-error','أدخل الاسم الظاهر');
+    if (password.length < 4) return Auth.showErr('reg-error','كلمة المرور يجب أن تكون 4 أحرف على الأقل');
+    const btn = document.getElementById('btn-do-register');
+    if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ الإنشاء…'; }
+    try {
+      const r = await Api.post('/auth/register',{username, password, display_name:display});
+      if (r.error){
+        const msgs = {invalid_input:'اسم المستخدم غير صالح أو كلمة المرور قصيرة جداً',taken:'اسم المستخدم مأخوذ — اختر اسماً آخر'};
+        Auth.showErr('reg-error', msgs[r.error]||'خطأ: '+r.error);
+      } else {
+        Auth.onLogin(r);
+      }
+    } catch(e){
+      Auth.showErr('reg-error','تعذّر الاتصال بالخادم — تحقق من الإنترنت');
+    } finally {
+      if (btn){ btn.disabled=false; btn.textContent='إنشاء الحساب'; }
+    }
+  },
+
   onLogin(r){
     S.token=r.token; S.username=r.username;
-    localStorage.setItem('qqc_token',r.token); localStorage.setItem('qqc_user',r.username);
+    try { localStorage.setItem('qqc_token',r.token); localStorage.setItem('qqc_user',r.username); } catch(_){}
     Boot.afterLogin();
     Notifications.startPolling();
   }
