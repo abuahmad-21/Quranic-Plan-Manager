@@ -260,7 +260,7 @@ const Dashboard = {
     if (!S.user) { const r = await Api.get('/me'); S.user = r.user; }
     setText('user-name', S.user.display_name);
     const av=document.getElementById('user-avatar');
-    if (av){ av.textContent = (S.user.display_name||'?')[0]; av.style.background = S.user.avatar_color; }
+    if (av){ Profile.renderAvatar(av, S.user); }
     setText('stat-pages', (S.user.progress.total_pages_memorized||0).toFixed(2));
     setText('stat-streak', S.user.progress.current_streak_days||0);
     setText('stat-sessions', S.user.progress.total_sessions_completed||0);
@@ -427,14 +427,32 @@ const Plan = {
 };
 
 /* ══ PROFILE ══ */
+const AVATAR_EMOJIS = ['😊','🌟','📖','🕌','🌙','⭐','🏆','💎','🦋','🌺','🌴','🦅','🌊','🔥','❤️','🙏','🤲','📿','🌹','🌸','🦁','🐉','🌈','☀️','🌙','💫','⚡','🎯','🎓','🕋'];
+
 const Profile = {
+  _selectedEmoji: null,
+
+  renderAvatar(el, user){
+    if (!el) return;
+    if (user.avatar_emoji){
+      el.textContent = user.avatar_emoji;
+      el.style.background = user.avatar_color || '#1e3a5f';
+      el.style.fontSize = '2rem';
+    } else {
+      el.textContent = (user.display_name||'?')[0].toUpperCase();
+      el.style.background = user.avatar_color || '#1e3a5f';
+    }
+  },
+
   async load(){
     const r = await Api.get('/me'); S.user = r.user;
     const u = S.user;
+    Profile._selectedEmoji = u.avatar_emoji || null;
+
     setText('profile-name', u.display_name);
     setText('profile-handle', '@'+u.username);
-    const av=document.getElementById('profile-avatar');
-    av.textContent=(u.display_name||'?')[0]; av.style.background=u.avatar_color;
+    const av = document.getElementById('profile-avatar');
+    Profile.renderAvatar(av, u);
 
     // Bio display
     const bioEl=document.getElementById('profile-bio-display');
@@ -458,64 +476,209 @@ const Profile = {
     setText('pf-stat-longest', p.longest_streak_days||0);
 
     // Edit form
+    const usernameEl = document.getElementById('pf-username');
+    const statusEl   = document.getElementById('pf-username-status');
+    if (usernameEl) usernameEl.value = u.username||'';
+
     document.getElementById('pf-display').value = u.display_name||'';
     document.getElementById('pf-bio').value     = u.bio||'';
     document.getElementById('pf-color').value   = u.avatar_color||'#3b82f6';
-    document.getElementById('btn-save-profile').onclick = async ()=>{
-      const r2 = await Api.patch('/me',{
-        display_name:document.getElementById('pf-display').value,
-        bio:document.getElementById('pf-bio').value,
-        avatar_color:document.getElementById('pf-color').value,
+
+    // Emoji grid
+    const emojiGrid = document.getElementById('pf-emoji-grid');
+    if (emojiGrid){
+      emojiGrid.innerHTML = `<button class="btn btn-sm ${!Profile._selectedEmoji?'btn-secondary':'btn-ghost'}" data-em="" style="font-size:.85rem">لا شيء</button>` +
+        AVATAR_EMOJIS.map(e=>`<button class="btn btn-sm ${Profile._selectedEmoji===e?'btn-secondary':'btn-ghost'} emoji-sel-btn" data-em="${e}" style="font-size:1.2rem;padding:4px 8px">${e}</button>`).join('');
+      emojiGrid.querySelectorAll('[data-em]').forEach(btn=>btn.onclick=()=>{
+        Profile._selectedEmoji = btn.dataset.em || null;
+        emojiGrid.querySelectorAll('[data-em]').forEach(b=>{ b.classList.remove('btn-secondary'); b.classList.add('btn-ghost'); });
+        btn.classList.add('btn-secondary'); btn.classList.remove('btn-ghost');
+        // Preview
+        Profile.renderAvatar(av, {...u, avatar_emoji: Profile._selectedEmoji, avatar_color: document.getElementById('pf-color').value});
       });
-      if (r2.error) return toast('خطأ','error');
-      S.user = r2.user; toast('تم الحفظ ✅','success');
+    }
+
+    // Avatar click → emoji panel toggle (same as emoji grid in form)
+    if (av) av.onclick = ()=>{ emojiGrid?.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+
+    // Live color preview
+    document.getElementById('pf-color')?.addEventListener('input', e=>{
+      Profile.renderAvatar(av, {...u, avatar_emoji: Profile._selectedEmoji, avatar_color: e.target.value});
+    });
+
+    // Username availability check
+    let checkTimeout;
+    if (usernameEl && statusEl){
+      usernameEl.oninput = ()=>{
+        clearTimeout(checkTimeout);
+        const val = usernameEl.value.toLowerCase().trim();
+        if (val === u.username){ statusEl.textContent=''; statusEl.style.color=''; return; }
+        statusEl.textContent='⏳ ...'; statusEl.style.color='var(--text-3)';
+        checkTimeout = setTimeout(async ()=>{
+          const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
+          if (val !== usernameEl.value.toLowerCase().trim()) return; // stale
+          if (!val || !/^[a-z0-9_]{3,20}$/.test(val)){
+            statusEl.textContent='⚠ اسم المستخدم يجب أن يكون 3-20 حرف (أحرف إنجليزية، أرقام، _)';
+            statusEl.style.color='#f59e0b';
+          } else if (res.available){
+            statusEl.textContent='✅ متاح';
+            statusEl.style.color='#34d399';
+          } else {
+            statusEl.textContent = res.reason==='invalid' ? '⚠ تنسيق غير صحيح' : '❌ محجوز بالفعل';
+            statusEl.style.color='#ef4444';
+          }
+        }, 600);
+      };
+    }
+
+    const checkBtn = document.getElementById('btn-check-username');
+    if (checkBtn) checkBtn.onclick = async ()=>{
+      const val = usernameEl?.value.toLowerCase().trim();
+      if (!val || !statusEl) return;
+      const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
+      if (res.available){ statusEl.textContent='✅ متاح'; statusEl.style.color='#34d399'; }
+      else { statusEl.textContent = res.reason==='invalid' ? '⚠ تنسيق غير صحيح' : '❌ محجوز بالفعل'; statusEl.style.color='#ef4444'; }
+    };
+
+    document.getElementById('btn-save-profile').onclick = async ()=>{
+      const newUsername = usernameEl?.value.toLowerCase().trim();
+      const payload = {
+        display_name: document.getElementById('pf-display').value.trim(),
+        bio: document.getElementById('pf-bio').value.trim(),
+        avatar_color: document.getElementById('pf-color').value,
+        avatar_emoji: Profile._selectedEmoji || '',
+      };
+      if (newUsername && newUsername !== u.username) payload.new_username = newUsername;
+      const r2 = await Api.patch('/me', payload);
+      if (r2.error) return toast(r2.error==='username_taken'?'اسم المستخدم محجوز':'خطأ في الحفظ','error');
+      if (r2.username_changed){
+        S.username = r2.new_username;
+        localStorage.setItem('qqc_username', r2.new_username);
+        toast('تم تغيير اسم المستخدم ✅','success');
+      } else {
+        toast('تم الحفظ ✅','success');
+      }
+      S.user = r2.user;
       Profile.load();
+      // Update header display
+      const dn = document.getElementById('dash-display-name');
+      if (dn) dn.textContent = r2.user.display_name;
     };
     document.getElementById('my-posts').innerHTML = (u.posts||[]).slice().reverse().map(p=>Feed.renderPost(p,true)).join('') || '<p style="color:var(--text-2)">لا توجد منشورات بعد.</p>';
+    document.querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{
+      const res=await Api.post('/posts/'+b.dataset.like+'/like'); if(res.ok) b.querySelector('.like-cnt').textContent=res.likes;
+    });
+    document.querySelectorAll('[data-del-post]').forEach(b=>b.onclick=async()=>{
+      if(!confirm('حذف المنشور؟'))return; const res=await Api.del('/posts/'+b.dataset.delPost);
+      if(res.ok){ toast('حُذف','success'); Profile.load(); }
+    });
   }
 };
 
 /* ══ FEED & POSTS ══ */
 const Feed = {
+  _tab: 'friends',
+
   async load(){
     document.getElementById('btn-publish').onclick = Feed.publish;
-    const r = await Api.get('/posts/feed');
-    document.getElementById('feed-list').innerHTML = (r.posts||[]).map(p=>Feed.renderPost(p,false)).join('') || '<p style="color:var(--text-2)">لا توجد منشورات. أضف أصدقاء!</p>';
+    // Tab switching
+    document.querySelectorAll('.feed-tab').forEach(t=>t.onclick=()=>{
+      document.querySelectorAll('.feed-tab').forEach(x=>{ x.classList.remove('active','btn-secondary'); x.classList.add('btn-ghost'); });
+      t.classList.add('active','btn-secondary'); t.classList.remove('btn-ghost');
+      Feed._tab = t.dataset.feedTab;
+      Feed.loadPosts();
+    });
+    Feed.loadPosts();
+  },
+
+  async loadPosts(){
+    const listEl = document.getElementById('feed-list');
+    if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-2)">⏳ جارٍ التحميل…</div>';
+    const endpoint = Feed._tab === 'explore' ? '/posts' : '/posts/feed';
+    const r = await Api.get(endpoint);
+    const posts = r.posts || [];
+    if (listEl){
+      listEl.innerHTML = posts.length
+        ? posts.map(p=>Feed.renderPost(p, p.author===S.username)).join('')
+        : `<p style="color:var(--text-2);text-align:center;padding:20px">${Feed._tab==='friends'?'لا توجد منشورات. أضف أصدقاء للمتابعة!':'لا توجد منشورات بعد.'}</p>`;
+    }
+    Feed.wireActions();
+  },
+
+  wireActions(){
     document.querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{
       const r=await Api.post('/posts/'+b.dataset.like+'/like');
-      if (r.ok) b.textContent='♥ '+r.likes;
+      if (r.ok){ const cnt=b.querySelector('.like-cnt'); if(cnt) cnt.textContent=r.likes; }
     });
     document.querySelectorAll('[data-del-post]').forEach(b=>b.onclick=async()=>{
       if (!confirm('حذف المنشور؟')) return;
-      const r = await Api.del('/posts/'+b.dataset.delPost);
-      if (r.ok){ toast('حُذف','success'); Feed.load(); }
+      const r=await Api.del('/posts/'+b.dataset.delPost);
+      if (r.ok){ toast('حُذف','success'); Feed.loadPosts(); }
+    });
+    document.querySelectorAll('[data-comment-toggle]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.commentToggle;
+      const area=document.getElementById('comment-area-'+id);
+      if(area) area.style.display=area.style.display==='none'?'block':'none';
+    });
+    document.querySelectorAll('[data-comment-send]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.commentSend;
+      const inp=document.getElementById('comment-inp-'+id);
+      if(!inp||!inp.value.trim()) return;
+      const r=await Api.post('/posts/'+id+'/comment',{text:inp.value.trim()});
+      if(r.ok){ inp.value=''; Feed.loadPosts(); toast('تم التعليق','success'); }
     });
   },
+
   renderPost(p, mine){
-    return `<div class="post glass-card">
-      <div class="post-head"><strong>@${escapeHTML(p.author)}</strong><span class="mono">${fmtTime(p.created_at)}</span></div>
-      <div class="post-text">${escapeHTML(p.text)}</div>
-      ${p.thumb?`<img class="post-thumb" src="${p.thumb}">`:''}
-      <div class="post-actions">
-        <button class="btn btn-sm btn-ghost" data-like="${p.id}">♥ ${p.likes?.length||0}</button>
-        ${mine||p.author===S.username?`<button class="btn btn-sm btn-danger" data-del-post="${p.id}">حذف</button>`:''}
-      </div></div>`;
+    const authorUser = p.author_display || p.author;
+    const commentsList = (p.comments||[]).slice(-5).map(c=>`
+      <div style="display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-top:1px solid rgba(255,255,255,.05)">
+        <div class="avatar-dot" style="width:22px;height:22px;font-size:.65rem;flex-shrink:0">${escapeHTML((c.from||'?')[0].toUpperCase())}</div>
+        <div style="flex:1;min-width:0">
+          <span style="font-size:.75rem;color:var(--gold);font-weight:600">@${escapeHTML(c.from)}</span>
+          <span style="font-size:.82rem;color:var(--text-1);margin-right:5px">${escapeHTML(c.text)}</span>
+        </div>
+        <span class="mono" style="font-size:.68rem;color:var(--text-3);flex-shrink:0">${fmtTime(c.created_at)}</span>
+      </div>`).join('');
+    return `<div class="post glass-card" style="margin-bottom:10px">
+      <div class="post-head" style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div class="avatar-dot" style="width:36px;height:36px;font-size:.9rem;flex-shrink:0">${escapeHTML((p.author||'?')[0].toUpperCase())}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.9rem">@${escapeHTML(p.author)}</div>
+          <div class="mono" style="font-size:.72rem;color:var(--text-3)">${fmtTime(p.created_at)}</div>
+        </div>
+        ${mine?`<button class="btn btn-sm btn-danger" data-del-post="${p.id}" style="opacity:.7">حذف</button>`:''}
+      </div>
+      ${p.text?`<div class="post-text" style="margin-bottom:8px">${escapeHTML(p.text)}</div>`:''}
+      ${p.thumb?`<img class="post-thumb" src="${p.thumb}" style="border-radius:10px;width:100%;max-height:300px;object-fit:cover;margin-bottom:8px">`:''}
+      <div class="post-actions" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-sm btn-ghost" data-like="${p.id}" style="gap:4px">♥ <span class="like-cnt">${p.likes?.length||0}</span></button>
+        <button class="btn btn-sm btn-ghost" data-comment-toggle="${p.id}">💬 ${(p.comments||[]).length}</button>
+      </div>
+      <div id="comment-area-${p.id}" style="display:none;margin-top:8px">
+        ${commentsList?`<div style="margin-bottom:6px">${commentsList}</div>`:''}
+        <div style="display:flex;gap:6px">
+          <input id="comment-inp-${p.id}" class="field-input" style="flex:1;padding:6px 10px;font-size:.82rem" placeholder="اكتب تعليقاً...">
+          <button class="btn btn-sm btn-secondary" data-comment-send="${p.id}">إرسال</button>
+        </div>
+      </div>
+    </div>`;
   },
+
   async publish(){
     const text = document.getElementById('post-text').value.trim();
     const file = document.getElementById('post-image').files[0];
     let thumb = null, local_ref = null;
     if (file){
-      // generate small thumbnail (max 200px) for feed; keep full image client-side
       const img = await readFileAsImage(file);
       thumb = compressImage(img, 240, 0.7);
-      local_ref = await Library.saveImage(file); // store full image locally
+      local_ref = await Library.saveImage(file);
     }
-    if (!text && !thumb) return toast('اكتب شيئاً','error');
+    if (!text && !thumb) return toast('اكتب شيئاً أو اختر صورة','error');
     const r = await Api.post('/posts',{text, thumb, local_ref});
     if (r.error) return toast('خطأ: '+r.error,'error');
     document.getElementById('post-text').value=''; document.getElementById('post-image').value='';
-    toast('نُشر','success'); Feed.load();
+    toast('نُشر ✅','success'); Feed.loadPosts();
   }
 };
 
@@ -1760,6 +1923,32 @@ const QuranBrowser = {
   /* Sheikh identifier map — CDN-validated identifiers */
   SHEIKHS: ['ar.alafasy','ar.husary','ar.abdulbasitmurattal','ar.mahermuaiqly','ar.saudalshuraym'],
   get loop(){ return +(document.getElementById('quran-loop-select')?.value ?? 1); },
+  get ayahRepeat(){ return +(document.getElementById('quran-ayah-repeat-select')?.value ?? 1); },
+  ayahRepeatRemain: 1,
+
+  saveSettings(){
+    if (!S.username) return;
+    const settings = {
+      sheikh: document.getElementById('quran-sheikh-select')?.value || 'ar.alafasy',
+      loop:   document.getElementById('quran-loop-select')?.value   || '1',
+      ayah_repeat: document.getElementById('quran-ayah-repeat-select')?.value || '1',
+    };
+    localStorage.setItem(`qqc_quran_${S.username}`, JSON.stringify(settings));
+  },
+
+  loadSettings(){
+    if (!S.username) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`qqc_quran_${S.username}`) || 'null');
+      if (!saved) return;
+      const sheikh = document.getElementById('quran-sheikh-select');
+      const loop   = document.getElementById('quran-loop-select');
+      const ayahR  = document.getElementById('quran-ayah-repeat-select');
+      if (sheikh && saved.sheikh) sheikh.value = saved.sheikh;
+      if (loop   && saved.loop)   loop.value   = saved.loop;
+      if (ayahR  && saved.ayah_repeat) ayahR.value = saved.ayah_repeat;
+    } catch(e){}
+  },
 
   async loadSurahs(){
     if (QuranBrowser.surahs.length) return QuranBrowser.surahs;
@@ -1816,6 +2005,14 @@ const QuranBrowser = {
       const inp = document.getElementById('quran-page-num');
       if (inp && +inp.value < 604){ inp.value = +inp.value + 1; QuranBrowser.loadContent(); }
     });
+    // Sheikh/loop/repeat change — stop audio and save settings
+    document.getElementById('quran-sheikh-select')?.addEventListener('change', ()=>{
+      QuranBrowser.stopAll(); QuranBrowser.saveSettings();
+    });
+    document.getElementById('quran-loop-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
+    document.getElementById('quran-ayah-repeat-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
+    // Load saved settings for this user
+    QuranBrowser.loadSettings();
     // Playback
     document.getElementById('btn-quran-play-all')?.addEventListener('click', QuranBrowser.playAll);
     document.getElementById('btn-quran-pause')?.addEventListener('click', QuranBrowser.togglePause);
@@ -1947,8 +2144,11 @@ const QuranBrowser = {
     display.querySelectorAll('.ayah-play-btn').forEach(b=>b.onclick=()=>{
       QuranBrowser.stopAll();
       const gNum = +b.dataset.playAyah;
-      QuranBrowser.playQueue = [gNum];
+      // Play from this ayah to the end of the loaded set (not just this one)
+      const idx = QuranBrowser.currentAyahs.findIndex(a=>a.number===gNum);
+      QuranBrowser.playQueue = QuranBrowser.currentAyahs.slice(idx>=0?idx:0).map(a=>a.number);
       QuranBrowser.loopRemain = QuranBrowser.loop === 0 ? Infinity : (QuranBrowser.loop || 1);
+      QuranBrowser.ayahRepeatRemain = QuranBrowser.ayahRepeat;
       QuranBrowser.playIndex = 0;
       QuranBrowser.playing = true;
       QuranBrowser.playNext();
@@ -1970,6 +2170,7 @@ const QuranBrowser = {
     if (!QuranBrowser.currentAyahs.length) return toast('حمّل سورة أو صفحة أولاً','error');
     QuranBrowser.playQueue = QuranBrowser.currentAyahs.map(a=>a.number);
     QuranBrowser.loopRemain = QuranBrowser.loop === 0 ? Infinity : (QuranBrowser.loop || 1);
+    QuranBrowser.ayahRepeatRemain = QuranBrowser.ayahRepeat;
     QuranBrowser.playIndex = 0;
     QuranBrowser.playing = true;
     QuranBrowser.paused = false;
@@ -1988,13 +2189,26 @@ const QuranBrowser = {
         return;
       }
       QuranBrowser.playIndex = 0;
+      QuranBrowser.ayahRepeatRemain = QuranBrowser.ayahRepeat;
     }
     const gNum = QuranBrowser.playQueue[QuranBrowser.playIndex];
     QuranBrowser.highlightAyah(gNum);
-    const loopTxt = QuranBrowser.loopRemain === Infinity ? '∞' : QuranBrowser.loopRemain > 1 ? `${QuranBrowser.loopRemain}×` : '';
+    const loopTxt = QuranBrowser.loopRemain === Infinity ? '∞' : QuranBrowser.loopRemain > 1 ? `(×${QuranBrowser.loopRemain})` : '';
+    const repTxt = QuranBrowser.ayahRepeat > 1 ? ` [${QuranBrowser.ayahRepeat - QuranBrowser.ayahRepeatRemain + 1}/${QuranBrowser.ayahRepeat}]` : '';
     const info = document.getElementById('quran-playing-info');
-    if (info) info.textContent = `▶ آية ${QuranBrowser.playIndex+1}/${QuranBrowser.playQueue.length} ${loopTxt}`;
-    QuranBrowser.playAudioSeq(gNum, ()=>{ QuranBrowser.playIndex++; setTimeout(QuranBrowser.playNext, 350); });
+    if (info) info.textContent = `▶ آية ${QuranBrowser.playIndex+1}/${QuranBrowser.playQueue.length}${repTxt} ${loopTxt}`;
+    QuranBrowser.playAudioSeq(gNum, ()=>{
+      QuranBrowser.ayahRepeatRemain--;
+      if (QuranBrowser.ayahRepeatRemain > 0){
+        // Repeat same ayah
+        setTimeout(QuranBrowser.playNext, 350);
+      } else {
+        // Advance to next ayah
+        QuranBrowser.ayahRepeatRemain = QuranBrowser.ayahRepeat;
+        QuranBrowser.playIndex++;
+        setTimeout(QuranBrowser.playNext, 400);
+      }
+    });
   },
 
   highlightAyah(gNum){
@@ -2049,13 +2263,18 @@ const QuranBrowser = {
   },
 
   playAudioSeq(gNum, onEnd){
-    if (QuranBrowser.audioEl){ QuranBrowser.audioEl.pause(); QuranBrowser.audioEl.src=''; QuranBrowser.audioEl=null; }
+    // Tear down any existing audio element first
+    if (QuranBrowser.audioEl){
+      const old = QuranBrowser.audioEl;
+      old.onended = null; old.onerror = null; old.ontimeupdate = null; old.oncanplay = null;
+      old.pause(); old.src='';
+      QuranBrowser.audioEl = null;
+    }
     document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
     const sheikh = QuranBrowser.sheikh;
     const info = QuranBrowser.ayahMap.get(gNum);
     document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b._origText=b.textContent; b.textContent='⏳'; b.disabled=true; });
     const resetBtns = ()=>document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b.textContent=b._origText||'🔊'; b.disabled=false; });
-    // Build URL list: everyayah.com first (reliable), then cdn.islamic.network fallbacks
     const evId = QuranBrowser.SHEIKH_EVERYAYAH[sheikh];
     const sNum = String(info?.surahNum||1).padStart(3,'0');
     const aNum = String(info?.ayahNum||gNum).padStart(3,'0');
@@ -2064,21 +2283,26 @@ const QuranBrowser = {
     urls.push(`https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`);
     urls.push(`https://cdn.islamic.network/quran/audio/64/${sheikh}/${gNum}.mp3`);
     let urlIdx = 0;
-    const au = new Audio(urls[0]);
+    let done = false; // guard against double-fire (onerror + play().catch)
+    const au = new Audio();
     au.preload = 'auto';
     QuranBrowser.audioEl = au;
-    const tryNext = ()=>{
-      urlIdx++;
-      if (urlIdx>=urls.length){ resetBtns(); if(onEnd) onEnd(); return; }
-      au.src = urls[urlIdx];
-      au.play().catch(()=>{ setTimeout(tryNext, 150); });
-    };
-    au.oncanplay = ()=>resetBtns();
-    au.onended = ()=>{
+    const finish = ()=>{
+      if (done) return;
+      done = true;
       resetBtns();
       document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
       if (!QuranBrowser.paused && onEnd) onEnd();
     };
+    const tryNext = ()=>{
+      urlIdx++;
+      if (urlIdx >= urls.length){ finish(); return; }
+      au.src = urls[urlIdx];
+      au.load();
+      au.play().catch(()=>{}); // onerror will handle failures
+    };
+    au.oncanplay = ()=>resetBtns();
+    au.onended = finish;
     au.onerror = ()=>tryNext();
     au.ontimeupdate = ()=>{
       if (!au.duration||au.duration<=0) return;
@@ -2088,7 +2312,9 @@ const QuranBrowser = {
       const idx = Math.min(Math.floor(prog*words.length), words.length-1);
       words.forEach((w,i)=>w.classList.toggle('word-playing', i===idx));
     };
-    au.play().catch(()=>tryNext());
+    au.src = urls[0];
+    au.load();
+    au.play().catch(()=>{}); // onerror handles failures
   },
 
   playAudio(gNum){

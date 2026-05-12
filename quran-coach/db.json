@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 20,
+      "total_users": 21,
       "total_sessions_today": 15,
       "total_pages_memorized_alltime": 2.6
     },
@@ -106,7 +106,8 @@
         "target_level": "all",
         "created_at": "2026-05-09T01:40:38.103Z"
       }
-    ]
+    ],
+    "training_samples": []
   },
   "users": {
     "455": {
@@ -2448,6 +2449,108 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": []
+    },
+    "jdjdhdh": {
+      "username": "jdjdhdh",
+      "password_hash": "57964e16317a8ac1691ee55d5fde29135753187a0be5beb57dab37ddf295910c",
+      "display_name": "Fuhdhdhd",
+      "created_at": "2026-05-12T01:26:08.686Z",
+      "last_active": "2026-05-12T01:28:55.581Z",
+      "avatar_color": "#0ccef6",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-12T01:26:10.881Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-12T01:26:10.881Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 4.53,
+        "afi": 77,
+        "history": [
+          75,
+          80,
+          85,
+          90,
+          96,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "studio_history": [
+        {
+          "surah_name": "سُورَةُ النِّسَاءِ",
+          "ayah_num": 10,
+          "global_num": 0,
+          "transcript": "‏إن الذين ياكلون أموال الأيتام ظلما إنما ياكلون في بطونهم نارا وسيصلون سعرة",
+          "ai_score": 14,
+          "ai_feedback": "التطابق التقريبي: 14%\nاستمر في التدريب والاستماع للشيخ لتحسين نطقك.",
+          "self_score": null,
+          "timestamp": "2026-05-12T01:27:58.824Z"
+        }
+      ]
     }
   },
   "chats": {},

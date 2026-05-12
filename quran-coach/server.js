@@ -24,6 +24,8 @@ const TECHS    = JSON.parse(fs.readFileSync(path.join(ROOT,'data','techniques.js
 /* ══ DB helpers (debounced write) ══ */
 let DB = JSON.parse(fs.readFileSync(DB_PATH));
 if(!DB.channels)  DB.channels  = {};
+if(!DB.posts)     DB.posts     = [];
+if(!DB.chats)     DB.chats     = {};
 if(!DB.admin.sheikh_requests)    DB.admin.sheikh_requests    = {};
 if(!DB.admin.memorization_plans) DB.admin.memorization_plans = [];
 let writePending = false;
@@ -154,6 +156,13 @@ R('POST','/api/auth/logout', async (req,res)=>{
   send(res,200,{ok:true});
 });
 
+R('GET','/api/auth/check-username', async (req,res,_,q)=>{
+  const u = String(q.username||'').toLowerCase().trim();
+  if (!/^[a-z0-9_]{3,20}$/.test(u)) return send(res,200,{available:false,reason:'invalid'});
+  if (DB.users[u]) return send(res,200,{available:false,reason:'taken'});
+  send(res,200,{available:true});
+});
+
 /* ── ONBOARDING & PROFILE ── */
 R('POST','/api/onboarding', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
@@ -192,9 +201,38 @@ R('PATCH','/api/me', async (req,res)=>{
   if (typeof b.display_name==='string') u.display_name=b.display_name.slice(0,40);
   if (typeof b.bio==='string') u.bio=b.bio.slice(0,300);
   if (typeof b.avatar_color==='string' && /^#[0-9a-f]{6}$/i.test(b.avatar_color)) u.avatar_color=b.avatar_color;
+  if (typeof b.avatar_emoji==='string') u.avatar_emoji=b.avatar_emoji.slice(0,8)||null;
   if (typeof b.plan_mode==='string' && ['both','memorization_only','review_only'].includes(b.plan_mode)){
     if(!u.onboarding) u.onboarding={};
     u.onboarding.plan_mode = b.plan_mode;
+  }
+  if (b.quran_settings && typeof b.quran_settings==='object'){
+    u.quran_settings = {
+      sheikh: String(b.quran_settings.sheikh||'ar.alafasy').slice(0,50),
+      loop: +b.quran_settings.loop||1,
+      ayah_repeat: +b.quran_settings.ayah_repeat||1,
+    };
+  }
+  // Username change
+  if (typeof b.new_username==='string'){
+    const newU = b.new_username.toLowerCase().trim();
+    if (/^[a-z0-9_]{3,20}$/.test(newU) && newU!==u.username){
+      if (DB.users[newU]) return send(res,409,{error:'username_taken'});
+      const oldU = u.username;
+      DB.users[newU] = {...u, username:newU};
+      delete DB.users[oldU];
+      // Update references
+      Object.values(DB.users).forEach(usr=>{
+        if(usr.friends) usr.friends=usr.friends.map(f=>f===oldU?newU:f);
+        if(usr.friend_requests_sent) usr.friend_requests_sent=usr.friend_requests_sent.map(f=>f===oldU?newU:f);
+        if(usr.friend_requests_received) usr.friend_requests_received=usr.friend_requests_received.map(f=>f===oldU?newU:f);
+      });
+      DB.posts.forEach(p=>{ if(p.author===oldU) p.author=newU; });
+      const tok = req.headers['x-token'];
+      if(tok) SESSIONS.set(tok, newU);
+      persist();
+      return send(res,200,{ok:true, user:safeUser(DB.users[newU]), username_changed:true, new_username:newU});
+    }
   }
   persist(); send(res,200,{ok:true,user:safeUser(u)});
 });
@@ -309,6 +347,27 @@ R('GET','/api/posts/feed', async (req,res)=>{
   const friends = new Set([u.username, ...(u.friends||[])]);
   const items = DB.posts.filter(p=>friends.has(p.author)).slice(-100).reverse();
   send(res,200,{posts:items});
+});
+
+R('GET','/api/posts', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const items = DB.posts.slice(-200).reverse();
+  send(res,200,{posts:items});
+});
+
+R('POST','/api/posts/:id/comment', async (req,res,p)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const text = String(b.text||'').trim().slice(0,500);
+  if (!text) return send(res,400,{error:'empty'});
+  const post = DB.posts.find(x=>x.id===p.id); if (!post) return send(res,404,{error:'not_found'});
+  if (!post.comments) post.comments=[];
+  const comment = {id:uid(), from:u.username, text, created_at:now()};
+  post.comments.push(comment);
+  if (post.comments.length>50) post.comments=post.comments.slice(-50);
+  const owner=DB.users[post.author];
+  if(owner){ const op=owner.posts.find(x=>x.id===p.id); if(op){ if(!op.comments) op.comments=[]; op.comments=post.comments.slice(); } }
+  persist(); send(res,200,{ok:true, comment});
 });
 
 R('POST','/api/posts/:id/like', async (req,res,p)=>{

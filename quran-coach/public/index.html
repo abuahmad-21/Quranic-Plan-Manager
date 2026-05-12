@@ -249,7 +249,10 @@
       <h2 class="view-title">ملفي الشخصي</h2>
       <div class="glass-card" style="padding:18px;margin-bottom:12px">
         <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
-          <div class="avatar-dot" id="profile-avatar" style="width:66px;height:66px;font-size:1.7rem;flex-shrink:0"></div>
+          <div style="position:relative;flex-shrink:0">
+            <div class="avatar-dot" id="profile-avatar" style="width:72px;height:72px;font-size:1.9rem;cursor:pointer" title="انقر لاختيار إيموجي"></div>
+            <div id="avatar-emoji-panel" style="display:none;position:absolute;top:78px;right:0;z-index:200;background:rgba(10,15,30,.98);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:10px;width:260px;display:none;flex-wrap:wrap;gap:4px;box-shadow:0 8px 40px rgba(0,0,0,.8)"></div>
+          </div>
           <div style="flex:1;min-width:0">
             <div id="profile-name" style="font-weight:700;font-size:1.1rem;margin-bottom:2px"></div>
             <div id="profile-handle" class="mono" style="color:var(--text-3);font-size:.8rem;margin-bottom:5px"></div>
@@ -267,13 +270,21 @@
         </div>
       </div>
       <div class="glass-card pad" style="margin-bottom:12px">
-        <h3 style="margin:0 0 10px">تعديل الملف</h3>
+        <h3 style="margin:0 0 12px">تعديل الملف الشخصي</h3>
+        <label class="field-label">اسم المستخدم</label>
+        <div style="display:flex;gap:6px;margin-bottom:4px">
+          <input id="pf-username" class="field-input" style="flex:1" autocomplete="username" placeholder="letters, numbers, _">
+          <button class="btn btn-sm btn-ghost" id="btn-check-username" style="white-space:nowrap">تحقق</button>
+        </div>
+        <div id="pf-username-status" style="font-size:.76rem;margin-bottom:10px;min-height:16px"></div>
         <label class="field-label">الاسم الظاهر</label>
-        <input id="pf-display" class="field-input">
+        <input id="pf-display" class="field-input" style="margin-bottom:10px">
         <label class="field-label">نبذة قصيرة</label>
-        <textarea id="pf-bio" class="field-input" rows="3" maxlength="300"></textarea>
+        <textarea id="pf-bio" class="field-input" rows="3" maxlength="300" style="margin-bottom:10px"></textarea>
         <label class="field-label">لون الأفاتار</label>
-        <input id="pf-color" type="color" class="field-input" style="height:44px">
+        <input id="pf-color" type="color" class="field-input" style="height:44px;margin-bottom:6px">
+        <label class="field-label" style="margin-top:6px">إيموجي الأفاتار (اختياري)</label>
+        <div id="pf-emoji-grid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;padding:8px;background:rgba(255,255,255,.04);border-radius:8px"></div>
         <button class="btn btn-primary btn-full" id="btn-save-profile">حفظ التعديلات</button>
       </div>
       <h3 style="margin:14px 6px 8px">منشوراتي</h3>
@@ -285,16 +296,20 @@
   <section id="view-feed" class="view">
     <div class="page-container">
       <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
-      <h2 class="view-title">منشورات الأصدقاء</h2>
-      <div class="glass-card pad">
-        <textarea id="post-text" class="field-input" rows="3" placeholder="ما الذي حفظته اليوم؟"></textarea>
+      <h2 class="view-title">المنشورات</h2>
+      <div class="glass-card pad" style="margin-bottom:12px">
+        <textarea id="post-text" class="field-input" rows="3" placeholder="شارك ما حفظته اليوم..."></textarea>
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
           <input type="file" id="post-image" accept="image/*" style="flex:1;color:var(--text-2);font-size:.8rem">
           <button class="btn btn-primary" id="btn-publish">نشر</button>
         </div>
         <div class="field-hint">الصورة الأصلية تُحفظ على جهازك فقط — يُرفع مصغّر صغير للسيرفر.</div>
       </div>
-      <div id="feed-list" style="margin-top:14px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn btn-secondary active feed-tab" data-feed-tab="friends">أصدقائي</button>
+        <button class="btn btn-ghost feed-tab" data-feed-tab="explore">استكشاف 🌍</button>
+      </div>
+      <div id="feed-list"></div>
     </div>
   </section>
 
@@ -749,12 +764,19 @@
             <option value="ar.mahermuaiqly">الشيخ ماهر المعيقلي</option>
             <option value="ar.saudalshuraym">الشيخ سعود الشريم</option>
           </select>
-          <select id="quran-loop-select" class="field-input" style="flex:0 0 120px">
-            <option value="1">تكرار مرة</option>
-            <option value="2">مرتين</option>
-            <option value="3">3 مرات</option>
-            <option value="5">5 مرات</option>
+          <select id="quran-loop-select" class="field-input" style="flex:0 0 110px">
+            <option value="1">دورة ×1</option>
+            <option value="2">دورة ×2</option>
+            <option value="3">دورة ×3</option>
+            <option value="5">دورة ×5</option>
             <option value="0">∞ لا نهاية</option>
+          </select>
+          <select id="quran-ayah-repeat-select" class="field-input" style="flex:0 0 100px">
+            <option value="1">آية ×1</option>
+            <option value="2">آية ×2</option>
+            <option value="3">آية ×3</option>
+            <option value="5">آية ×5</option>
+            <option value="7">آية ×7</option>
           </select>
           <button class="btn btn-primary" id="btn-load-surah">تحميل</button>
         </div>
