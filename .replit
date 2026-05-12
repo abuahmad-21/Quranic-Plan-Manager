@@ -29,7 +29,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd quran-coach && PORT=5000 node server.js"
+args = "fuser -k 5000/tcp 2>/dev/null; sleep 1; cd quran-coach && PORT=5000 node server.js"
 waitForPort = 5000
 
 [agent]
