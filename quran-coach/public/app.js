@@ -2322,10 +2322,14 @@ const QuranBrowser = {
   addPanelSpeechCheck(p){
     const area = document.getElementById('qp-speech-area');
     if (!area || !p) return;
+    area.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn btn-xs btn-ghost" id="btn-qp-tts" style="font-size:.74rem;padding:3px 9px">🤖 اسمع AI</button>
+      <button class="btn btn-xs btn-secondary" id="btn-qp-speech" style="font-size:.74rem;padding:3px 9px">🎤 تحقق آني</button>
+    </div>
+    <div id="qp-speech-result" style="margin-top:5px"></div>`;
+    document.getElementById('btn-qp-tts')?.addEventListener('click', ()=>VoiceStudio._ttsSpeak(p.text,'btn-qp-tts'));
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    area.innerHTML=`<button class="btn btn-xs btn-ghost" id="btn-qp-speech" style="font-size:.74rem;padding:3px 9px">🎤 تحقق آني (اتلُ → ميكروفون)</button>
-      <div id="qp-speech-result" style="margin-top:5px"></div>`;
+    if (!SR){ document.getElementById('btn-qp-speech')?.remove(); return; }
     document.getElementById('btn-qp-speech').onclick=()=>{
       const btn=document.getElementById('btn-qp-speech');
       const res=document.getElementById('qp-speech-result');
@@ -2421,12 +2425,43 @@ const VoiceStudio = {
         <div style="font-size:.72rem;color:#34d399;margin-bottom:4px">🎯 الآية المستهدفة</div>
         <div style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">${escapeHTML(p.surahName)} · الآية ${p.ayahNum}</div>
         <div dir="rtl" style="font-size:1.6rem;line-height:2.6;text-align:justify;color:var(--gold);font-family:'Amiri Quran','Amiri','Scheherazade New',serif">${escapeHTML(p.text)}</div>
-        ${p.globalNum?`<div style="margin-top:12px;text-align:center"><button class="btn btn-sm btn-ghost" onclick="QuranBrowser.playAudio(${p.globalNum})">🔊 استمع للنموذج</button></div>`:''}
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          ${p.globalNum?`<button class="btn btn-sm btn-ghost" onclick="QuranBrowser.playAudio(${p.globalNum})">🔊 استمع للشيخ</button>`:''}
+          <button class="btn btn-sm btn-ghost" id="btn-verse-tts">🤖 اسمع صوت AI</button>
+        </div>
       </div>`;
+      document.getElementById('btn-verse-tts')?.addEventListener('click', ()=>VoiceStudio._ttsSpeak(p.text,'btn-verse-tts'));
     }
     if (res) res.style.display='none';
     if (p.surahNum){ const s2=document.getElementById('studio-surah'); if(s2&&s2.options.length>1) s2.value=p.surahNum; }
     if (p.ayahNum){ const ai=document.getElementById('studio-ayah'); if(ai) ai.value=p.ayahNum; }
+  },
+
+  async _ttsSpeak(text, btnId){
+    const btn = btnId ? document.getElementById(btnId) : null;
+    if (btn){ btn._orig=btn.textContent; btn.disabled=true; btn.textContent='⏳...'; }
+    try {
+      const resp = await fetch('/api/ai/tts',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-token':S.token,'x-username':S.username},
+        body:JSON.stringify({text})
+      });
+      if (resp.ok){
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const au = new Audio(url);
+        au.play();
+        au.onended=()=>URL.revokeObjectURL(url);
+        if (btn){ btn.disabled=false; btn.textContent='🤖 أعد الاستماع'; }
+        return;
+      }
+    } catch(e){}
+    // Fallback: browser built-in TTS
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='ar-SA'; u.rate=0.8; u.pitch=1.05;
+    window.speechSynthesis.speak(u);
+    if (btn){ btn.disabled=false; btn.textContent=btn._orig||'🔊 أعد'; }
   },
   async toggleRecord(){
     if (VoiceStudio.recorder && VoiceStudio.recorder.state==='recording'){
@@ -2541,19 +2576,22 @@ const VoiceStudio = {
       });
       // Whisper STT transcription, then AI evaluation
       let transcript = (VoiceStudio._speechTranscript||'').trim();
+      let audio_base64 = null;
       try {
         if (blob.size < 15*1024*1024){
-          const audio_base64 = await blobToBase64(blob);
+          audio_base64 = await blobToBase64(blob);
           const tr = await Api.post('/ai/transcribe',{audio_base64, mime_type:recMime});
           if (tr.transcript) transcript = tr.transcript;
         }
       } catch(e){}
       if (transcript && p) {
+        let aiScore = null;
         try {
           const r = await Api.post('/ai/evaluate-recitation',{
             transcript, target_verse:p.text, surah_name:p.surahName, ayah_num:p.ayahNum
           });
-          const sc = r.score ?? null;
+          aiScore = r.score ?? null;
+          const sc = aiScore;
           const col = sc!=null ? (sc>=80?'#34d399':sc>=55?'#fbbf24':'#ef4444') : '#34d399';
           const autoEl = document.getElementById('studio-auto-eval');
           if (autoEl) autoEl.innerHTML=`<div style="padding:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:12px">
@@ -2569,13 +2607,21 @@ const VoiceStudio = {
             <div style="font-size:.88rem;color:var(--text-1);line-height:1.75;white-space:pre-wrap">${escapeHTML(r.evaluation||r.reply||'')}</div>
           </div>`;
           Api.post('/studio/recording',{surah_name:p.surahName,ayah_num:p.ayahNum,global_num:p.globalNum,transcript,ai_score:r.score,ai_feedback:r.evaluation}).catch(()=>{});
+          // Auto-save training sample (audio + correct text + score)
+          if (audio_base64) {
+            Api.post('/ai/save-training',{
+              audio_base64, mime_type:recMime,
+              correct_text:p.text, transcript,
+              score:r.score, surah_name:p.surahName, ayah_num:p.ayahNum
+            }).catch(()=>{});
+          }
         } catch(e){
           const autoEl=document.getElementById('studio-auto-eval');
           if (autoEl) autoEl.innerHTML='<p style="font-size:.82rem;color:var(--text-3)">تعذّر التقييم التلقائي</p>';
         }
       } else {
         const autoEl=document.getElementById('studio-auto-eval');
-        if (autoEl) autoEl.innerHTML='<p style="font-size:.82rem;color:var(--text-3)">لم يُتعرَّف على الصوت — جرّب في مكان أهدأ أو اضغط "تحقق صوتي" أدناه</p>';
+        if (autoEl) autoEl.innerHTML='<p style="font-size:.82rem;color:var(--text-3)">لم يُتعرَّف على الصوت — جرّب في مكان أهدأ</p>';
       }
       VoiceStudio.addSpeechCheck(p);
     }
@@ -2584,91 +2630,42 @@ const VoiceStudio = {
   addSpeechCheck(p){
     const area = document.getElementById('studio-speech-area');
     if (!area || !p) return;
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
     area.innerHTML = `
-      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
-        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:8px">🎤 تحقق صوتي — اتلُ الآية مجدداً للمقارنة الفورية:</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button class="btn btn-sm btn-secondary" id="btn-speech-check">🎤 ابدأ التحقق الصوتي</button>
-        </div>
-        <div id="speech-result"></div>
-        <div id="ai-eval-area" style="margin-top:10px">
-          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:6px">أو أدخل النص يدوياً لتقييم ذكي إضافي:</div>
-          <textarea id="ai-eval-input" class="field-input" placeholder="الصق ما فهمه المتصفح من تلاوتك..." style="width:100%;min-height:55px;resize:vertical;margin-bottom:8px" dir="rtl"></textarea>
-          <button class="btn btn-sm btn-primary" id="btn-ai-eval-send">إرسال للتقييم</button>
-          <div id="ai-eval-result" style="margin-top:10px"></div>
-        </div>
-      </div>`;
-
-    if (SR){
-      document.getElementById('btn-speech-check').onclick=()=>{
-        const btn=document.getElementById('btn-speech-check');
-        const resultEl=document.getElementById('speech-result');
-        const rec=new SR();
-        rec.lang='ar-SA'; rec.continuous=false; rec.interimResults=false;
-        btn.textContent='🔴 يستمع...'; btn.disabled=true;
-        rec.onresult=ev=>{
-          const transcript=Array.from(ev.results).map(r=>r[0].transcript).join(' ').trim();
-          const pct=Math.round(VoiceStudio.similarity(transcript,p.text)*100);
-          const col=pct>=80?'#34d399':pct>=55?'#fbbf24':'#ef4444';
-          if (resultEl) resultEl.innerHTML=`<div style="padding:12px;background:rgba(0,0,0,.25);border-radius:10px">
-            <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px">سمعت:</div>
-            <div style="font-size:.85rem;color:var(--text-2);margin-bottom:10px;font-style:italic">"${escapeHTML(transcript)}"</div>
-            <div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden;margin-bottom:8px">
-              <div style="background:${col};height:100%;width:${pct}%;border-radius:20px;transition:width .6s ease"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between">
-              <span style="font-size:1.4rem;font-weight:900;color:${col}">${pct}%</span>
-              <span style="font-size:.82rem;color:var(--text-2)">${pct>=85?'✨ ممتاز!':pct>=70?'✅ جيد جداً':pct>=50?'👍 مقبول':'🔄 راجع وكرر'}</span>
-            </div>
-          </div>`;
-          // pre-fill ai eval textarea
-          const ta = document.getElementById('ai-eval-input');
-          if (ta) ta.value = transcript;
-          btn.textContent='🎤 أعد التحقق'; btn.disabled=false;
-        };
-        rec.onerror=()=>{ btn.textContent='❌ فشل'; btn.disabled=false; };
-        rec.onend=()=>{ if(btn.disabled){ btn.textContent='🎤 تحقق صوتي آني'; btn.disabled=false; } };
-        rec.start();
-      };
-    }
-
-    const aiEvalSendBtn = document.getElementById('btn-ai-eval-send');
-    if (aiEvalSendBtn) aiEvalSendBtn.onclick = async ()=>{
-      const transcript = (document.getElementById('ai-eval-input')?.value||'').trim();
-      if (!transcript) return toast('اكتب ما تلوته','error');
-      const btn = document.getElementById('btn-ai-eval-send');
-      const resEl = document.getElementById('ai-eval-result');
-      btn.textContent='⏳ يحلّل...'; btn.disabled=true;
-      if (resEl) resEl.innerHTML='';
-      try {
-        const r = await Api.post('/ai/evaluate-recitation',{
-          transcript,
-          target_verse: p.text,
-          surah_name: p.surahName,
-          ayah_num: p.ayahNum
-        });
-        if (resEl) resEl.innerHTML=`<div style="padding:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:12px">
-          <div style="font-size:.72rem;color:#34d399;margin-bottom:8px;font-weight:600">🤖 تقييم الذكاء الاصطناعي</div>
-          <div style="font-size:.88rem;color:var(--text-1);line-height:1.7;white-space:pre-wrap">${escapeHTML(r.evaluation||r.reply||'')}</div>
-          ${r.score!=null?`<div style="margin-top:10px;display:flex;align-items:center;gap:10px">
-            <div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;flex:1;overflow:hidden">
-              <div style="background:${r.score>=80?'#34d399':r.score>=55?'#fbbf24':'#ef4444'};height:100%;width:${r.score}%;border-radius:20px;transition:width .8s ease"></div>
-            </div>
-            <span style="font-size:1.3rem;font-weight:900;color:${r.score>=80?'#34d399':r.score>=55?'#fbbf24':'#ef4444'}">${r.score}%</span>
-          </div>`:''}
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-sm btn-ghost" id="btn-studio-tts">🤖 اسمع الآية بصوت AI</button>
+        <button class="btn btn-sm btn-secondary" id="btn-speech-recheck">🎤 تحقق صوتي آني</button>
+      </div>
+      <div id="speech-result" style="margin-top:8px"></div>`;
+    document.getElementById('btn-studio-tts')?.addEventListener('click', ()=>VoiceStudio._ttsSpeak(p.text,'btn-studio-tts'));
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recheckBtn = document.getElementById('btn-speech-recheck');
+    if (!SR || !recheckBtn){ recheckBtn?.remove(); return; }
+    recheckBtn.onclick = ()=>{
+      const btn=document.getElementById('btn-speech-recheck');
+      const resultEl=document.getElementById('speech-result');
+      const rec=new SR();
+      rec.lang='ar-SA'; rec.continuous=false; rec.interimResults=false;
+      btn.textContent='🔴 يستمع...'; btn.disabled=true;
+      rec.onresult=ev=>{
+        const t=Array.from(ev.results).map(r=>r[0].transcript).join(' ').trim();
+        const pct=Math.round(VoiceStudio.similarity(t,p.text)*100);
+        const col=pct>=80?'#34d399':pct>=55?'#fbbf24':'#ef4444';
+        if(resultEl) resultEl.innerHTML=`<div style="padding:12px;background:rgba(0,0,0,.25);border-radius:10px">
+          <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px">سمعت:</div>
+          <div style="font-size:.82rem;color:var(--text-2);margin-bottom:8px;font-style:italic">"${escapeHTML(t)}"</div>
+          <div style="background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden;margin-bottom:8px">
+            <div style="background:${col};height:100%;width:${pct}%;border-radius:20px;transition:width .6s"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:1.3rem;font-weight:900;color:${col}">${pct}%</span>
+            <span style="font-size:.8rem;color:var(--text-2)">${pct>=85?'✨ ممتاز!':pct>=70?'✅ جيد جداً':pct>=50?'👍 مقبول':'🔄 راجع وكرر'}</span>
+          </div>
         </div>`;
-        // Log as training data point
-        Api.post('/studio/recording',{
-          surah_name: p.surahName, ayah_num: p.ayahNum,
-          global_num: p.globalNum, transcript,
-          ai_score: r.score, ai_feedback: r.evaluation
-        }).catch(()=>{});
-      } catch(e){
-        if (resEl) resEl.innerHTML='<p style="color:#ef4444;font-size:.82rem">تعذّر الاتصال بالذكاء الاصطناعي</p>';
-      }
-      btn.textContent='إرسال للتقييم'; btn.disabled=false;
+        btn.textContent='🎤 أعد التحقق'; btn.disabled=false;
+      };
+      rec.onerror=()=>{btn.textContent='❌ فشل';btn.disabled=false;};
+      rec.onend=()=>{if(btn.disabled){btn.textContent='🎤 تحقق';btn.disabled=false;}};
+      rec.start();
     };
   },
   similarity(a,b){

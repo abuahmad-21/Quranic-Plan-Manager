@@ -1238,6 +1238,81 @@ R('POST','/api/ai/transcribe', async (req,res)=>{
   } catch(e){ console.error('Transcribe error:',e.message); return send(res,200,{transcript:'',error:e.message}); }
 });
 
+/* ── TEXT TO SPEECH (OpenAI TTS) ── */
+R('POST','/api/ai/tts', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const text = String(b.text||'').slice(0,600);
+  if (!text) return send(res,400,{error:'no_text'});
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured'});
+  try {
+    const resp = await fetch(`${baseUrl}/audio/speech`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'tts-1',input:text,voice:'alloy',speed:0.82})
+    });
+    if (!resp.ok){ const t=await resp.text(); return send(res,502,{error:'tts_failed',detail:t.slice(0,200)}); }
+    const buf=Buffer.from(await resp.arrayBuffer());
+    res.writeHead(200,{'Content-Type':'audio/mpeg','Access-Control-Allow-Origin':'*','Content-Length':buf.length});
+    res.end(buf);
+  } catch(e){ return send(res,500,{error:e.message}); }
+});
+
+/* ── AI TRAINING DATA (collect audio + text pairs for fine-tuning) ── */
+const TRAINING_DIR = path.join(ROOT,'training_data');
+if(!fs.existsSync(TRAINING_DIR)) fs.mkdirSync(TRAINING_DIR,{recursive:true});
+if(!DB.admin.training_samples) DB.admin.training_samples=[];
+
+R('POST','/api/ai/save-training', async (req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  let body;
+  try { body = await readLargeBody(req,20); } catch(e){ return send(res,413,{error:'too_large'}); }
+  const audio_base64 = String(body.audio_base64||'');
+  const correct_text = String(body.correct_text||'').slice(0,1000);
+  if (!audio_base64||!correct_text) return send(res,400,{error:'missing_fields'});
+  const id=uid();
+  const mt=String(body.mime_type||'audio/webm');
+  const ext=mt.includes('mp4')||mt.includes('m4a')?'m4a':mt.includes('ogg')?'ogg':'webm';
+  const filename=`${id}.${ext}`;
+  try { fs.writeFileSync(path.join(TRAINING_DIR,filename),Buffer.from(audio_base64,'base64')); }
+  catch(e){ return send(res,500,{error:'save_failed'}); }
+  DB.admin.training_samples.push({
+    id, filename, correct_text,
+    transcript:String(body.transcript||'').slice(0,1000),
+    score:+body.score||null,
+    quality:+body.score>=80?'good':+body.score>=50?'fair':'poor',
+    surah_name:String(body.surah_name||'').slice(0,100),
+    ayah_num:+body.ayah_num||0,
+    username:u.username, timestamp:now()
+  });
+  if(DB.admin.training_samples.length>20000) DB.admin.training_samples=DB.admin.training_samples.slice(-20000);
+  persist();
+  send(res,200,{ok:true,id});
+});
+
+R('GET','/api/admin/training-data', async (req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const samples=(DB.admin.training_samples||[]).slice().reverse();
+  const good=samples.filter(s=>s.quality==='good').length;
+  const fair=samples.filter(s=>s.quality==='fair').length;
+  const poor=samples.filter(s=>s.quality==='poor').length;
+  send(res,200,{samples:samples.slice(0,500),total:samples.length,stats:{good,fair,poor}});
+});
+
+R('GET','/api/admin/training-data/:id/audio', async (req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const sample=(DB.admin.training_samples||[]).find(s=>s.id===p.id);
+  if(!sample) return send(res,404,{error:'not_found'});
+  const fp=path.join(TRAINING_DIR,sample.filename);
+  if(!fs.existsSync(fp)) return send(res,404,{error:'file_not_found'});
+  const buf=fs.readFileSync(fp);
+  const ct=sample.filename.endsWith('m4a')?'audio/mp4':sample.filename.endsWith('ogg')?'audio/ogg':'audio/webm';
+  res.writeHead(200,{'Content-Type':ct,'Access-Control-Allow-Origin':'*','Content-Length':buf.length,'Content-Disposition':`attachment;filename="${sample.filename}"`});
+  res.end(buf);
+});
+
 /* ── STUDIO RECORDINGS (metadata + training data) ── */
 R('GET','/api/studio/recordings', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
