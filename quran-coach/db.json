@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 23,
+      "total_users": 24,
       "total_sessions_today": 15,
       "total_pages_memorized_alltime": 2.6
     },
@@ -2651,7 +2651,7 @@
       "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae",
       "display_name": "Test",
       "created_at": "2026-05-12T04:33:05.072Z",
-      "last_active": "2026-05-12T04:33:36.075Z",
+      "last_active": "2026-05-12T04:39:15.955Z",
       "avatar_color": "#0e044c",
       "bio": "",
       "is_banned": false,
@@ -2661,6 +2661,72 @@
         "completed": false
       },
       "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": []
+    },
+    "testflow2": {
+      "username": "testflow2",
+      "password_hash": "937e8d5fbb48bd4949536cd65b8d35c426b80d2f830c5c308e2cdec422ae2244",
+      "display_name": "FlowTest",
+      "created_at": "2026-05-12T04:40:40.196Z",
+      "last_active": "2026-05-12T04:40:40.196Z",
+      "avatar_color": "#0e044c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-12T04:40:40.201Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-12T04:40:40.201Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,

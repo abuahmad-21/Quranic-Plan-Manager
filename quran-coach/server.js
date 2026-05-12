@@ -89,13 +89,22 @@ function isAdmin(req){
 /* ══ MIME ══ */
 const MIME = {'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'};
 function serveStatic(req,res,pathname){
-  let fp = path.join(PUBLIC, pathname==='/'?'/index.html':pathname);
+  // Strip cache-busting query params (e.g. ?v=123)
+  const cleanPath = pathname.split('?')[0];
+  let fp = path.join(PUBLIC, cleanPath==='/'?'/index.html':cleanPath);
   if (!fp.startsWith(PUBLIC)) return send(res,403,'forbidden');
   fs.stat(fp,(err,st)=>{
     if (err || st.isDirectory()) { fp = path.join(PUBLIC,'index.html'); }
     fs.readFile(fp,(e,buf)=>{
       if(e) return send(res,404,'not found');
-      send(res,200,buf,{'Content-Type':MIME[path.extname(fp)]||'application/octet-stream'});
+      const ext = path.extname(fp);
+      const headers = {
+        'Content-Type': MIME[ext]||'application/octet-stream',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      };
+      send(res,200,buf,headers);
     });
   });
 }
