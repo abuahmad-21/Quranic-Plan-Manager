@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════ */
 'use strict';
 
-const API = '/api';
+const API = '/qqc';
 
 /* Safe localStorage wrapper — handles iOS Safari private mode */
 const LS = {
@@ -623,7 +623,7 @@ const Profile = {
         if (val === u.username){ statusEl.textContent=''; statusEl.style.color=''; return; }
         statusEl.textContent='⏳ ...'; statusEl.style.color='var(--text-3)';
         checkTimeout = setTimeout(async ()=>{
-          const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
+          const res = await fetch(`/qqc/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
           if (val !== usernameEl.value.toLowerCase().trim()) return; // stale
           if (!val || !/^[a-z0-9_]{3,20}$/.test(val)){
             statusEl.textContent='⚠ اسم المستخدم يجب أن يكون 3-20 حرف (أحرف إنجليزية، أرقام، _)';
@@ -643,7 +643,7 @@ const Profile = {
     if (checkBtn) checkBtn.onclick = async ()=>{
       const val = usernameEl?.value.toLowerCase().trim();
       if (!val || !statusEl) return;
-      const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
+      const res = await fetch(`/qqc/auth/check-username?username=${encodeURIComponent(val)}`).then(r=>r.json()).catch(()=>({available:false}));
       if (res.available){ statusEl.textContent='✅ متاح'; statusEl.style.color='#34d399'; }
       else { statusEl.textContent = res.reason==='invalid' ? '⚠ تنسيق غير صحيح' : '❌ محجوز بالفعل'; statusEl.style.color='#ef4444'; }
     };
@@ -2786,7 +2786,7 @@ const VoiceStudio = {
     const btn = btnId ? document.getElementById(btnId) : null;
     if (btn){ btn._orig=btn.textContent; btn.disabled=true; btn.textContent='⏳...'; }
     try {
-      const resp = await fetch('/api/ai/tts',{
+      const resp = await fetch('/qqc/ai/tts',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-token':S.token,'x-username':S.username},
         body:JSON.stringify({text})
@@ -3252,7 +3252,7 @@ const VoiceStudio = {
    ─────────────────────────────────────────────────────────────────
    Word-by-word Arabic recitation checker with real-time feedback.
    Levenshtein-based phoneme matching · Memorization mode (fade-in) ·
-   Haptic errors · Full ai_core.js integration via /api/tarteel/log
+   Haptic errors · Full ai_core.js integration via /qqc/tarteel/log
 ══════════════════════════════════════════════════════════════════ */
 const TarteelMode = {
   /* ── State ── */

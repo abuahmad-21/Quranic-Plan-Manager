@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 27,
+      "total_users": 30,
       "total_sessions_today": 18,
       "total_pages_memorized_alltime": 2.6
     },
@@ -2918,7 +2918,7 @@
       "password_hash": "9a822d8c183329f622346e98dd1ef736fecd00aead70442ce1fe2797eb9ee94c",
       "display_name": "أحمد الحافظ",
       "created_at": "2026-05-13T04:00:47.635Z",
-      "last_active": "2026-05-13T04:00:47.895Z",
+      "last_active": "2026-05-13T04:17:08.433Z",
       "avatar_color": "#0bb88f",
       "bio": "",
       "is_banned": false,
@@ -2964,8 +2964,176 @@
         {
           "at": "2026-05-13T04:00:47.895Z",
           "remember_me": true
+        },
+        {
+          "at": "2026-05-13T04:06:22.323Z",
+          "remember_me": true
+        },
+        {
+          "at": "2026-05-13T04:14:51.042Z",
+          "remember_me": true
+        },
+        {
+          "at": "2026-05-13T04:15:03.283Z",
+          "remember_me": false
+        },
+        {
+          "at": "2026-05-13T04:17:08.433Z",
+          "remember_me": true
         }
       ]
+    },
+    "test_live": {
+      "username": "test_live",
+      "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+      "display_name": "تجربة مباشرة",
+      "created_at": "2026-05-13T04:06:22.388Z",
+      "last_active": "2026-05-13T04:09:22.557Z",
+      "avatar_color": "#0e044c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [
+        {
+          "at": "2026-05-13T04:09:22.557Z",
+          "remember_me": true
+        }
+      ]
+    },
+    "user_final_test": {
+      "username": "user_final_test",
+      "password_hash": "d055f09770f03116933078abc0d3dd4282c7e0e9be8e402486ed339bafbb0810",
+      "display_name": "مستخدم تجريبي",
+      "created_at": "2026-05-13T04:15:03.009Z",
+      "last_active": "2026-05-13T04:15:03.009Z",
+      "avatar_color": "#0e233b",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
+    },
+    "new_ios_test": {
+      "username": "new_ios_test",
+      "password_hash": "299ed772851dcc4af360ff9ad0d2e1ae7cf206a85a0ed23454b85f9921dc8118",
+      "display_name": "iOS User",
+      "created_at": "2026-05-13T04:17:08.792Z",
+      "last_active": "2026-05-13T04:17:08.792Z",
+      "avatar_color": "#0d4ab2",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -3082,6 +3250,46 @@
       "username": "ahmad_hafiz",
       "expires": 1781236847895,
       "created_at": "2026-05-13T04:00:47.895Z"
+    },
+    "f2e8c3834ed3fe045e1b8ce5bf0757a2fc0794f6d013fc30": {
+      "username": "ahmad_hafiz",
+      "expires": 1781237182324,
+      "created_at": "2026-05-13T04:06:22.324Z"
+    },
+    "6fff0c09dc22c51ca3266251b3068a29f38bb0d951443041": {
+      "username": "test_live",
+      "expires": 1781237182388,
+      "created_at": "2026-05-13T04:06:22.388Z"
+    },
+    "aaf2cfb90ca48eff5272fd485d7ba7d043bbb99b1c761863": {
+      "username": "test_live",
+      "expires": 1781237362557,
+      "created_at": "2026-05-13T04:09:22.557Z"
+    },
+    "937b771c6c3a884137e0d358a5f820ef26d924832bd6b367": {
+      "username": "ahmad_hafiz",
+      "expires": 1781237691044,
+      "created_at": "2026-05-13T04:14:51.044Z"
+    },
+    "4225a372526f15f4d4acb82fbac3ff7169f872d01540a782": {
+      "username": "user_final_test",
+      "expires": 1781237703009,
+      "created_at": "2026-05-13T04:15:03.009Z"
+    },
+    "cf7220242342c5785411818e2b6150d415375058ec9f3a66": {
+      "username": "ahmad_hafiz",
+      "expires": 1778732103283,
+      "created_at": "2026-05-13T04:15:03.283Z"
+    },
+    "46916752d9056fe35463d42d99e18ff4c5c63a4b0fe2fb00": {
+      "username": "ahmad_hafiz",
+      "expires": 1781237828433,
+      "created_at": "2026-05-13T04:17:08.433Z"
+    },
+    "b7843cdb8ceb198a4bd478ff6b0f2efcb28ef5af4e94a86b": {
+      "username": "new_ios_test",
+      "expires": 1781237828792,
+      "created_at": "2026-05-13T04:17:08.792Z"
     }
   }
 }

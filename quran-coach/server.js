@@ -170,7 +170,7 @@ const ROUTES = {};
 function R(method, path, fn){ ROUTES[method+' '+path] = fn; }
 
 /* ── AUTH ── */
-R('POST','/api/auth/register', async (req,res)=>{
+R('POST','/qqc/auth/register', async (req,res)=>{
   const b = await readBody(req);
   const u = String(b.username||'').toLowerCase().trim();
   const p = String(b.password||'');
@@ -204,7 +204,7 @@ R('POST','/api/auth/register', async (req,res)=>{
   send(res,200,{ok:true, token:tok, username:u, remember_me:rememberMe});
 });
 
-R('POST','/api/auth/login', async (req,res)=>{
+R('POST','/qqc/auth/login', async (req,res)=>{
   const b = await readBody(req);
   const u = String(b.username||'').toLowerCase().trim();
   // Rate limit check
@@ -229,13 +229,13 @@ R('POST','/api/auth/login', async (req,res)=>{
   send(res,200,{ok:true, token:tok, username:u, remember_me:rememberMe, last_login: user.login_history.slice(-2)[0]?.at || null});
 });
 
-R('POST','/api/auth/logout', async (req,res)=>{
+R('POST','/qqc/auth/logout', async (req,res)=>{
   const t = req.headers['x-token']; if (t) deleteSession(t);
   send(res,200,{ok:true});
 });
 
 
-R('GET','/api/auth/check-username', async (req,res,_,q)=>{
+R('GET','/qqc/auth/check-username', async (req,res,_,q)=>{
   const u = String(q.username||'').toLowerCase().trim();
   if (!/^[a-z0-9_]{3,20}$/.test(u)) return send(res,200,{available:false,reason:'invalid'});
   if (DB.users[u]) return send(res,200,{available:false,reason:'taken'});
@@ -243,7 +243,7 @@ R('GET','/api/auth/check-username', async (req,res,_,q)=>{
 });
 
 /* ── ONBOARDING & PROFILE ── */
-R('POST','/api/onboarding', async (req,res)=>{
+R('POST','/qqc/onboarding', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   u.onboarding = {
@@ -266,7 +266,7 @@ R('POST','/api/onboarding', async (req,res)=>{
   send(res,200,{ok:true, user:safeUser(u)});
 });
 
-R('GET','/api/me', async (req,res)=>{
+R('GET','/qqc/me', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   // Ensure new fields exist on old users
   if(u.sheikh_verified===undefined) u.sheikh_verified=false;
@@ -274,7 +274,7 @@ R('GET','/api/me', async (req,res)=>{
   send(res,200,{user:safeUser(u)});
 });
 
-R('PATCH','/api/me', async (req,res)=>{
+R('PATCH','/qqc/me', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   if (typeof b.display_name==='string') u.display_name=b.display_name.slice(0,40);
@@ -316,7 +316,7 @@ R('PATCH','/api/me', async (req,res)=>{
   persist(); send(res,200,{ok:true,user:safeUser(u)});
 });
 
-R('GET','/api/profile/:username', async (req,res,p)=>{
+R('GET','/qqc/profile/:username', async (req,res,p)=>{
   const target = DB.users[p.username];
   if (!target) return send(res,404,{error:'not_found'});
   send(res,200,{
@@ -334,7 +334,7 @@ R('GET','/api/profile/:username', async (req,res,p)=>{
 });
 
 /* ── SENSOR / DECISION ── */
-R('POST','/api/process-state', async (req,res)=>{
+R('POST','/qqc/process-state', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const sensors = await readBody(req);
   const decision = AI.decide(u, sensors, ALERTS);
@@ -350,7 +350,7 @@ R('POST','/api/process-state', async (req,res)=>{
 });
 
 /* ── SESSIONS ── */
-R('POST','/api/session/complete', async (req,res)=>{
+R('POST','/qqc/session/complete', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const today = now().slice(0,10);
@@ -390,14 +390,14 @@ R('POST','/api/session/complete', async (req,res)=>{
   send(res,200,{ok:true, session:sess, plan_recommendation:planRec, sr:u.sr_state[juz]});
 });
 
-R('GET','/api/plan', async (req,res)=>{
+R('GET','/qqc/plan', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const preview = AI.PlanAdapter.preview(u, 30);
   const rec = AI.PlanAdapter.recompute(u);
   send(res,200,{plan:u.plan, preview, recommendation:rec, sr_state:u.sr_state});
 });
 
-R('PATCH','/api/plan', async (req,res)=>{
+R('PATCH','/qqc/plan', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   if (typeof b.current_daily_pages==='number') u.plan.current_daily_pages = b.current_daily_pages;
@@ -407,7 +407,7 @@ R('PATCH','/api/plan', async (req,res)=>{
 });
 
 /* ── POSTS (lightweight: text + optional small thumbnail; large media stays client) ── */
-R('POST','/api/posts', async (req,res)=>{
+R('POST','/qqc/posts', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const text = String(b.text||'').slice(0,1000);
@@ -421,20 +421,20 @@ R('POST','/api/posts', async (req,res)=>{
   persist(); send(res,200,{ok:true, post});
 });
 
-R('GET','/api/posts/feed', async (req,res)=>{
+R('GET','/qqc/posts/feed', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const friends = new Set([u.username, ...(u.friends||[])]);
   const items = DB.posts.filter(p=>friends.has(p.author)).slice(-100).reverse();
   send(res,200,{posts:items});
 });
 
-R('GET','/api/posts', async (req,res)=>{
+R('GET','/qqc/posts', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const items = DB.posts.slice(-200).reverse();
   send(res,200,{posts:items});
 });
 
-R('POST','/api/posts/:id/comment', async (req,res,p)=>{
+R('POST','/qqc/posts/:id/comment', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const text = String(b.text||'').trim().slice(0,500);
@@ -449,7 +449,7 @@ R('POST','/api/posts/:id/comment', async (req,res,p)=>{
   persist(); send(res,200,{ok:true, comment});
 });
 
-R('POST','/api/posts/:id/like', async (req,res,p)=>{
+R('POST','/qqc/posts/:id/like', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const post = DB.posts.find(x=>x.id===p.id); if (!post) return send(res,404,{error:'not_found'});
   const i = post.likes.indexOf(u.username);
@@ -460,7 +460,7 @@ R('POST','/api/posts/:id/like', async (req,res,p)=>{
   persist(); send(res,200,{ok:true, likes: post.likes.length});
 });
 
-R('DELETE','/api/posts/:id', async (req,res,p)=>{
+R('DELETE','/qqc/posts/:id', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const idx = DB.posts.findIndex(x=>x.id===p.id);
   if (idx<0) return send(res,404,{error:'not_found'});
@@ -472,7 +472,7 @@ R('DELETE','/api/posts/:id', async (req,res,p)=>{
 });
 
 /* ── FRIENDS ── */
-R('POST','/api/friends/request', async (req,res)=>{
+R('POST','/qqc/friends/request', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const target = DB.users[String(b.username||'').toLowerCase()];
@@ -483,7 +483,7 @@ R('POST','/api/friends/request', async (req,res)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/friends/accept', async (req,res)=>{
+R('POST','/qqc/friends/accept', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const from = DB.users[String(b.username||'').toLowerCase()];
@@ -497,7 +497,7 @@ R('POST','/api/friends/accept', async (req,res)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/friends/remove', async (req,res)=>{
+R('POST','/qqc/friends/remove', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const other = DB.users[String(b.username||'').toLowerCase()];
@@ -507,7 +507,7 @@ R('POST','/api/friends/remove', async (req,res)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('GET','/api/friends', async (req,res)=>{
+R('GET','/qqc/friends', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   send(res,200,{
     friends: u.friends.map(n=>{const f=DB.users[n]; return f?{username:f.username,display_name:f.display_name,avatar_color:f.avatar_color,last_active:f.last_active}:{username:n};}),
@@ -516,7 +516,7 @@ R('GET','/api/friends', async (req,res)=>{
   });
 });
 
-R('GET','/api/users/search', async (req,res,_,q)=>{
+R('GET','/qqc/users/search', async (req,res,_,q)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const term = String(q.q||'').toLowerCase();
   if (!term) return send(res,200,{users:[]});
@@ -530,7 +530,7 @@ R('GET','/api/users/search', async (req,res,_,q)=>{
 /* ── CHAT (1:1) ── */
 function chatId(a,b){ return [a,b].sort().join('_'); }
 
-R('GET','/api/chat/:username', async (req,res,p)=>{
+R('GET','/qqc/chat/:username', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const other = p.username; if (!DB.users[other]) return send(res,404,{error:'not_found'});
   const id = chatId(u.username, other);
@@ -538,7 +538,7 @@ R('GET','/api/chat/:username', async (req,res,p)=>{
   send(res,200,{chat:c});
 });
 
-R('POST','/api/chat/:username', async (req,res,p)=>{
+R('POST','/qqc/chat/:username', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const other = p.username; if (!DB.users[other]) return send(res,404,{error:'not_found'});
   const b = await readBody(req);
@@ -565,7 +565,7 @@ R('POST','/api/chat/:username', async (req,res,p)=>{
   send(res,200,{ok:true, message:msg});
 });
 
-R('GET','/api/chats', async (req,res)=>{
+R('GET','/qqc/chats', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const out = [];
   for (const id in DB.chats) {
@@ -580,7 +580,7 @@ R('GET','/api/chats', async (req,res)=>{
 });
 
 /* ── VOICE PERMISSIONS ── */
-R('POST','/api/voice/permit', async (req,res)=>{
+R('POST','/qqc/voice/permit', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const friend = String(b.username||'').toLowerCase();
@@ -590,7 +590,7 @@ R('POST','/api/voice/permit', async (req,res)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/voice/revoke', async (req,res)=>{
+R('POST','/qqc/voice/revoke', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   u.voice_permissions_granted = u.voice_permissions_granted.filter(x=>x!==String(b.username||'').toLowerCase());
@@ -598,7 +598,7 @@ R('POST','/api/voice/revoke', async (req,res)=>{
 });
 
 /* ── GROUPS ── */
-R('POST','/api/groups', async (req,res)=>{
+R('POST','/qqc/groups', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const name = String(b.name||'مجموعة').slice(0,40);
@@ -609,21 +609,21 @@ R('POST','/api/groups', async (req,res)=>{
   persist(); send(res,200,{ok:true, group:DB.groups[id]});
 });
 
-R('GET','/api/groups', async (req,res)=>{
+R('GET','/qqc/groups', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const list = Object.values(DB.groups).filter(g=>g.members.includes(u.username))
     .map(g=>({id:g.id,name:g.name,members:g.members,last:g.messages[g.messages.length-1]||null}));
   send(res,200,{groups:list});
 });
 
-R('GET','/api/groups/:id', async (req,res,p)=>{
+R('GET','/qqc/groups/:id', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const g = DB.groups[p.id];
   if (!g || !g.members.includes(u.username)) return send(res,404,{error:'not_found'});
   send(res,200,{group:g});
 });
 
-R('POST','/api/groups/:id/message', async (req,res,p)=>{
+R('POST','/qqc/groups/:id/message', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const g = DB.groups[p.id];
   if (!g || !g.members.includes(u.username)) return send(res,404,{error:'not_found'});
@@ -635,7 +635,7 @@ R('POST','/api/groups/:id/message', async (req,res,p)=>{
   persist(); send(res,200,{ok:true, message:msg});
 });
 
-R('POST','/api/groups/:id/add', async (req,res,p)=>{
+R('POST','/qqc/groups/:id/add', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const g = DB.groups[p.id];
   if (!g || g.created_by!==u.username) return send(res,403,{error:'not_owner'});
@@ -647,13 +647,13 @@ R('POST','/api/groups/:id/add', async (req,res,p)=>{
 });
 
 /* ── SUPPORT TICKETS (chat with admin) ── */
-R('GET','/api/support', async (req,res)=>{
+R('GET','/qqc/support', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const t = DB.support_tickets[u.username] || {messages:[]};
   send(res,200,{ticket:t});
 });
 
-R('POST','/api/support', async (req,res)=>{
+R('POST','/qqc/support', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   if (!DB.support_tickets[u.username]) DB.support_tickets[u.username] = {messages:[], opened_at:now()};
@@ -662,18 +662,18 @@ R('POST','/api/support', async (req,res)=>{
 });
 
 /* ── BROADCAST (read by all users) ── */
-R('GET','/api/broadcast', async (req,res)=>{
+R('GET','/qqc/broadcast', async (req,res)=>{
   const active = (DB.admin.broadcast_messages||[]).filter(m=>m.active);
   send(res,200,{messages: active.slice(-3)});
 });
 
 /* ── DATA ── */
-R('GET','/api/data/surahs',     async (_,res)=>send(res,200,{surahs:SURAHS}));
-R('GET','/api/data/techniques', async (_,res)=>send(res,200,{techniques:TECHS}));
-R('GET','/api/data/alerts',     async (_,res)=>send(res,200,{alerts:ALERTS}));
+R('GET','/qqc/data/surahs',     async (_,res)=>send(res,200,{surahs:SURAHS}));
+R('GET','/qqc/data/techniques', async (_,res)=>send(res,200,{techniques:TECHS}));
+R('GET','/qqc/data/alerts',     async (_,res)=>send(res,200,{alerts:ALERTS}));
 
 /* ── LEADERBOARD ── */
-R('GET','/api/leaderboard', async (req,res)=>{
+R('GET','/qqc/leaderboard', async (req,res)=>{
   const top = Object.values(DB.users)
     .filter(u=>!u.is_banned)
     .map(u=>({username:u.username, display_name:u.display_name, avatar_color:u.avatar_color, pages:u.progress.total_pages_memorized||0, streak:u.progress.current_streak_days||0}))
@@ -684,13 +684,13 @@ R('GET','/api/leaderboard', async (req,res)=>{
 /* ══════════════════════════════════════════════
    ADMIN ROUTES
 ══════════════════════════════════════════════ */
-R('POST','/api/admin/login', async (req,res)=>{
+R('POST','/qqc/admin/login', async (req,res)=>{
   const b = await readBody(req);
   if (sha(String(b.password||'')) !== DB.admin.password_hash) return send(res,401,{error:'bad_password'});
   send(res,200,{ok:true});
 });
 
-R('GET','/api/admin/overview', async (req,res)=>{
+R('GET','/qqc/admin/overview', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const users = Object.values(DB.users);
   send(res,200,{
@@ -709,7 +709,7 @@ R('GET','/api/admin/overview', async (req,res)=>{
   });
 });
 
-R('GET','/api/admin/users', async (req,res)=>{
+R('GET','/qqc/admin/users', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{users: Object.values(DB.users).map(u=>({
     username:u.username, display_name:u.display_name, created_at:u.created_at,
@@ -719,19 +719,19 @@ R('GET','/api/admin/users', async (req,res)=>{
   }))});
 });
 
-R('POST','/api/admin/user/:username/ban', async (req,res,p)=>{
+R('POST','/qqc/admin/user/:username/ban', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const u = DB.users[p.username]; if (!u) return send(res,404,{error:'not_found'});
   u.is_banned = true; persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/admin/user/:username/unban', async (req,res,p)=>{
+R('POST','/qqc/admin/user/:username/unban', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const u = DB.users[p.username]; if (!u) return send(res,404,{error:'not_found'});
   u.is_banned = false; persist(); send(res,200,{ok:true});
 });
 
-R('DELETE','/api/admin/user/:username', async (req,res,p)=>{
+R('DELETE','/qqc/admin/user/:username', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   if (!DB.users[p.username]) return send(res,404,{error:'not_found'});
   delete DB.users[p.username];
@@ -740,7 +740,7 @@ R('DELETE','/api/admin/user/:username', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('DELETE','/api/admin/post/:id', async (req,res,p)=>{
+R('DELETE','/qqc/admin/post/:id', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const idx = DB.posts.findIndex(x=>x.id===p.id);
   if (idx<0) return send(res,404,{error:'not_found'});
@@ -750,12 +750,12 @@ R('DELETE','/api/admin/post/:id', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('GET','/api/admin/posts', async (req,res)=>{
+R('GET','/qqc/admin/posts', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{posts: DB.posts.slice(-200).reverse()});
 });
 
-R('GET','/api/admin/chats', async (req,res)=>{
+R('GET','/qqc/admin/chats', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const list = Object.entries(DB.chats).map(([id,c])=>({
     id, participants:c.participants, last:c.messages[c.messages.length-1]||null, count:c.messages.length
@@ -763,25 +763,25 @@ R('GET','/api/admin/chats', async (req,res)=>{
   send(res,200,{chats:list});
 });
 
-R('GET','/api/admin/chat/:id', async (req,res,p)=>{
+R('GET','/qqc/admin/chat/:id', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const c = DB.chats[p.id]; if (!c) return send(res,404,{error:'not_found'});
   send(res,200,{chat:c});
 });
 
-R('DELETE','/api/admin/chat/:id/message/:mid', async (req,res,p)=>{
+R('DELETE','/qqc/admin/chat/:id/message/:mid', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const c = DB.chats[p.id]; if (!c) return send(res,404,{error:'not_found'});
   c.messages = c.messages.filter(m=>m.id!==p.mid);
   persist(); send(res,200,{ok:true});
 });
 
-R('GET','/api/admin/tickets', async (req,res)=>{
+R('GET','/qqc/admin/tickets', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{tickets: Object.entries(DB.support_tickets).map(([u,t])=>({user:u,messages:t.messages,opened_at:t.opened_at}))});
 });
 
-R('POST','/api/admin/tickets/:user/reply', async (req,res,p)=>{
+R('POST','/qqc/admin/tickets/:user/reply', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   if (!DB.support_tickets[p.user]) DB.support_tickets[p.user] = {messages:[], opened_at:now()};
@@ -790,7 +790,7 @@ R('POST','/api/admin/tickets/:user/reply', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/admin/broadcast', async (req,res)=>{
+R('POST','/qqc/admin/broadcast', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const m = {id:uid(), message:String(b.message||'').slice(0,500), sent_at:now(), sent_by:'admin', active:true};
@@ -799,7 +799,7 @@ R('POST','/api/admin/broadcast', async (req,res)=>{
   persist(); send(res,200,{ok:true, message:m});
 });
 
-R('PATCH','/api/admin/broadcast/:id', async (req,res,p)=>{
+R('PATCH','/qqc/admin/broadcast/:id', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const m = DB.admin.broadcast_messages.find(x=>x.id===p.id);
   if (!m) return send(res,404,{error:'not_found'});
@@ -808,27 +808,27 @@ R('PATCH','/api/admin/broadcast/:id', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('PATCH','/api/admin/weights', async (req,res)=>{
+R('PATCH','/qqc/admin/weights', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   Object.assign(DB.admin.algorithm_weights, b);
   persist(); send(res,200,{ok:true, weights: DB.admin.algorithm_weights});
 });
 
-R('POST','/api/admin/quote', async (req,res)=>{
+R('POST','/qqc/admin/quote', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const q = {id:uid(), text_ar:String(b.text_ar||'').slice(0,400), category:b.category||'motivation', active:true, added_at:now()};
   DB.admin.quotes.push(q); persist(); send(res,200,{ok:true,quote:q});
 });
 
-R('DELETE','/api/admin/quote/:id', async (req,res,p)=>{
+R('DELETE','/qqc/admin/quote/:id', async (req,res,p)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   DB.admin.quotes = DB.admin.quotes.filter(q=>q.id!==p.id);
   persist(); send(res,200,{ok:true});
 });
 
-R('GET','/api/admin/groups', async (req,res)=>{
+R('GET','/qqc/admin/groups', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{groups: Object.values(DB.groups)});
 });
@@ -857,7 +857,7 @@ async function callAI(systemPrompt, userMsg){
 }
 
 /* ── SHEIKH REQUESTS ── */
-R('POST','/api/sheikh-request', async (req,res)=>{
+R('POST','/qqc/sheikh-request', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   if(u.sheikh_verified) return send(res,409,{error:'already_sheikh'});
   const b = await readBody(req);
@@ -877,18 +877,18 @@ R('POST','/api/sheikh-request', async (req,res)=>{
   send(res,200,{ok:true});
 });
 
-R('GET','/api/sheikh-request/status', async (req,res)=>{
+R('GET','/qqc/sheikh-request/status', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const req2 = DB.admin.sheikh_requests[u.username]||null;
   send(res,200,{verified:u.sheikh_verified, requested:u.sheikh_requested, request:req2});
 });
 
-R('GET','/api/admin/sheikh-requests', async (req,res)=>{
+R('GET','/qqc/admin/sheikh-requests', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{requests: Object.values(DB.admin.sheikh_requests)});
 });
 
-R('POST','/api/admin/sheikh-requests/:username/approve', async (req,res,p)=>{
+R('POST','/qqc/admin/sheikh-requests/:username/approve', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const u = DB.users[p.username]; if(!u) return send(res,404,{error:'not_found'});
   u.sheikh_verified = true;
@@ -898,7 +898,7 @@ R('POST','/api/admin/sheikh-requests/:username/approve', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/admin/sheikh-requests/:username/reject', async (req,res,p)=>{
+R('POST','/qqc/admin/sheikh-requests/:username/reject', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const u = DB.users[p.username];
@@ -909,12 +909,12 @@ R('POST','/api/admin/sheikh-requests/:username/reject', async (req,res,p)=>{
 });
 
 /* ── MEMORIZATION PLANS (admin-created, public) ── */
-R('GET','/api/plans', async (req,res)=>{
+R('GET','/qqc/plans', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   send(res,200,{plans: (DB.admin.memorization_plans||[])});
 });
 
-R('POST','/api/admin/plans', async (req,res)=>{
+R('POST','/qqc/admin/plans', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const name = String(b.name||'').slice(0,80); if(!name) return send(res,400,{error:'name_required'});
@@ -932,14 +932,14 @@ R('POST','/api/admin/plans', async (req,res)=>{
   persist(); send(res,200,{ok:true,plan});
 });
 
-R('DELETE','/api/admin/plans/:id', async (req,res,p)=>{
+R('DELETE','/qqc/admin/plans/:id', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   DB.admin.memorization_plans=(DB.admin.memorization_plans||[]).filter(x=>x.id!==p.id);
   persist(); send(res,200,{ok:true});
 });
 
 /* ── AI PLAN GENERATOR ── */
-R('POST','/api/plan/generate', async (req,res)=>{
+R('POST','/qqc/plan/generate', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const total_pages = Math.max(1, Math.min(+b.total_pages||20, 604));
@@ -1007,7 +1007,7 @@ R('POST','/api/plan/generate', async (req,res)=>{
 });
 
 /* ── CHANNELS (شعبة) ── */
-R('POST','/api/channels', async (req,res)=>{
+R('POST','/qqc/channels', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   if(!u.sheikh_verified) return send(res,403,{error:'not_verified_sheikh'});
   const b = await readBody(req);
@@ -1034,7 +1034,7 @@ R('POST','/api/channels', async (req,res)=>{
   send(res,200,{ok:true, channel:DB.channels[id]});
 });
 
-R('GET','/api/channels', async (req,res)=>{
+R('GET','/qqc/channels', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const list = Object.values(DB.channels).filter(c=>c.members.includes(u.username));
   send(res,200,{channels: list.map(c=>({
@@ -1047,7 +1047,7 @@ R('GET','/api/channels', async (req,res)=>{
   }))});
 });
 
-R('GET','/api/channels/discover', async (req,res)=>{
+R('GET','/qqc/channels/discover', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const open = Object.values(DB.channels)
     .filter(c=>c.is_public && !c.members.includes(u.username) && c.members.length < c.max_members)
@@ -1056,7 +1056,7 @@ R('GET','/api/channels/discover', async (req,res)=>{
   send(res,200,{channels:open});
 });
 
-R('POST','/api/channels/join', async (req,res)=>{
+R('POST','/qqc/channels/join', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const code = String(b.code||'').toUpperCase().trim();
@@ -1083,7 +1083,7 @@ R('POST','/api/channels/join', async (req,res)=>{
   send(res,200,{ok:true, channel:{id:ch.id,name:ch.name}});
 });
 
-R('GET','/api/channels/:id', async (req,res,p)=>{
+R('GET','/qqc/channels/:id', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
@@ -1108,7 +1108,7 @@ R('GET','/api/channels/:id', async (req,res,p)=>{
   }});
 });
 
-R('POST','/api/channels/:id/message', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/message', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
@@ -1120,7 +1120,7 @@ R('POST','/api/channels/:id/message', async (req,res,p)=>{
   persist(); send(res,200,{ok:true,message:msg});
 });
 
-R('POST','/api/channels/:id/announce', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/announce', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1134,7 +1134,7 @@ R('POST','/api/channels/:id/announce', async (req,res,p)=>{
   persist(); send(res,200,{ok:true,announcement:ann});
 });
 
-R('PATCH','/api/channels/:id', async (req,res,p)=>{
+R('PATCH','/qqc/channels/:id', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1148,7 +1148,7 @@ R('PATCH','/api/channels/:id', async (req,res,p)=>{
   persist(); send(res,200,{ok:true,channel:ch});
 });
 
-R('DELETE','/api/channels/:id/member/:username', async (req,res,p)=>{
+R('DELETE','/qqc/channels/:id/member/:username', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1157,7 +1157,7 @@ R('DELETE','/api/channels/:id/member/:username', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/channels/:id/invite-token', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/invite-token', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1174,14 +1174,14 @@ R('POST','/api/channels/:id/invite-token', async (req,res,p)=>{
   persist(); send(res,200,{ok:true, token});
 });
 
-R('GET','/api/channels/:id/invites', async (req,res,p)=>{
+R('GET','/qqc/channels/:id/invites', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
   send(res,200,{invites:(ch.invite_tokens||[]).slice().reverse()});
 });
 
-R('DELETE','/api/channels/:id/invite/:token', async (req,res,p)=>{
+R('DELETE','/qqc/channels/:id/invite/:token', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1189,7 +1189,7 @@ R('DELETE','/api/channels/:id/invite/:token', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/channels/:id/plan-template', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/plan-template', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1204,7 +1204,7 @@ R('POST','/api/channels/:id/plan-template', async (req,res,p)=>{
 });
 
 /* ── REVIEW SESSIONS ── */
-R('POST','/api/channels/:id/review-session', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/review-session', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1233,7 +1233,7 @@ R('POST','/api/channels/:id/review-session', async (req,res,p)=>{
   persist(); send(res,200,{ok:true, session});
 });
 
-R('POST','/api/channels/:id/review-session/:sid/log', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/review-session/:sid/log', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
@@ -1250,7 +1250,7 @@ R('POST','/api/channels/:id/review-session/:sid/log', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('DELETE','/api/channels/:id/review-session/:sid', async (req,res,p)=>{
+R('DELETE','/qqc/channels/:id/review-session/:sid', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || ch.sheikh_username!==u.username) return send(res,403,{error:'not_sheikh'});
@@ -1259,7 +1259,7 @@ R('DELETE','/api/channels/:id/review-session/:sid', async (req,res,p)=>{
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/channels/:id/leave', async (req,res,p)=>{
+R('POST','/qqc/channels/:id/leave', async (req,res,p)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const ch = DB.channels[p.id];
   if(!ch || !ch.members.includes(u.username)) return send(res,404,{error:'not_found'});
@@ -1269,21 +1269,21 @@ R('POST','/api/channels/:id/leave', async (req,res,p)=>{
 });
 
 /* ── NOTIFICATIONS ── */
-R('GET','/api/notifications', async (req,res)=>{
+R('GET','/qqc/notifications', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   if(!u.notifications) u.notifications=[];
   const notifs = u.notifications.slice().reverse().slice(0,50);
   send(res,200,{notifications:notifs, unread:u.notifications.filter(n=>!n.read).length});
 });
 
-R('POST','/api/notifications/read-all', async (req,res)=>{
+R('POST','/qqc/notifications/read-all', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   (u.notifications||[]).forEach(n=>n.read=true);
   persist(); send(res,200,{ok:true});
 });
 
 /* ── AI COACH ── */
-R('POST','/api/ai-coach', async (req,res)=>{
+R('POST','/qqc/ai-coach', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const userMsg = String(b.message||'').slice(0,500);
@@ -1298,7 +1298,7 @@ R('POST','/api/ai-coach', async (req,res)=>{
 });
 
 /* ── AI RECITATION EVALUATION ── */
-R('POST','/api/ai/evaluate-recitation', async (req,res)=>{
+R('POST','/qqc/ai/evaluate-recitation', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const transcript  = String(b.transcript||'').slice(0,1000);
@@ -1352,7 +1352,7 @@ R('POST','/api/ai/evaluate-recitation', async (req,res)=>{
 });
 
 /* ── AI AUDIO TRANSCRIPTION (Whisper STT) ── */
-R('POST','/api/ai/transcribe', async (req,res)=>{
+R('POST','/qqc/ai/transcribe', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   let bodyData;
   try { bodyData = await readLargeBody(req, 20); } catch(e){ return send(res,413,{transcript:'',error:'audio too large'}); }
@@ -1377,7 +1377,7 @@ R('POST','/api/ai/transcribe', async (req,res)=>{
 });
 
 /* ── TEXT TO SPEECH (OpenAI TTS) ── */
-R('POST','/api/ai/tts', async (req,res)=>{
+R('POST','/qqc/ai/tts', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const text = String(b.text||'').slice(0,600);
@@ -1403,7 +1403,7 @@ const TRAINING_DIR = path.join(ROOT,'training_data');
 if(!fs.existsSync(TRAINING_DIR)) fs.mkdirSync(TRAINING_DIR,{recursive:true});
 if(!DB.admin.training_samples) DB.admin.training_samples=[];
 
-R('POST','/api/ai/save-training', async (req,res)=>{
+R('POST','/qqc/ai/save-training', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   let body;
   try { body = await readLargeBody(req,20); } catch(e){ return send(res,413,{error:'too_large'}); }
@@ -1430,7 +1430,7 @@ R('POST','/api/ai/save-training', async (req,res)=>{
   send(res,200,{ok:true,id});
 });
 
-R('GET','/api/admin/training-data', async (req,res)=>{
+R('GET','/qqc/admin/training-data', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const samples=(DB.admin.training_samples||[]).slice().reverse();
   const good=samples.filter(s=>s.quality==='good').length;
@@ -1439,7 +1439,7 @@ R('GET','/api/admin/training-data', async (req,res)=>{
   send(res,200,{samples:samples.slice(0,500),total:samples.length,stats:{good,fair,poor}});
 });
 
-R('GET','/api/admin/training-data/:id/audio', async (req,res,p)=>{
+R('GET','/qqc/admin/training-data/:id/audio', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const sample=(DB.admin.training_samples||[]).find(s=>s.id===p.id);
   if(!sample) return send(res,404,{error:'not_found'});
@@ -1452,12 +1452,12 @@ R('GET','/api/admin/training-data/:id/audio', async (req,res,p)=>{
 });
 
 /* ── STUDIO RECORDINGS (metadata + training data) ── */
-R('GET','/api/studio/recordings', async (req,res)=>{
+R('GET','/qqc/studio/recordings', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   send(res,200,{ recordings: (u.studio_history||[]).slice().reverse().slice(0,50) });
 });
 
-R('POST','/api/studio/recording', async (req,res)=>{
+R('POST','/qqc/studio/recording', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   if (!u.studio_history) u.studio_history = [];
@@ -1477,7 +1477,7 @@ R('POST','/api/studio/recording', async (req,res)=>{
 });
 
 /* ── STUDIO PROGRESS (chart data) ── */
-R('GET','/api/studio/progress', async (req,res)=>{
+R('GET','/qqc/studio/progress', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const raw = (u.studio_history||[]);
   // Normalize score field (ai_score OR score)
@@ -1493,7 +1493,7 @@ R('GET','/api/studio/progress', async (req,res)=>{
 });
 
 /* ── ADMIN CHANNELS ── */
-R('GET','/api/admin/channels', async (req,res)=>{
+R('GET','/qqc/admin/channels', async (req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   send(res,200,{channels: Object.values(DB.channels).map(c=>({
     id:c.id,name:c.name,sheikh_username:c.sheikh_username,
@@ -1504,7 +1504,7 @@ R('GET','/api/admin/channels', async (req,res)=>{
   }))});
 });
 
-R('GET','/api/admin/channels/:id', async (req,res,p)=>{
+R('GET','/qqc/admin/channels/:id', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const ch = DB.channels[p.id];
   if(!ch) return send(res,404,{error:'not_found'});
@@ -1533,14 +1533,14 @@ R('GET','/api/admin/channels/:id', async (req,res,p)=>{
   }});
 });
 
-R('DELETE','/api/admin/channels/:id', async (req,res,p)=>{
+R('DELETE','/qqc/admin/channels/:id', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   if(!DB.channels[p.id]) return send(res,404,{error:'not_found'});
   delete DB.channels[p.id];
   persist(); send(res,200,{ok:true});
 });
 
-R('POST','/api/admin/direct-message/:username', async (req,res,p)=>{
+R('POST','/qqc/admin/direct-message/:username', async (req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const text = String(b.text||'').slice(0,2000);
@@ -1577,14 +1577,25 @@ function matchRoute(method, pathname){
 }
 
 const server = http.createServer(async (req,res)=>{
-  if (req.method==='OPTIONS') return send(res,204,null);
-  const parsed = url.parse(req.url, true);
-  const pathname = parsed.pathname || '/';
+  if (req.method==='OPTIONS'){
+    res.writeHead(204,{
+      'Access-Control-Allow-Origin':'*',
+      'Access-Control-Allow-Headers':'Content-Type, x-token, x-username, x-admin-password',
+      'Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS',
+      'Access-Control-Max-Age':'86400',
+    });
+    return res.end();
+  }
+  let parsedUrl;
+  try { parsedUrl = new URL(req.url, 'http://localhost'); }
+  catch(_){ parsedUrl = new URL('/', 'http://localhost'); }
+  const pathname = parsedUrl.pathname || '/';
+  const query = Object.fromEntries(parsedUrl.searchParams);
 
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/qqc/')) {
     const route = matchRoute(req.method, pathname);
     if (!route) return send(res,404,{error:'route_not_found', path:pathname});
-    try { await route.fn(req,res,route.params,parsed.query); }
+    try { await route.fn(req,res,route.params,query); }
     catch(e){ console.error('route error',e); send(res,500,{error:'internal',detail:String(e.message)}); }
     return;
   }
@@ -1644,7 +1655,7 @@ server.listen(PORT, ()=>{
 ══════════════════════════════════════════════════════════════ */
 
 /* POST /api/tarteel/log — save session + run ai_core.decide() */
-R('POST','/api/tarteel/log', async (req,res)=>{
+R('POST','/qqc/tarteel/log', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const score         = Math.max(0, Math.min(100, +b.score||0));
@@ -1725,7 +1736,7 @@ R('POST','/api/tarteel/log', async (req,res)=>{
 });
 
 /* GET /api/tarteel/history — return user's recitation history */
-R('GET','/api/tarteel/history', async (req,res)=>{
+R('GET','/qqc/tarteel/history', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   send(res,200,{history: (u.tarteel_history||[]).slice().reverse().slice(0,50)});
 });
