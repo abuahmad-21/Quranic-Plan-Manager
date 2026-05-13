@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 30,
-      "total_sessions_today": 18,
-      "total_pages_memorized_alltime": 2.6
+      "total_users": 32,
+      "total_sessions_today": 19,
+      "total_pages_memorized_alltime": 4.47
     },
     "sheikh_requests": {
       "455": {
@@ -3134,6 +3134,414 @@
       "notifications": [],
       "posts": [],
       "login_history": []
+    },
+    "qqqqqqq": {
+      "username": "qqqqqqq",
+      "password_hash": "e0bdf4054c1024832c22cdf87c4e645bb75c410ca75d2ef701376d0db7a946cc",
+      "display_name": "Kahsh",
+      "created_at": "2026-05-13T04:21:33.040Z",
+      "last_active": "2026-05-13T04:23:28.648Z",
+      "avatar_color": "#0da77f",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-13T04:21:34.921Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-13T04:21:34.921Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 3.42,
+        "afi": 83,
+        "history": [
+          75,
+          81,
+          88,
+          95,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
+    },
+    "gfggfg": {
+      "username": "gfggfg",
+      "password_hash": "a5cc8b28c211dcc8bd9676232ebcf185d3e0eeebe64ad6b1e740f80b3d670c43",
+      "display_name": "Yfghfff",
+      "created_at": "2026-05-13T04:23:47.055Z",
+      "last_active": "2026-05-13T04:33:21.603Z",
+      "avatar_color": "#0c7229",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto",
+        "plan_mode": "both"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-13T04:23:49.041Z",
+        "current_daily_pages": 0.75,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-13T04:23:49.041Z",
+        "phase_days_elapsed": 0,
+        "manual_override": true,
+        "override_target": 0.75,
+        "weekly_off_days": [
+          5
+        ],
+        "generated_plan": {
+          "from_page": 1,
+          "to_page": 20,
+          "total_pages": 20,
+          "duration_days": 30,
+          "daily_memorization_pages": 0.75,
+          "daily_review_pages": 0.75,
+          "review_days_every": 10,
+          "mode": "both",
+          "preview": [
+            {
+              "day": 1,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 0.75
+            },
+            {
+              "day": 2,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 1.5
+            },
+            {
+              "day": 3,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 2.25
+            },
+            {
+              "day": 4,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 3
+            },
+            {
+              "day": 5,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 3.75
+            },
+            {
+              "day": 6,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 4.5
+            },
+            {
+              "day": 7,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 5.25
+            },
+            {
+              "day": 8,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 6
+            },
+            {
+              "day": 9,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 6.75
+            },
+            {
+              "day": 10,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 7.5
+            },
+            {
+              "day": 11,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 8.25
+            },
+            {
+              "day": 12,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 9
+            },
+            {
+              "day": 13,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 9.75
+            },
+            {
+              "day": 14,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 10.5
+            },
+            {
+              "day": 15,
+              "type": "مراجعة",
+              "pages": 0.75,
+              "cumulative": 10.5
+            },
+            {
+              "day": 16,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 11.25
+            },
+            {
+              "day": 17,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 12
+            },
+            {
+              "day": 18,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 12.75
+            },
+            {
+              "day": 19,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 13.5
+            },
+            {
+              "day": 20,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 14.25
+            },
+            {
+              "day": 21,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 15
+            },
+            {
+              "day": 22,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 15.75
+            },
+            {
+              "day": 23,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 16.5
+            },
+            {
+              "day": 24,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 17.25
+            },
+            {
+              "day": 25,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 18
+            },
+            {
+              "day": 26,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 18.75
+            },
+            {
+              "day": 27,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 19.5
+            },
+            {
+              "day": 28,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 20.25
+            },
+            {
+              "day": 29,
+              "type": "حفظ",
+              "pages": 0.75,
+              "cumulative": 21
+            },
+            {
+              "day": 30,
+              "type": "مراجعة",
+              "pages": 0.75,
+              "cumulative": 21
+            }
+          ],
+          "ai_note": "خطة دقيقة ومتوازنة: 0.75 صفحة يومياً تُوصلك لهدفك في 30 يوماً بإذن الله.",
+          "generated_at": "2026-05-13T04:24:05.656Z"
+        }
+      },
+      "progress": {
+        "total_pages_memorized": 4.37,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-13",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-13T04:25:17.905Z",
+          "pages_done": 1.875,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 5
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 5.79,
+        "afi": 71,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 1.96,
+          "interval": 1,
+          "reps": 0,
+          "next_review": "2026-05-14T04:25:17.905Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [],
+      "tarteel_history": [
+        {
+          "surah_name": "سُورَةُ الأَنفَالِ",
+          "from_ayah": 1,
+          "to_ayah": 75,
+          "word_count": 1249,
+          "correct_words": 1,
+          "error_words": 1,
+          "score": 0,
+          "duration_minutes": 1,
+          "mode": "practice",
+          "transcript": "‏الو الو ‏الو ‏بسم الله الرحمن بسم الله ‏الرحمن الرحيم ‏بسم الله الرحمن الرحيم ‏بسم الله الرحمن الرحيم",
+          "created_at": "2026-05-13T04:25:17.679Z"
+        }
+      ]
     }
   },
   "chats": {},
@@ -3290,6 +3698,16 @@
       "username": "new_ios_test",
       "expires": 1781237828792,
       "created_at": "2026-05-13T04:17:08.792Z"
+    },
+    "80721ec52fd1e912042656207f3698b999a4a1e48bf8b5cb": {
+      "username": "qqqqqqq",
+      "expires": 1781238093041,
+      "created_at": "2026-05-13T04:21:33.041Z"
+    },
+    "37c27039618b67fcdd4a4e8403afab59436d440bfe5164aa": {
+      "username": "gfggfg",
+      "expires": 1781238227056,
+      "created_at": "2026-05-13T04:23:47.056Z"
     }
   }
 }
