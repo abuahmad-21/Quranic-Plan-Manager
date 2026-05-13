@@ -1740,3 +1740,196 @@ R('GET','/qqc/tarteel/history', async (req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   send(res,200,{history: (u.tarteel_history||[]).slice().reverse().slice(0,50)});
 });
+
+/* ════════════════════════════════════════════════════════════════
+   QURAN LOCAL CACHE — proxy + cache alquran.cloud responses
+   Caches surah text + page data locally so the app works offline
+   after first use and loads instantly thereafter.
+════════════════════════════════════════════════════════════════ */
+const QURAN_CACHE_PATH = path.join(ROOT,'data','quran_cache.json');
+let QURAN_CACHE = {};
+try {
+  if (fs.existsSync(QURAN_CACHE_PATH)) QURAN_CACHE = JSON.parse(fs.readFileSync(QURAN_CACHE_PATH));
+} catch(e){ QURAN_CACHE = {}; }
+let qCachePending = false;
+function saveQCache(){
+  if(qCachePending) return;
+  qCachePending = true;
+  setTimeout(()=>{
+    try{
+      fs.writeFileSync(QURAN_CACHE_PATH+'.tmp', JSON.stringify(QURAN_CACHE));
+      fs.renameSync(QURAN_CACHE_PATH+'.tmp', QURAN_CACHE_PATH);
+    }catch(e){ console.error('Quran cache write error',e.message); }
+    qCachePending = false;
+  }, 800);
+}
+
+R('GET','/qqc/quran/surahs', async(req,res)=>{
+  if(QURAN_CACHE['list']) return send(res,200,QURAN_CACHE['list']);
+  try{
+    const r = await fetch('https://api.alquran.cloud/v1/surah');
+    const d = await r.json();
+    if(d.data){ QURAN_CACHE['list']=d; saveQCache(); }
+    send(res,200,d);
+  }catch(e){ send(res,503,{error:'unavailable'}); }
+});
+
+R('GET','/qqc/quran/surah/:num', async(req,res,p)=>{
+  const num = +p.num;
+  if(num<1||num>114) return send(res,400,{error:'invalid'});
+  const key = `s${num}`;
+  if(QURAN_CACHE[key]) return send(res,200,QURAN_CACHE[key]);
+  try{
+    const r = await fetch(`https://api.alquran.cloud/v1/surah/${num}`);
+    const d = await r.json();
+    if(d.data){ QURAN_CACHE[key]=d; saveQCache(); }
+    send(res,200,d);
+  }catch(e){ send(res,503,{error:'unavailable'}); }
+});
+
+R('GET','/qqc/quran/page/:num', async(req,res,p)=>{
+  const num = +p.num;
+  if(num<1||num>604) return send(res,400,{error:'invalid'});
+  const key = `p${num}`;
+  if(QURAN_CACHE[key]) return send(res,200,QURAN_CACHE[key]);
+  try{
+    const r = await fetch(`https://api.alquran.cloud/v1/page/${num}/ar.uthmani`);
+    const d = await r.json();
+    if(d.data){ QURAN_CACHE[key]=d; saveQCache(); }
+    send(res,200,d);
+  }catch(e){ send(res,503,{error:'unavailable'}); }
+});
+
+/* ════════════════════════════════════════════════════════════════
+   TARTEEL AI CHECK — Whisper STT + GPT evaluation + training data
+   Sends recorded audio to Whisper for high-accuracy Arabic STT,
+   then asks GPT to evaluate against expected Quran text.
+   Saves every transcript/expected pair as training data.
+════════════════════════════════════════════════════════════════ */
+R('POST','/qqc/tarteel/ai-check', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  let body;
+  try{ body = await readLargeBody(req,20); }catch(e){ return send(res,413,{error:'too_large'}); }
+  const audio_base64  = String(body.audio_base64||'');
+  const expected_text = String(body.expected_text||'').slice(0,5000);
+  const surah_name    = String(body.surah_name||'');
+  const from_ayah     = +body.from_ayah||1;
+  const to_ayah       = +body.to_ayah||1;
+  const mime_type     = String(body.mime_type||'audio/webm');
+  if(!audio_base64) return send(res,400,{transcript:'',error:'no audio'});
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if(!baseUrl||!apiKey) return send(res,200,{transcript:'',feedback:null,error:'ai_not_configured'});
+  try{
+    // 1. Whisper STT
+    const buf = Buffer.from(audio_base64,'base64');
+    const ext = mime_type.includes('mp4')||mime_type.includes('m4a')?'m4a':
+                mime_type.includes('ogg')?'ogg':
+                mime_type.includes('wav')?'wav':'webm';
+    const fd = new FormData();
+    fd.append('file', new Blob([buf],{type:mime_type}), `rec.${ext}`);
+    fd.append('model','whisper-1');
+    fd.append('language','ar');
+    const tr = await fetch(`${baseUrl}/audio/transcriptions`,{method:'POST',headers:{'Authorization':`Bearer ${apiKey}`},body:fd});
+    let transcript = '';
+    if(tr.ok){ const td=await tr.json(); transcript=td.text||''; }
+    // 2. Save training data
+    if(!DB.admin.tarteel_training) DB.admin.tarteel_training=[];
+    if(transcript||expected_text){
+      DB.admin.tarteel_training.push({
+        id:uid(), username:u.username,
+        transcript, expected_text:expected_text.slice(0,1000),
+        surah_name, from_ayah, to_ayah, created_at:now()
+      });
+      if(DB.admin.tarteel_training.length>20000) DB.admin.tarteel_training=DB.admin.tarteel_training.slice(-20000);
+    }
+    // 3. GPT evaluation
+    let feedback = null;
+    if(transcript && expected_text){
+      const sysP = `أنت محكّم متخصص في تجويد القرآن الكريم. قارن بين ما قاله المتلو والنص الصحيح وأعط تغذية راجعة تفصيلية دقيقة. أذكر الكلمات الخاطئة تحديداً. الإجابة بالعربية، 5 أسطر كحد أقصى.`;
+      const userP = `النص الصحيح:\n"${expected_text.slice(0,800)}"\n\nما قاله المتلو (Whisper AI):\n"${transcript.slice(0,800)}"\n\nأعط: ١) نسبة الدقة (0-100%) ٢) الكلمات الخاطئة تحديداً ٣) نصيحة تجويدية عملية.`;
+      feedback = await callAI(sysP, userP);
+    }
+    persist();
+    send(res,200,{ok:true, transcript, feedback});
+  }catch(e){
+    console.error('Tarteel AI check error',e.message);
+    send(res,200,{transcript:'',feedback:null,error:e.message});
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════
+   KHATMA — Full Quran reading plan with daily tracking
+   User sets target days → gets pages/day → marks daily ward done
+════════════════════════════════════════════════════════════════ */
+R('GET','/qqc/khatma', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const khatma = u.khatma||null;
+  if(!khatma) return send(res,200,{khatma:null});
+  const today = new Date().toISOString().slice(0,10);
+  const msPerDay = 86400000;
+  const daysPassed = Math.max(0, Math.floor((Date.now()-new Date(khatma.start_date))/msPerDay));
+  const ppd = khatma.pages_per_day||1;
+  const todayPageStart = Math.max(1, Math.min(604, 1+Math.floor(daysPassed*ppd)));
+  const todayPageEnd   = Math.max(1, Math.min(604, Math.ceil((daysPassed+1)*ppd)));
+  const todayCompleted = !!(khatma.daily_log&&khatma.daily_log[today]);
+  const pagesRead = Math.min(604, khatma.total_pages_read||0);
+  const percentDone = Math.round(pagesRead/604*100);
+  send(res,200,{
+    khatma,
+    today,
+    today_pages:{from:todayPageStart, to:todayPageEnd},
+    today_completed:todayCompleted,
+    pages_read:pagesRead,
+    percent_done:percentDone,
+    days_passed:daysPassed,
+    days_remaining:Math.max(0,khatma.target_days-daysPassed),
+    completions:khatma.completions||0,
+  });
+});
+
+R('POST','/qqc/khatma/create', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const target_days = Math.max(1,Math.min(3650,+(b.target_days||30)));
+  const pages_per_day = 604/target_days;
+  const prevCompletions = u.khatma?.completions||0;
+  u.khatma = {
+    id:uid(), created_at:now(),
+    start_date:new Date().toISOString().slice(0,10),
+    target_days, pages_per_day,
+    daily_log:{}, total_pages_read:0,
+    completions:prevCompletions,
+  };
+  persist();
+  send(res,200,{ok:true, khatma:u.khatma});
+});
+
+R('POST','/qqc/khatma/complete-day', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  if(!u.khatma) return send(res,400,{error:'no_khatma'});
+  const today = new Date().toISOString().slice(0,10);
+  if(!u.khatma.daily_log) u.khatma.daily_log={};
+  if(u.khatma.daily_log[today]) return send(res,200,{ok:true,already_done:true,pages_read:u.khatma.total_pages_read});
+  const pagesForToday = Math.max(1,Math.round(u.khatma.pages_per_day));
+  u.khatma.daily_log[today] = {completed:true, at:now()};
+  u.khatma.total_pages_read = Math.min(604,(u.khatma.total_pages_read||0)+pagesForToday);
+  let khatma_complete = false;
+  if(u.khatma.total_pages_read>=604){
+    khatma_complete = true;
+    u.khatma.completions = (u.khatma.completions||0)+1;
+    u.khatma.completed_at = now();
+    u.khatma.total_pages_read = 0;
+    u.khatma.daily_log = {};
+    u.khatma.start_date = new Date().toISOString().slice(0,10);
+  }
+  persist();
+  send(res,200,{ok:true, pages_read:u.khatma.total_pages_read, khatma_complete, completions:u.khatma.completions||0});
+});
+
+R('DELETE','/qqc/khatma', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  u.khatma = null;
+  persist();
+  send(res,200,{ok:true});
+});

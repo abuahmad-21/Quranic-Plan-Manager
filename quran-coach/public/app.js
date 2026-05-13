@@ -154,6 +154,7 @@ const App = {
     if (id==='view-quran') QuranBrowser.load();
     if (id==='view-studio') VoiceStudio.load();
     if (id==='view-tarteel') TarteelMode.load();
+    if (id==='view-khatma') KhatmaMode.load();
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
@@ -2074,7 +2075,7 @@ const QuranBrowser = {
     try {
       const c = sessionStorage.getItem('qqc_surahs');
       if (c){ QuranBrowser.surahs = JSON.parse(c); return QuranBrowser.surahs; }
-      const r = await fetch('https://api.alquran.cloud/v1/surah');
+      const r = await fetch(`${API}/quran/surahs`);
       const d = await r.json();
       QuranBrowser.surahs = d.data || [];
       sessionStorage.setItem('qqc_surahs', JSON.stringify(QuranBrowser.surahs));
@@ -2136,6 +2137,23 @@ const QuranBrowser = {
     document.getElementById('btn-quran-play-all')?.addEventListener('click', QuranBrowser.playAll);
     document.getElementById('btn-quran-pause')?.addEventListener('click', QuranBrowser.togglePause);
     document.getElementById('btn-quran-stop')?.addEventListener('click', QuranBrowser.stopAll);
+    // Auto-load Al-Fatiha on first open (no button press needed)
+    if (!QuranBrowser.currentAyahs.length) {
+      const sel = document.getElementById('quran-surah-select');
+      if (sel) {
+        // Wait for surahs to populate then auto-load Fatiha
+        const doAutoLoad = ()=>{
+          if (sel.options.length > 1 && !QuranBrowser.currentAyahs.length) {
+            sel.value = '1';
+            const surahTab = document.querySelector('.quran-tab[data-tab="surah"]');
+            surahTab?.click();
+            QuranBrowser.loadContent();
+          }
+        };
+        if (sel.options.length > 1) doAutoLoad();
+        else setTimeout(doAutoLoad, 600);
+      }
+    }
     // Inline practice panel
     QuranBrowser.initPracticePanel();
   },
@@ -2153,7 +2171,7 @@ const QuranBrowser = {
     const display = document.getElementById('quran-display');
     if (display) display.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-2)">⏳ جارٍ تحميل الصفحة ${pageNum}…</div>`;
     try {
-      const r = await fetch(`https://api.alquran.cloud/v1/page/${pageNum}/ar.uthmani`);
+      const r = await fetch(`${API}/quran/page/${pageNum}`);
       const d = await r.json();
       if (!d.data?.ayahs) throw new Error('no data');
       const ayahs = d.data.ayahs;
@@ -2205,7 +2223,7 @@ const QuranBrowser = {
     const display = document.getElementById('quran-display');
     if (display) display.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-2)">⏳ جارٍ تحميل السورة…</div>';
     try {
-      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const r = await fetch(`${API}/quran/surah/${surahNum}`);
       const d = await r.json();
       if (!d.data) throw new Error('no data');
       const surah = d.data;
@@ -3339,6 +3357,11 @@ const TarteelMode = {
       const text = TarteelMode.ayahs.map(a=>a.text).join(' ');
       if (text) VoiceStudio._ttsSpeak(text, 'btn-tarteel-tts');
     });
+    // Sheikh selector in tarteel — sync with QuranBrowser sheikh
+    document.getElementById('tarteel-sheikh-select')?.addEventListener('change', e=>{
+      const qs = document.getElementById('quran-sheikh-select');
+      if (qs) qs.value = e.target.value;
+    });
     TarteelMode.loadHistory();
   },
 
@@ -3360,7 +3383,7 @@ const TarteelMode = {
     const btn = document.getElementById('btn-tarteel-load');
     if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ التحميل…'; }
     try {
-      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const r = await fetch(`${API}/quran/surah/${surahNum}`);
       const d = await r.json();
       if (!d.data) throw new Error('no data');
       const surah = d.data;
@@ -3661,16 +3684,69 @@ const TarteelMode = {
       const inl = document.getElementById('tarteel-ai-result-inline');
       if (inl) inl.textContent = 'تعذّر التواصل مع نظام الذكاء الاصطناعي.';
     }
-    // Save audio
+    // Save audio + run Whisper AI check
     if (TarteelMode.mediaChunks.length){
       try {
         const recMime = TarteelMode.mediaRec?.mimeType || 'audio/webm';
         const blob = new Blob(TarteelMode.mediaChunks, {type:recMime});
         const surahName2 = TarteelMode.ayahs[0]?.surahName || 'تلاوة';
         await Library.saveAudio(blob, `🎯 ${surahName2} — ${score}% دقة`);
+        // Run Whisper AI check in background
+        TarteelMode.doAICheck(blob, recMime);
       } catch(e){}
     }
     TarteelMode.loadHistory();
+  },
+
+  /* ── Whisper AI check: send audio → get accurate transcript + GPT feedback ── */
+  async doAICheck(blob, mimeType){
+    const inl = document.getElementById('tarteel-ai-result-inline');
+    const fbEl = document.getElementById('tarteel-ai-feedback');
+    const expectedText = TarteelMode.ayahs.map(a=>a.text).join(' ');
+    if (!expectedText || !blob) return;
+    try {
+      // Convert blob to base64
+      const ab = await blob.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(ab)));
+      if (inl) inl.innerHTML = `<div style="color:var(--text-2)">🎤 Whisper يحلل تلاوتك بدقة عالية...</div>`;
+      const res = await Api.post('/tarteel/ai-check', {
+        audio_base64: b64,
+        mime_type: mimeType || 'audio/webm',
+        expected_text: expectedText,
+        surah_name: TarteelMode.ayahs[0]?.surahName || '',
+        from_ayah: TarteelMode.ayahs[0]?.numberInSurah || 1,
+        to_ayah: TarteelMode.ayahs[TarteelMode.ayahs.length-1]?.numberInSurah || 1,
+      });
+      if (res.error && res.error !== 'ai_not_configured') {
+        if (inl) inl.textContent = 'تعذّر تحليل الصوت: ' + res.error;
+        return;
+      }
+      const transcript = res.transcript || '';
+      const feedback   = res.feedback   || '';
+      // Show Whisper transcript
+      if (inl && transcript) {
+        inl.innerHTML = `
+          <div style="margin-bottom:8px">
+            <div style="font-size:.72rem;color:#a5b4fc;margin-bottom:3px">🎤 Whisper — ما سمعه الذكاء الاصطناعي:</div>
+            <div style="font-size:.88rem;color:var(--text-1);line-height:1.8;direction:rtl;padding:8px;background:rgba(99,102,241,.08);border-radius:8px">${escapeHTML(transcript)}</div>
+          </div>`;
+      } else if (inl) {
+        inl.innerHTML = `<div style="color:var(--text-3);font-size:.82rem">لم يتمكن Whisper من التعرف على الصوت — تأكد من وضوح التلاوة.</div>`;
+      }
+      // Show GPT feedback in AI panel
+      if (feedback && fbEl) {
+        const existing = fbEl.querySelector('.glass-card');
+        const whisperPanel = document.createElement('div');
+        whisperPanel.className = 'glass-card pad';
+        whisperPanel.style.cssText = 'border:1px solid rgba(52,211,153,.3);margin-top:8px';
+        whisperPanel.innerHTML = `
+          <div style="font-size:.8rem;font-weight:700;color:#34d399;margin-bottom:10px">🤖 تقييم التجويد — Whisper + GPT</div>
+          <div style="font-size:.85rem;color:var(--text-2);line-height:1.8;direction:rtl">${escapeHTML(feedback)}</div>`;
+        fbEl.appendChild(whisperPanel);
+      }
+    } catch(e) {
+      console.error('Tarteel AI check error:', e.message);
+    }
   },
 
   /* ── Render AI core decision ── */
@@ -3738,6 +3814,25 @@ const TarteelMode = {
     UI.applyDecision(r);
   },
 
+  /* ── listenToAyah: use tarteel-sheikh-select if present ── */
+  listenToAyah(){
+    const ayahs = TarteelMode.ayahs;
+    if (!ayahs.length) return;
+    // Sync tarteel sheikh to quran sheikh before playing
+    const tSheikh = document.getElementById('tarteel-sheikh-select');
+    const qSheikh = document.getElementById('quran-sheikh-select');
+    if (tSheikh && qSheikh) qSheikh.value = tSheikh.value;
+    QuranBrowser.stopAll();
+    const queue = ayahs.map(a=>a.globalNum).filter(Boolean);
+    if (queue.length){
+      QuranBrowser.playQueue = queue;
+      QuranBrowser.loopRemain = 1; QuranBrowser.playIndex = 0;
+      QuranBrowser.playing = true; QuranBrowser.paused = false;
+      QuranBrowser.ayahRepeatRemain = 1;
+      QuranBrowser.playNext();
+    }
+  },
+
   /* ── Waveform helpers ── */
   startWaveform(stream){
     const canvas = document.getElementById('tarteel-waveform');
@@ -3771,7 +3866,6 @@ const TarteelMode = {
     if (cv){ const c=cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); }
   },
 
-  /* ── Session history from server ── */
   async loadHistory(){
     try {
       const r = await Api.get('/tarteel/history');
@@ -3793,5 +3887,122 @@ const TarteelMode = {
         </div>`;
       }).join('');
     } catch(e){}
+  },
+};
+
+/* ══════════════════════════════════════════════════════════════
+   KHATMA MODE — Full Quran reading plan tracker
+   Keeps reading plan, marks daily ward, shows animated ring
+══════════════════════════════════════════════════════════════ */
+const KhatmaMode = {
+  data: null,
+
+  /* Called by router when entering view-khatma */
+  async load(){
+    await KhatmaMode.refresh();
+    // Preset buttons
+    document.querySelectorAll('[data-khatma-days]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const di = document.getElementById('khatma-days-input');
+        if (di) di.value = btn.dataset.khatmaDays;
+      });
+    });
+    document.getElementById('btn-khatma-start')?.addEventListener('click', KhatmaMode.start);
+    document.getElementById('btn-khatma-complete')?.addEventListener('click', KhatmaMode.completeDay);
+    document.getElementById('btn-khatma-delete')?.addEventListener('click', KhatmaMode.deleteKhatma);
+  },
+
+  async refresh(){
+    try {
+      const r = await Api.get('/khatma');
+      KhatmaMode.data = r;
+      KhatmaMode.render(r);
+    } catch(e){ console.error('khatma refresh', e); }
+  },
+
+  render(d){
+    const setup  = document.getElementById('khatma-setup-panel');
+    const active = document.getElementById('khatma-active-panel');
+    if (!d || !d.khatma){
+      if (setup)  setup.style.display  = '';
+      if (active) active.style.display = 'none';
+      return;
+    }
+    if (setup)  setup.style.display  = 'none';
+    if (active) active.style.display = '';
+    const pct = d.percent_done || 0;
+    // Animate SVG ring (circumference = 2π×55 ≈ 345.4)
+    const ring = document.getElementById('khatma-ring-fill');
+    if (ring){
+      const offset = 345.4 * (1 - pct/100);
+      ring.style.strokeDashoffset = offset;
+    }
+    const pctEl = document.getElementById('khatma-ring-pct');
+    if (pctEl) pctEl.textContent = pct + '%';
+    const sumEl = document.getElementById('khatma-summary');
+    const ppd = d.khatma.pages_per_day || 1;
+    if (sumEl) sumEl.textContent = `${d.pages_read||0} / 604 صفحة · ${ppd.toFixed(1)} صفحة/يوم`;
+    const compEl = document.getElementById('khatma-completions');
+    if (compEl) compEl.textContent = (d.completions||0) > 0 ? `⭐ ختمات مكتملة: ${d.completions}` : '';
+    // Today's ward
+    const tp = d.today_pages || {};
+    const todayPagesEl = document.getElementById('khatma-today-pages');
+    if (todayPagesEl) todayPagesEl.textContent = `صفحات ${tp.from||1} — ${tp.to||tp.from||1}`;
+    // Done today?
+    const card = document.getElementById('khatma-today-card');
+    const btn  = document.getElementById('btn-khatma-complete');
+    const msg  = document.getElementById('khatma-today-done-msg');
+    if (d.today_completed){
+      if (card) card.classList.add('done');
+      if (btn)  { btn.disabled=true; btn.style.display='none'; }
+      if (msg)  msg.style.display='';
+    } else {
+      if (card) card.classList.remove('done');
+      if (btn)  { btn.disabled=false; btn.style.display=''; }
+      if (msg)  msg.style.display='none';
+    }
+    // Stats
+    const sp = document.getElementById('khatma-stat-pages');
+    const sd = document.getElementById('khatma-stat-days-passed');
+    const sr = document.getElementById('khatma-stat-days-remain');
+    if (sp) sp.textContent = d.pages_read||0;
+    if (sd) sd.textContent = d.days_passed||0;
+    if (sr) sr.textContent = d.days_remaining||0;
+  },
+
+  async start(){
+    const days = +(document.getElementById('khatma-days-input')?.value||30);
+    if (!days||days<1){ toast('أدخل عدد الأيام','error'); return; }
+    const btn = document.getElementById('btn-khatma-start');
+    if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ إنشاء الختمة…'; }
+    try {
+      await Api.post('/khatma/create', {target_days: days});
+      toast('تم إنشاء الختمة 📿','success');
+      await KhatmaMode.refresh();
+    } catch(e){ toast('تعذّر إنشاء الختمة','error'); }
+    finally { if(btn){ btn.disabled=false; btn.textContent='ابدأ الختمة'; } }
+  },
+
+  async completeDay(){
+    const btn = document.getElementById('btn-khatma-complete');
+    if (btn){ btn.disabled=true; btn.textContent='⏳…'; }
+    try {
+      const r = await Api.post('/khatma/complete-day', {});
+      if (r.khatma_complete){
+        toast('مبروك! أتممت الختمة كاملة 🎉 تم تجديدها تلقائياً','success');
+      } else {
+        toast('بارك الله فيك — سُجّل وردك اليومي ✅','success');
+      }
+      await KhatmaMode.refresh();
+    } catch(e){ toast('تعذّر تسجيل الورد','error'); if(btn){ btn.disabled=false; btn.textContent='✅ أتممت وردي اليوم'; } }
+  },
+
+  async deleteKhatma(){
+    if (!confirm('هل أنت متأكد من إلغاء الختمة الحالية؟ سيُمحى تقدمك.')) return;
+    try {
+      await Api.del('/khatma');
+      toast('تم إلغاء الختمة','success');
+      await KhatmaMode.refresh();
+    } catch(e){ toast('تعذّر إلغاء الختمة','error'); }
   },
 };

@@ -135,6 +135,7 @@
       <button class="icon-btn" data-go="view-quran" title="القرآن الكريم">📖</button>
       <button class="icon-btn" data-go="view-studio" title="استوديو التجويد">🎤</button>
       <button class="icon-btn" data-go="view-tarteel" title="المصنف الذكي">🎯</button>
+      <button class="icon-btn" data-go="view-khatma" title="ختمتي">📿</button>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
     </div>
@@ -919,6 +920,17 @@
           <input id="tarteel-to"   class="field-input" type="number" min="1" placeholder="إلى آية" style="width:82px">
           <button class="btn btn-secondary" id="btn-tarteel-load">تحميل</button>
         </div>
+        <!-- Sheikh selector for listen mode -->
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
+          <label style="font-size:.78rem;color:var(--text-3)">🎙️ القارئ:</label>
+          <select id="tarteel-sheikh-select" class="field-input" style="max-width:220px">
+            <option value="ar.alafasy">مشاري العفاسي</option>
+            <option value="ar.abdurrahmaansudais">عبدالرحمن السديس</option>
+            <option value="ar.husary">محمود خليل الحصري</option>
+            <option value="ar.minshawi">محمد صديق المنشاوي</option>
+            <option value="ar.abdullahbasfar">عبدالله بصفر</option>
+          </select>
+        </div>
         <!-- Quick Surahs -->
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-xs btn-ghost" data-tqs="1">الفاتحة</button>
@@ -993,6 +1005,9 @@
       <!-- Session Result (shown after session ends) -->
       <div id="tarteel-result" style="display:none;margin-bottom:12px"></div>
 
+      <!-- Whisper AI inline result (transcript + feedback) -->
+      <div id="tarteel-ai-result-inline" style="margin-bottom:10px"></div>
+
       <!-- AI Feedback Panel -->
       <div id="tarteel-ai-feedback" style="display:none;margin-bottom:12px"></div>
 
@@ -1001,6 +1016,87 @@
         <h3 style="margin:14px 6px 8px">📊 سجل جلسات التلاوة</h3>
         <div id="tarteel-history-list"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ KHATMA VIEW ═══════════════════ -->
+  <section id="view-khatma" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <h2 class="view-title">📿 ختمتي</h2>
+
+      <!-- No khatma state -->
+      <div id="khatma-setup-panel">
+        <div class="glass-card pad" style="text-align:center;margin-bottom:14px">
+          <div style="font-size:2.4rem;margin-bottom:8px">📿</div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:6px">لا توجد ختمة جارية</div>
+          <div style="font-size:.82rem;color:var(--text-2);margin-bottom:18px">حدّد عدد الأيام التي تريد إتمام الختمة فيها وسيحسب التطبيق وردك اليومي تلقائياً.</div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+            <button class="btn btn-sm btn-ghost" data-khatma-days="30">شهر (30 يوم)</button>
+            <button class="btn btn-sm btn-ghost" data-khatma-days="60">شهران</button>
+            <button class="btn btn-sm btn-ghost" data-khatma-days="90">3 أشهر</button>
+            <button class="btn btn-sm btn-ghost" data-khatma-days="365">سنة</button>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">
+            <label style="font-size:.82rem;color:var(--text-2)">أو اختر:</label>
+            <input id="khatma-days-input" class="field-input" type="number" min="1" max="3650" value="30" style="width:90px">
+            <label style="font-size:.82rem;color:var(--text-2)">يوم</label>
+            <button class="btn btn-primary" id="btn-khatma-start">ابدأ الختمة</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active khatma state -->
+      <div id="khatma-active-panel" style="display:none">
+        <!-- Progress Ring -->
+        <div class="glass-card pad" style="text-align:center;margin-bottom:12px">
+          <svg id="khatma-ring-svg" width="130" height="130" style="margin:0 auto 10px;display:block">
+            <circle cx="65" cy="65" r="55" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="10"/>
+            <circle id="khatma-ring-fill" cx="65" cy="65" r="55" fill="none" stroke="url(#khatmaGrad)" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="345.4" stroke-dashoffset="345.4"
+              transform="rotate(-90 65 65)"/>
+            <defs>
+              <linearGradient id="khatmaGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="100%" stop-color="#34d399"/>
+              </linearGradient>
+            </defs>
+            <text id="khatma-ring-pct" x="65" y="70" text-anchor="middle" fill="white" font-size="22" font-weight="700">0%</text>
+          </svg>
+          <div id="khatma-summary" style="font-size:.85rem;color:var(--text-2)"></div>
+          <div id="khatma-completions" style="font-size:.75rem;color:#fbbf24;margin-top:5px"></div>
+        </div>
+
+        <!-- Today's Ward -->
+        <div class="glass-card pad khatma-today-card" id="khatma-today-card" style="margin-bottom:12px">
+          <div style="font-size:.8rem;font-weight:700;color:#a5b4fc;margin-bottom:8px">📅 وردك اليوم</div>
+          <div id="khatma-today-pages" style="font-size:1.05rem;font-weight:700;margin-bottom:12px"></div>
+          <button class="btn btn-primary btn-lg" id="btn-khatma-complete" style="width:100%">✅ أتممت وردي اليوم</button>
+          <div id="khatma-today-done-msg" style="display:none;text-align:center;padding:12px;font-size:.9rem;color:#34d399;font-weight:700">
+            ما شاء الله! ✅ أتممت وردك اليوم — تابع غداً
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+          <div class="glass-card" style="padding:12px 8px;text-align:center">
+            <div id="khatma-stat-pages" class="mono" style="font-size:1.3rem;font-weight:900;color:#818cf8">0</div>
+            <div style="font-size:.68rem;color:var(--text-3)">صفحات قُرئت</div>
+          </div>
+          <div class="glass-card" style="padding:12px 8px;text-align:center">
+            <div id="khatma-stat-days-passed" class="mono" style="font-size:1.3rem;font-weight:900;color:#34d399">0</div>
+            <div style="font-size:.68rem;color:var(--text-3)">يوم مضى</div>
+          </div>
+          <div class="glass-card" style="padding:12px 8px;text-align:center">
+            <div id="khatma-stat-days-remain" class="mono" style="font-size:1.3rem;font-weight:900;color:#fbbf24">0</div>
+            <div style="font-size:.68rem;color:var(--text-3)">يوم متبقٍّ</div>
+          </div>
+        </div>
+
+        <!-- Reset -->
+        <button class="btn btn-ghost btn-sm" id="btn-khatma-delete" style="color:#ef4444;border-color:#ef4444">🗑 إلغاء الختمة الحالية</button>
+      </div>
+
     </div>
   </section>
 
