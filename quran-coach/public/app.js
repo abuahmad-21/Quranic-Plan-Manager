@@ -152,7 +152,7 @@ const App = {
     if (id==='view-channels') Channels.load();
     if (id==='view-channelroom' && !S.currentChannel) App.showView('view-channels');
     if (id==='view-quran') QuranBrowser.load();
-    if (id==='view-studio') VoiceStudio.load();
+    if (id==='view-studio') { App.showView('view-tarteel'); return; }
     if (id==='view-tarteel') TarteelMode.load();
     if (id==='view-khatma') KhatmaMode.load();
     // Stop chat polling when leaving chat room
@@ -2090,80 +2090,86 @@ const QuranBrowser = {
       surahs.forEach(s=>{
         const o = document.createElement('option');
         o.value = s.number;
-        o.textContent = `${s.number}. ${s.name} — ${s.englishName} (${s.numberOfAyahs} آية)`;
+        o.textContent = `${s.number}. ${s.name} (${s.numberOfAyahs} آية)`;
         sel.appendChild(o);
       });
     }
-    // Tab switching
-    document.querySelectorAll('.quran-tab').forEach(t=>t.onclick=()=>{
-      document.querySelectorAll('.quran-tab').forEach(x=>{
-        x.classList.remove('active','btn-secondary'); x.classList.add('btn-ghost');
-      });
-      t.classList.add('active','btn-secondary'); t.classList.remove('btn-ghost');
-      const isSurah = t.dataset.tab === 'surah';
-      const tSurah = document.getElementById('quran-tab-surah');
-      const tPage  = document.getElementById('quran-tab-page');
-      if (tSurah) tSurah.style.display = isSurah ? 'block' : 'none';
-      if (tPage)  tPage.style.display  = isSurah ? 'none'  : 'block';
+    // Settings toggle
+    document.getElementById('btn-quran-settings-toggle')?.addEventListener('click', ()=>{
+      const p = document.getElementById('quran-settings-panel');
+      if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
     });
-    // Load button
-    document.getElementById('btn-load-surah')?.addEventListener('click', QuranBrowser.loadContent);
+    // Prev/next surah navigation
+    document.getElementById('btn-quran-prev-surah')?.addEventListener('click', ()=>{
+      const s2 = document.getElementById('quran-surah-select');
+      if (s2 && +s2.value > 1){ s2.value = +s2.value - 1; QuranBrowser.loadSurah(); }
+    });
+    document.getElementById('btn-quran-next-surah')?.addEventListener('click', ()=>{
+      const s2 = document.getElementById('quran-surah-select');
+      if (s2 && +s2.value < 114){ s2.value = +s2.value + 1; QuranBrowser.loadSurah(); }
+      else if (s2 && !s2.value && s2.options.length > 1){ s2.value = '1'; QuranBrowser.loadSurah(); }
+    });
+    // Surah select change → auto-load
+    sel?.addEventListener('change', ()=>{ if (sel.value) QuranBrowser.loadSurah(); });
+    // Load button (in settings panel)
+    document.getElementById('btn-load-surah')?.addEventListener('click', QuranBrowser.loadSurah);
     // Quick surahs
     document.querySelectorAll('[data-qs]').forEach(b=>b.onclick=()=>{
       const s2 = document.getElementById('quran-surah-select');
       if (s2) s2.value = b.dataset.qs;
-      const surahTab = document.querySelector('.quran-tab[data-tab="surah"]');
-      surahTab?.click();
-      QuranBrowser.loadContent();
+      QuranBrowser.loadSurah();
     });
-    // Page nav
-    document.getElementById('btn-quran-page-prev')?.addEventListener('click', ()=>{
-      const inp = document.getElementById('quran-page-num');
-      if (inp && +inp.value > 1){ inp.value = +inp.value - 1; QuranBrowser.loadContent(); }
-    });
-    document.getElementById('btn-quran-page-next')?.addEventListener('click', ()=>{
-      const inp = document.getElementById('quran-page-num');
-      if (inp && +inp.value < 604){ inp.value = +inp.value + 1; QuranBrowser.loadContent(); }
-    });
-    // Sheikh/loop/repeat change — stop audio and save settings
+    // Sheikh/loop/repeat change
     document.getElementById('quran-sheikh-select')?.addEventListener('change', ()=>{
       QuranBrowser.stopAll(); QuranBrowser.saveSettings();
     });
     document.getElementById('quran-loop-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
     document.getElementById('quran-ayah-repeat-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
-    // Load saved settings for this user
     QuranBrowser.loadSettings();
     // Playback
     document.getElementById('btn-quran-play-all')?.addEventListener('click', QuranBrowser.playAll);
     document.getElementById('btn-quran-pause')?.addEventListener('click', QuranBrowser.togglePause);
     document.getElementById('btn-quran-stop')?.addEventListener('click', QuranBrowser.stopAll);
-    // Auto-load Al-Fatiha on first open (no button press needed)
+    // Khatma widget in settings panel
+    QuranBrowser.loadKhatmaWidget();
+    document.getElementById('btn-quran-khatma-complete')?.addEventListener('click', async()=>{
+      try { await Api.post('/khatma/complete-day',{}); toast('أحسنت! سُجّل وردك اليوم ✅','success',2500); QuranBrowser.loadKhatmaWidget(); } catch(e){ toast('خطأ في تسجيل الورد','error'); }
+    });
+    // Auto-load Al-Fatiha on first open
     if (!QuranBrowser.currentAyahs.length) {
-      const sel = document.getElementById('quran-surah-select');
-      if (sel) {
-        // Wait for surahs to populate then auto-load Fatiha
-        const doAutoLoad = ()=>{
-          if (sel.options.length > 1 && !QuranBrowser.currentAyahs.length) {
-            sel.value = '1';
-            const surahTab = document.querySelector('.quran-tab[data-tab="surah"]');
-            surahTab?.click();
-            QuranBrowser.loadContent();
-          }
-        };
-        if (sel.options.length > 1) doAutoLoad();
-        else setTimeout(doAutoLoad, 600);
-      }
+      const doAutoLoad = ()=>{
+        if (sel && sel.options.length > 1 && !QuranBrowser.currentAyahs.length) {
+          sel.value = '1';
+          QuranBrowser.loadSurah();
+        }
+      };
+      if (sel && sel.options.length > 1) doAutoLoad();
+      else setTimeout(doAutoLoad, 600);
     }
     // Inline practice panel
     QuranBrowser.initPracticePanel();
   },
 
+  async loadKhatmaWidget(){
+    try {
+      const r = await Api.get('/khatma');
+      const k = r.khatma;
+      const bar = document.getElementById('quran-khatma-bar');
+      const info = document.getElementById('quran-khatma-info');
+      if (!k || !bar || !info) return;
+      bar.style.display = 'block';
+      const pct = Math.round((k.completed_days/k.total_days)*100);
+      info.textContent = `${k.completed_days} / ${k.total_days} يوم — الورد: ${k.daily_pages || '?'} صفحة يومياً — ${pct}% مكتمل`;
+    } catch(e){}
+  },
+
+  loadSurah(){
+    return QuranBrowser.loadContent();
+  },
+
   async loadContent(){
     QuranBrowser.stopAll();
-    const pageTab = document.getElementById('quran-tab-page');
-    const isPage = pageTab && pageTab.style.display !== 'none';
-    if (isPage) await QuranBrowser.loadPage();
-    else await QuranBrowser.loadSurah();
+    await QuranBrowser.loadSurah();
   },
 
   async loadPage(){
@@ -3331,9 +3337,10 @@ const TarteelMode = {
     });
   },
 
-  /* ── Load: populate surah dropdowns ── */
+  /* ── Load: populate dropdowns + tab system ── */
   async load(){
     const surahs = await QuranBrowser.loadSurahs();
+    // Populate tarteel surah select
     const sel = document.getElementById('tarteel-surah');
     if (sel && sel.options.length <= 1 && surahs.length){
       surahs.forEach(s=>{
@@ -3342,6 +3349,32 @@ const TarteelMode = {
         sel.appendChild(o);
       });
     }
+    // Populate studio surah selects
+    ['studio-surah','studio-range-surah'].forEach(id=>{
+      const s2 = document.getElementById(id);
+      if (s2 && s2.options.length <= 1 && surahs.length){
+        surahs.forEach(s=>{ const o=document.createElement('option'); o.value=s.number; o.textContent=`${s.number}. ${s.name}`; s2.appendChild(o); });
+      }
+    });
+
+    /* ── Tab switching ── */
+    const switchTab = (t)=>{
+      document.querySelectorAll('.recitation-tab').forEach(bt=>{
+        const active = bt.dataset.rtab === t;
+        bt.classList.toggle('rtab-active', active);
+      });
+      ['smart','studio','progress'].forEach(name=>{
+        const el = document.getElementById('rtab-'+name);
+        if (el) el.style.display = name === t ? '' : 'none';
+      });
+      if (t==='studio') TarteelMode._loadStudioTab();
+      if (t==='progress') TarteelMode._loadProgressTab();
+    };
+    document.querySelectorAll('.recitation-tab').forEach(tab=>{
+      tab.onclick = ()=> switchTab(tab.dataset.rtab);
+    });
+
+    /* ── Smart dictation wiring ── */
     document.getElementById('btn-tarteel-load')?.addEventListener('click', TarteelMode.loadAyahs);
     document.querySelectorAll('[data-tqs]').forEach(b=>b.onclick=()=>{
       const s2 = document.getElementById('tarteel-surah');
@@ -3357,12 +3390,27 @@ const TarteelMode = {
       const text = TarteelMode.ayahs.map(a=>a.text).join(' ');
       if (text) VoiceStudio._ttsSpeak(text, 'btn-tarteel-tts');
     });
-    // Sheikh selector in tarteel — sync with QuranBrowser sheikh
     document.getElementById('tarteel-sheikh-select')?.addEventListener('change', e=>{
       const qs = document.getElementById('quran-sheikh-select');
       if (qs) qs.value = e.target.value;
     });
+
+    /* ── Studio wiring ── */
+    document.getElementById('btn-studio-load')?.addEventListener('click', VoiceStudio.loadVerse);
+    document.getElementById('btn-studio-record')?.addEventListener('click', VoiceStudio.toggleRecord);
+    document.getElementById('btn-studio-range-load')?.addEventListener('click', VoiceStudio.loadRange);
+    document.getElementById('btn-studio-range-record')?.addEventListener('click', VoiceStudio.toggleRangeRecord);
+    if (VoiceStudio.practiceVerse) VoiceStudio.showVerse();
+
     TarteelMode.loadHistory();
+  },
+
+  async _loadStudioTab(){
+    await VoiceStudio.loadRecordings();
+  },
+
+  async _loadProgressTab(){
+    await Promise.all([VoiceStudio.loadProgressChart(), TarteelMode.loadHistory()]);
   },
 
   setMode(m){

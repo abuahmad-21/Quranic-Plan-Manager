@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 33,
-      "total_sessions_today": 19,
-      "total_pages_memorized_alltime": 4.47
+      "total_users": 34,
+      "total_sessions_today": 20,
+      "total_pages_memorized_alltime": 4.64
     },
     "sheikh_requests": {
       "455": {
@@ -3596,6 +3596,144 @@
           "remember_me": false
         }
       ]
+    },
+    "suudud": {
+      "username": "suudud",
+      "password_hash": "672fbedd977b0aff1cbc9162eda282c8da95c8e469db5a9bf729b5c30f8b7964",
+      "display_name": "Hdhdhdhd",
+      "created_at": "2026-05-13T11:37:27.425Z",
+      "last_active": "2026-05-13T11:58:40.350Z",
+      "avatar_color": "#0de55d",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-13T11:37:31.176Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-13T11:37:31.176Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.24,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-13",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-13T11:39:48.426Z",
+          "pages_done": 0.175,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 5
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 0,
+        "afi": 71,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 1.96,
+          "interval": 1,
+          "reps": 0,
+          "next_review": "2026-05-14T11:39:48.426Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [],
+      "khatma": {
+        "id": "013ac8f720618a61",
+        "created_at": "2026-05-13T11:38:57.344Z",
+        "start_date": "2026-05-13",
+        "target_days": 30,
+        "pages_per_day": 20.133333333333333,
+        "daily_log": {
+          "2026-05-13": {
+            "completed": true,
+            "at": "2026-05-13T11:39:01.154Z"
+          }
+        },
+        "total_pages_read": 20,
+        "completions": 0
+      },
+      "tarteel_history": [
+        {
+          "surah_name": "سُورَةُ ٱلْفَاتِحَةِ",
+          "from_ayah": 1,
+          "to_ayah": 7,
+          "word_count": 31,
+          "correct_words": 0,
+          "error_words": 1,
+          "score": 0,
+          "duration_minutes": 1,
+          "mode": "memorize",
+          "transcript": "‏بسم الله الرحمن الرحيم ‏بسم الله الرحمن الرحيم ‏الحمد لله رب العالمين",
+          "created_at": "2026-05-13T11:39:48.227Z"
+        }
+      ]
     }
   },
   "chats": {},
@@ -3772,6 +3910,11 @@
       "username": "migrationtest",
       "expires": 1778756543328,
       "created_at": "2026-05-13T11:02:23.328Z"
+    },
+    "a1233f592b42902fa370410eb6a6e23d2d8d8b2bc23dab32": {
+      "username": "suudud",
+      "expires": 1781264247425,
+      "created_at": "2026-05-13T11:37:27.425Z"
     }
   }
 }

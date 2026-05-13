@@ -133,8 +133,7 @@
       <button class="icon-btn" data-go="view-channels" title="الشُّعب">📡</button>
       <span style="position:relative;display:inline-flex"><button class="icon-btn" data-go="view-notifications" title="الإشعارات">🔔</button><span id="notif-badge" class="notif-badge hidden">0</span></span>
       <button class="icon-btn" data-go="view-quran" title="القرآن الكريم">📖</button>
-      <button class="icon-btn" data-go="view-studio" title="استوديو التجويد">🎤</button>
-      <button class="icon-btn" data-go="view-tarteel" title="المصنف الذكي">🎯</button>
+      <button class="icon-btn" data-go="view-tarteel" title="مركز التلاوة">🎙️</button>
       <button class="icon-btn" data-go="view-khatma" title="ختمتي">📿</button>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
@@ -725,297 +724,270 @@
   </section>
 
   <!-- QURAN BROWSER -->
-  <section id="view-quran" class="view">
-    <div class="page-container">
-      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
-      <h2 class="view-title">📖 القرآن الكريم</h2>
-
-      <!-- Navigation tabs -->
-      <div class="glass-card pad" style="margin-bottom:10px">
-        <div style="display:flex;gap:6px;margin-bottom:12px">
-          <button class="btn btn-sm btn-secondary quran-tab" data-tab="surah">📋 بالسورة</button>
-          <button class="btn btn-sm btn-ghost quran-tab" data-tab="page">📜 بالصفحة (مصحف)</button>
+  <section id="view-quran" class="view quran-clean-view">
+    <!-- Sticky control bar -->
+    <div id="quran-ctrl-bar">
+      <div class="quran-toprow">
+        <button class="btn btn-ghost btn-xs" data-go="view-dashboard">⟵</button>
+        <span class="quran-title-lbl">📖 القرآن الكريم</span>
+        <button class="btn btn-ghost btn-xs" id="btn-quran-prev-surah" title="السورة السابقة">◀</button>
+        <select id="quran-surah-select" class="field-input quran-surah-sel">
+          <option value="">اختر سورة...</option>
+        </select>
+        <button class="btn btn-ghost btn-xs" id="btn-quran-next-surah" title="السورة التالية">▶</button>
+        <button class="btn btn-primary btn-xs" id="btn-quran-play-all" disabled>▶</button>
+        <button class="btn btn-ghost btn-xs" id="btn-quran-pause" disabled>⏸</button>
+        <button class="btn btn-ghost btn-xs" id="btn-quran-stop" disabled>⏹</button>
+        <button class="btn btn-ghost btn-xs" id="btn-quran-settings-toggle" title="إعدادات">⚙️</button>
+        <button class="btn btn-ghost btn-xs" data-go="view-khatma" title="ختمتي" style="color:#a5b4fc">📿</button>
+      </div>
+      <!-- Collapsible settings panel -->
+      <div id="quran-settings-panel" style="display:none">
+        <div class="quran-settings-inner">
+          <select id="quran-sheikh-select" class="field-input">
+            <option value="ar.alafasy">مشاري العفاسي</option>
+            <option value="ar.abdulbasitmurattal">عبد الباسط (مرتل)</option>
+            <option value="ar.husary">الحصري</option>
+            <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
+            <option value="ar.saudalshuraym">سعود الشريم</option>
+          </select>
+          <select id="quran-loop-select" class="field-input" style="width:90px">
+            <option value="1">×1</option><option value="2">×2</option>
+            <option value="3">×3</option><option value="5">×5</option>
+            <option value="0">∞</option>
+          </select>
+          <select id="quran-ayah-repeat-select" class="field-input" style="width:90px">
+            <option value="1">آية ×1</option><option value="2">×2</option>
+            <option value="3">×3</option><option value="5">×5</option>
+          </select>
+          <button class="btn btn-secondary btn-xs" id="btn-load-surah">تطبيق</button>
         </div>
-
-        <!-- By Surah -->
-        <div id="quran-tab-surah">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-            <select id="quran-surah-select" class="field-input" style="flex:1;min-width:160px">
-              <option value="">اختر سورة...</option>
-            </select>
-            <input id="quran-from-ayah" class="field-input" type="number" min="1" placeholder="من آية" style="width:74px">
-            <input id="quran-to-ayah" class="field-input" type="number" min="1" placeholder="إلى آية" style="width:74px">
-          </div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn btn-sm btn-ghost" data-qs="1">الفاتحة</button>
-            <button class="btn btn-sm btn-ghost" data-qs="2">البقرة</button>
-            <button class="btn btn-sm btn-ghost" data-qs="36">يس</button>
-            <button class="btn btn-sm btn-ghost" data-qs="55">الرحمن</button>
-            <button class="btn btn-sm btn-ghost" data-qs="67">الملك</button>
-            <button class="btn btn-sm btn-ghost" data-qs="78">النبأ</button>
-            <button class="btn btn-sm btn-ghost" data-qs="112">الإخلاص</button>
-          </div>
+        <div class="quran-quick-btns">
+          <button class="btn btn-xs btn-ghost" data-qs="1">الفاتحة</button>
+          <button class="btn btn-xs btn-ghost" data-qs="2">البقرة</button>
+          <button class="btn btn-xs btn-ghost" data-qs="18">الكهف</button>
+          <button class="btn btn-xs btn-ghost" data-qs="36">يس</button>
+          <button class="btn btn-xs btn-ghost" data-qs="55">الرحمن</button>
+          <button class="btn btn-xs btn-ghost" data-qs="67">الملك</button>
+          <button class="btn btn-xs btn-ghost" data-qs="78">النبأ</button>
+          <button class="btn btn-xs btn-ghost" data-qs="112">الإخلاص</button>
+          <button class="btn btn-xs btn-ghost" data-qs="113">الفلق</button>
+          <button class="btn btn-xs btn-ghost" data-qs="114">الناس</button>
         </div>
-
-        <!-- By Page -->
-        <div id="quran-tab-page" style="display:none">
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button class="btn btn-sm btn-ghost" id="btn-quran-page-prev">◀</button>
-            <span style="font-size:.78rem;color:var(--text-3)">صفحة</span>
-            <input id="quran-page-num" class="field-input" type="number" min="1" max="604" value="1" style="width:66px;text-align:center">
-            <span style="font-size:.78rem;color:var(--text-3)">/ 604</span>
-            <button class="btn btn-sm btn-ghost" id="btn-quran-page-next">▶</button>
+        <!-- Khatma mini-widget -->
+        <div id="quran-khatma-bar" style="display:none">
+          <div class="quran-khatma-row">
+            <div>
+              <div style="font-size:.75rem;font-weight:700;color:#a5b4fc">📿 وردك اليوم</div>
+              <div id="quran-khatma-info" style="font-size:.72rem;color:var(--text-2);margin-top:2px"></div>
+            </div>
+            <button class="btn btn-xs btn-secondary" id="btn-quran-khatma-complete">✅ أتممت الورد</button>
           </div>
         </div>
       </div>
+      <div id="quran-playing-info" style="font-size:.72rem;color:var(--gold);text-align:center;padding:3px 0;min-height:14px"></div>
+    </div>
 
-      <!-- Sheikh + Playback controls -->
-      <div class="glass-card pad" style="margin-bottom:10px">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-          <select id="quran-sheikh-select" class="field-input" style="flex:1;min-width:170px">
-            <option value="ar.alafasy">الشيخ مشاري راشد العفاسي</option>
-            <option value="ar.abdulbasitmurattal">الشيخ عبد الباسط (مرتل)</option>
-            <option value="ar.husary">الشيخ محمود خليل الحصري</option>
-            <option value="ar.mahermuaiqly">الشيخ ماهر المعيقلي</option>
-            <option value="ar.saudalshuraym">الشيخ سعود الشريم</option>
-          </select>
-          <select id="quran-loop-select" class="field-input" style="flex:0 0 110px">
-            <option value="1">دورة ×1</option>
-            <option value="2">دورة ×2</option>
-            <option value="3">دورة ×3</option>
-            <option value="5">دورة ×5</option>
-            <option value="0">∞ لا نهاية</option>
-          </select>
-          <select id="quran-ayah-repeat-select" class="field-input" style="flex:0 0 100px">
-            <option value="1">آية ×1</option>
-            <option value="2">آية ×2</option>
-            <option value="3">آية ×3</option>
-            <option value="5">آية ×5</option>
-            <option value="7">آية ×7</option>
-          </select>
-          <button class="btn btn-primary" id="btn-load-surah">تحميل</button>
+    <!-- Main text display (vertical, full-width) -->
+    <div id="quran-display"></div>
+
+    <!-- Inline practice panel (sticky bottom) -->
+    <div id="quran-practice-panel" class="glass-card" style="display:none;position:sticky;bottom:76px;z-index:200;margin:0 8px;border:1px solid rgba(52,211,153,.4)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+        <div>
+          <div style="font-size:.72rem;color:#34d399;font-weight:700">🎯 تدريب مباشر</div>
+          <div id="qp-info" style="font-size:.74rem;color:var(--text-3);margin-top:2px"></div>
         </div>
-        <!-- Playback bar -->
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-secondary btn-sm" id="btn-quran-play-all" disabled>▶ تشغيل الكل</button>
-          <button class="btn btn-ghost btn-sm" id="btn-quran-pause" disabled>⏸ إيقاف</button>
-          <button class="btn btn-ghost btn-sm" id="btn-quran-stop" disabled>⏹ توقف</button>
-          <div id="quran-playing-info" style="font-size:.78rem;color:var(--gold);flex:1;text-align:center"></div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-sm btn-ghost" id="btn-qp-studio">↗ مركز التلاوة</button>
+          <button class="btn btn-sm btn-ghost" id="btn-qp-close">✕</button>
         </div>
       </div>
-
-      <div id="quran-display"></div>
-
-      <!-- ═══ INLINE PRACTICE PANEL ═══ -->
-      <div id="quran-practice-panel" class="glass-card" style="display:none;position:sticky;bottom:76px;z-index:200;margin-top:12px;border:1px solid rgba(52,211,153,.4)">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
-          <div>
-            <div style="font-size:.72rem;color:#34d399;font-weight:700;letter-spacing:.03em">🎯 تدريب مباشر على الآية</div>
-            <div id="qp-info" style="font-size:.74rem;color:var(--text-3);margin-top:2px"></div>
-          </div>
-          <div style="display:flex;gap:5px">
-            <button class="btn btn-sm btn-ghost" id="btn-qp-studio" title="فتح الاستوديو الكامل">↗ الاستوديو</button>
-            <button class="btn btn-sm btn-ghost" id="btn-qp-close">✕</button>
-          </div>
+      <div class="pad">
+        <div id="qp-verse" dir="rtl" style="font-size:1.55rem;line-height:2.4;text-align:center;color:var(--gold);padding:14px;background:rgba(245,158,11,.06);border-radius:10px;margin-bottom:10px;font-family:'Amiri Quran','Amiri','Scheherazade New','Tajawal',serif"></div>
+        <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btn-qp-record">🎙️ سجّل تلاوتك</button>
+          <button class="btn btn-ghost btn-sm" id="btn-qp-listen">🔊 استمع</button>
+          <div id="qp-status" style="font-size:.78rem;color:var(--text-2);flex:1"></div>
         </div>
-        <div class="pad">
-          <div id="qp-verse" dir="rtl" style="font-size:1.55rem;line-height:2.4;text-align:center;color:var(--gold);padding:14px;background:rgba(245,158,11,.06);border-radius:10px;margin-bottom:10px;font-family:'Amiri Quran','Amiri','Scheherazade New','Tajawal',serif;letter-spacing:.02em"></div>
-          <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" id="btn-qp-record">🎙️ سجّل تلاوتك</button>
-            <button class="btn btn-ghost btn-sm" id="btn-qp-listen">🔊 استمع للنموذج</button>
-            <div id="qp-status" style="font-size:.78rem;color:var(--text-2);flex:1"></div>
-          </div>
-          <canvas id="qp-waveform" height="56" style="width:100%;height:56px;border-radius:8px;background:rgba(0,0,0,.3);display:block;margin-bottom:8px"></canvas>
-          <div id="qp-result"></div>
-          <div id="qp-speech-area" style="margin-top:8px"></div>
-        </div>
+        <canvas id="qp-waveform" height="56" style="width:100%;height:56px;border-radius:8px;background:rgba(0,0,0,.3);display:block;margin-bottom:8px"></canvas>
+        <div id="qp-result"></div>
+        <div id="qp-speech-area" style="margin-top:8px"></div>
       </div>
     </div>
   </section>
 
-  <!-- VOICE STUDIO -->
-  <section id="view-studio" class="view">
-    <div class="page-container">
-      <button class="btn btn-ghost btn-sm" data-go="view-library">⟵ رجوع</button>
-      <h2 class="view-title">🎤 استوديو التجويد</h2>
-      <div style="font-size:.82rem;color:var(--text-2);margin-bottom:10px;padding:8px 12px;background:rgba(52,211,153,.06);border-radius:10px;border:1px solid rgba(52,211,153,.15)">
-        سجّل تلاوتك، واستمع لنفسك، وقيّم أداءك. خوارزمياتنا تتعلم من تقييماتك لتحسين خطتك.
-      </div>
-      <!-- Recitation Progress Chart -->
-      <div id="studio-progress-wrap" class="glass-card pad" style="margin-bottom:12px;display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:.9rem;font-weight:700">📊 مخطط تقدمي في التلاوة</span>
-          <span id="studio-progress-count" style="font-size:.75rem;color:var(--text-3)"></span>
-        </div>
-        <canvas id="studio-progress-chart" height="90" style="width:100%;height:90px;display:block;border-radius:8px;background:rgba(0,0,0,.2)"></canvas>
-        <div id="studio-progress-summary" style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"></div>
-      </div>
-      <!-- Verse picker -->
-      <div class="glass-card pad" style="margin-bottom:12px">
-        <div style="font-size:.85rem;color:var(--text-2);margin-bottom:8px">📖 اختر آية للتدرب عليها</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="studio-surah" class="field-input" style="flex:1;min-width:150px">
-            <option value="">اختر سورة...</option>
-          </select>
-          <input id="studio-ayah" class="field-input" type="number" min="1" placeholder="رقم الآية" style="flex:0 0 100px">
-          <button class="btn btn-secondary" id="btn-studio-load">تحميل الآية</button>
-        </div>
-      </div>
-      <!-- Target verse display -->
-      <div id="studio-verse-display" style="display:none;margin-bottom:12px"></div>
-      <!-- Recording area -->
-      <div class="glass-card pad" style="margin-bottom:12px">
-        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="btn-studio-record">🎙️ ابدأ التسجيل</button>
-          <div id="studio-rec-status" style="font-size:.85rem;color:var(--text-2)"></div>
-        </div>
-        <canvas id="studio-waveform" width="800" height="80" style="width:100%;height:80px;border-radius:10px;background:rgba(0,0,0,.3);display:block"></canvas>
-      </div>
-      <!-- Result -->
-      <div id="studio-result" style="display:none"></div>
-      <!-- Range Recording (سورة/صفحة كاملة) -->
-      <div class="glass-card pad" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.2)">
-        <div style="font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:10px">📖 تسجيل نطاق كامل (سورة / صفحة / عدة آيات)</div>
-        <div style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">اختر سورة ونطاق الآيات، اتلُ كل النطاق وسيحلّله الذكاء الاصطناعي تلقائياً</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-          <select id="studio-range-surah" class="field-input" style="flex:2;min-width:150px">
-            <option value="">اختر سورة...</option>
-          </select>
-          <input id="studio-range-from" class="field-input" type="number" min="1" placeholder="من آية" style="width:80px">
-          <input id="studio-range-to"   class="field-input" type="number" min="1" placeholder="إلى آية" style="width:80px">
-          <button class="btn btn-secondary btn-sm" id="btn-studio-range-load">تحميل</button>
-        </div>
-        <div id="studio-range-display"></div>
-        <button class="btn btn-primary" id="btn-studio-range-record" style="display:none;margin-bottom:8px">🎙️ سجّل النطاق كاملاً</button>
-        <div id="studio-range-status" style="font-size:.82rem;color:var(--text-2);margin-top:4px"></div>
-        <canvas id="studio-range-waveform" height="60" style="width:100%;height:60px;display:none;border-radius:8px;background:rgba(0,0,0,.3);margin-top:8px"></canvas>
-        <div id="studio-range-result" style="margin-top:10px"></div>
-      </div>
+  <!-- view-studio redirects to tarteel (merged) -->
+  <section id="view-studio" class="view" style="display:none"></section>
 
-      <!-- Past recordings -->
-      <h3 style="margin:14px 6px 8px">🗂️ تسجيلاتي التدريبية</h3>
-      <div id="studio-recordings-list"></div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       المصنف الذكي — Tarteel Mode (Word-by-Word + AI Adaptation)
-  ════════════════════════════════════════════════════════════ -->
+  <!-- ═══════════════ مركز التلاوة — Unified Studio + Tarteel ═══════════════ -->
   <section id="view-tarteel" class="view">
     <div class="page-container">
-      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
-      <h2 class="view-title">🎯 المصنف الذكي</h2>
-      <div style="font-size:.82rem;color:var(--text-2);margin-bottom:14px;padding:8px 14px;background:rgba(99,102,241,.07);border-radius:10px;border:1px solid rgba(99,102,241,.2)">
-        اتلُ كلمةً كلمة — الذكاء الاصطناعي يتابعك لحظياً ويكشف الأخطاء، ثم يُعدّل خطتك بناءً على أدائك.
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵</button>
+        <h2 class="view-title" style="margin:0">🎙️ مركز التلاوة</h2>
       </div>
 
-      <!-- Selector -->
-      <div class="glass-card pad" style="margin-bottom:12px">
-        <div style="font-size:.85rem;color:var(--text-2);margin-bottom:10px;font-weight:600">📖 اختر السورة والآيات</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-          <select id="tarteel-surah" class="field-input" style="flex:2;min-width:160px">
-            <option value="">اختر سورة...</option>
-          </select>
-          <input id="tarteel-from" class="field-input" type="number" min="1" placeholder="من آية" style="width:82px">
-          <input id="tarteel-to"   class="field-input" type="number" min="1" placeholder="إلى آية" style="width:82px">
-          <button class="btn btn-secondary" id="btn-tarteel-load">تحميل</button>
-        </div>
-        <!-- Sheikh selector for listen mode -->
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
-          <label style="font-size:.78rem;color:var(--text-3)">🎙️ القارئ:</label>
-          <select id="tarteel-sheikh-select" class="field-input" style="max-width:220px">
-            <option value="ar.alafasy">مشاري العفاسي</option>
-            <option value="ar.abdurrahmaansudais">عبدالرحمن السديس</option>
-            <option value="ar.husary">محمود خليل الحصري</option>
-            <option value="ar.minshawi">محمد صديق المنشاوي</option>
-            <option value="ar.abdullahbasfar">عبدالله بصفر</option>
-          </select>
-        </div>
-        <!-- Quick Surahs -->
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-xs btn-ghost" data-tqs="1">الفاتحة</button>
-          <button class="btn btn-xs btn-ghost" data-tqs="112">الإخلاص</button>
-          <button class="btn btn-xs btn-ghost" data-tqs="113">الفلق</button>
-          <button class="btn btn-xs btn-ghost" data-tqs="114">الناس</button>
-          <button class="btn btn-xs btn-ghost" data-tqs="67">الملك</button>
-          <button class="btn btn-xs btn-ghost" data-tqs="55">الرحمن</button>
-        </div>
+      <!-- Tab bar -->
+      <div class="recitation-tabbar">
+        <button class="recitation-tab rtab-active" data-rtab="smart">🎯 تسميع ذكي</button>
+        <button class="recitation-tab" data-rtab="studio">🎤 استوديو</button>
+        <button class="recitation-tab" data-rtab="progress">📊 تقدمي</button>
       </div>
 
-      <!-- Mode Toggle -->
-      <div class="glass-card pad" style="margin-bottom:12px;display:none" id="tarteel-controls">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
-          <div style="font-size:.85rem;color:var(--text-2);font-weight:600">وضع التدريب:</div>
-          <button class="btn btn-sm btn-secondary active" id="btn-mode-practice">🔍 مراجعة (نص ظاهر)</button>
-          <button class="btn btn-sm btn-ghost" id="btn-mode-memorize">🧠 تسميع (نص مخفي)</button>
+      <!-- ════ TAB 1: Smart Dictation ════ -->
+      <div id="rtab-smart">
+        <div class="glass-card pad" style="margin-bottom:12px">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text-2);margin-bottom:10px">📖 اختر السورة والآيات</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <select id="tarteel-surah" class="field-input" style="flex:2;min-width:150px">
+              <option value="">اختر سورة...</option>
+            </select>
+            <input id="tarteel-from" class="field-input" type="number" min="1" placeholder="من" style="width:66px">
+            <input id="tarteel-to" class="field-input" type="number" min="1" placeholder="إلى" style="width:66px">
+            <button class="btn btn-secondary" id="btn-tarteel-load">تحميل</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+            <select id="tarteel-sheikh-select" class="field-input" style="flex:1;min-width:140px">
+              <option value="ar.alafasy">مشاري العفاسي</option>
+              <option value="ar.abdurrahmaansudais">السديس</option>
+              <option value="ar.husary">الحصري</option>
+              <option value="ar.minshawi">المنشاوي</option>
+              <option value="ar.abdullahbasfar">بصفر</option>
+            </select>
+            <button class="btn btn-sm btn-secondary" id="btn-mode-practice">🔍 مراجعة</button>
+            <button class="btn btn-sm btn-ghost" id="btn-mode-memorize">🧠 تسميع</button>
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-xs btn-ghost" data-tqs="1">الفاتحة</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="2">البقرة</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="18">الكهف</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="36">يس</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="55">الرحمن</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="67">الملك</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="112">الإخلاص</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="113">الفلق</button>
+            <button class="btn btn-xs btn-ghost" data-tqs="114">الناس</button>
+          </div>
         </div>
+
         <!-- AI State Bar -->
-        <div id="tarteel-ai-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;background:rgba(99,102,241,.07);border-radius:10px;border:1px solid rgba(99,102,241,.15)">
-          <span style="font-size:.75rem;color:var(--text-3)">الذكاء الاصطناعي:</span>
-          <span id="tarteel-mode-badge" class="tarteel-ai-badge tarteel-mode-normal">NORMAL MODE</span>
-          <span style="font-size:.72rem;color:var(--text-3)">طاقة:</span>
-          <span id="tarteel-energy-val" class="mono" style="font-size:.85rem;color:#93c5fd">75</span>
-          <span style="font-size:.72rem;color:var(--text-3)">AFI:</span>
-          <span id="tarteel-afi-val" class="mono" style="font-size:.85rem;color:#34d399">—</span>
-        </div>
-      </div>
-
-      <!-- Verse Display -->
-      <div id="tarteel-verse-wrap" style="display:none;margin-bottom:12px">
-        <div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-            <div>
-              <div id="tarteel-surah-label" style="font-size:.72rem;color:#a5b4fc;font-weight:700"></div>
-              <div id="tarteel-ayah-range" style="font-size:.68rem;color:var(--text-3);margin-top:2px"></div>
-            </div>
-            <div style="display:flex;gap:5px">
-              <button class="btn btn-xs btn-ghost" id="btn-tarteel-listen">🔊 استمع</button>
-              <button class="btn btn-xs btn-ghost" id="btn-tarteel-tts">🤖 AI صوت</button>
-              <button class="btn btn-xs btn-ghost" id="btn-tarteel-reset">↺ إعادة</button>
-            </div>
+        <div class="glass-card" id="tarteel-controls" style="display:none;padding:8px 12px;margin-bottom:10px">
+          <div id="tarteel-ai-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:.72rem;color:var(--text-3)">AI:</span>
+            <span id="tarteel-mode-badge" class="tarteel-ai-badge tarteel-mode-normal">NORMAL</span>
+            <span style="font-size:.72rem;color:var(--text-3)">طاقة:</span>
+            <span id="tarteel-energy-val" class="mono" style="font-size:.82rem;color:#93c5fd">75</span>
+            <span style="font-size:.72rem;color:var(--text-3)">AFI:</span>
+            <span id="tarteel-afi-val" class="mono" style="font-size:.82rem;color:#34d399">—</span>
           </div>
-          <!-- Word-by-Word Text -->
-          <div id="tarteel-text" class="tarteel-text" dir="rtl"></div>
-          <!-- Progress Bar -->
-          <div style="margin-top:14px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-              <span style="font-size:.72rem;color:var(--text-3)">التقدم</span>
-              <span id="tarteel-progress-label" style="font-size:.72rem;color:#a5b4fc">0 / 0</span>
+        </div>
+
+        <!-- Verse display -->
+        <div id="tarteel-verse-wrap" style="display:none;margin-bottom:10px">
+          <div class="glass-card pad" style="border:1px solid rgba(99,102,241,.3)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:5px">
+              <div>
+                <div id="tarteel-surah-label" style="font-size:.72rem;color:#a5b4fc;font-weight:700"></div>
+                <div id="tarteel-ayah-range" style="font-size:.68rem;color:var(--text-3);margin-top:1px"></div>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <button class="btn btn-xs btn-ghost" id="btn-tarteel-listen">🔊 استمع</button>
+                <button class="btn btn-xs btn-ghost" id="btn-tarteel-tts">🤖 AI</button>
+                <button class="btn btn-xs btn-ghost" id="btn-tarteel-reset">↺</button>
+              </div>
             </div>
-            <div class="tarteel-progress-bar">
-              <div id="tarteel-progress-fill" class="tarteel-progress-fill" style="width:0%"></div>
+            <div id="tarteel-text" class="tarteel-text" dir="rtl"></div>
+            <div style="margin-top:12px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.72rem;color:var(--text-3)">التقدم</span>
+                <span id="tarteel-progress-label" style="font-size:.72rem;color:#a5b4fc">0 / 0</span>
+              </div>
+              <div class="tarteel-progress-bar"><div id="tarteel-progress-fill" class="tarteel-progress-fill" style="width:0%"></div></div>
             </div>
           </div>
         </div>
+
+        <!-- Recording area -->
+        <div id="tarteel-rec-area" style="display:none;margin-bottom:10px">
+          <div class="glass-card pad">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <button class="btn btn-primary" id="btn-tarteel-record">🎙️ ابدأ التلاوة</button>
+              <div id="tarteel-rec-status" style="font-size:.82rem;color:var(--text-2)"></div>
+            </div>
+            <canvas id="tarteel-waveform" height="52" style="width:100%;height:52px;border-radius:8px;background:rgba(0,0,0,.3);display:block"></canvas>
+            <!-- Live transcript: shows real-time recognized words -->
+            <div id="tarteel-live-transcript" style="display:none;margin-top:6px;min-height:24px;font-size:.82rem;color:#a5b4fc;padding:5px 10px;background:rgba(99,102,241,.09);border-radius:8px;direction:rtl;text-align:right"></div>
+          </div>
+        </div>
+
+        <div id="tarteel-result" style="display:none;margin-bottom:10px"></div>
+        <div id="tarteel-ai-result-inline" style="margin-bottom:8px"></div>
+        <div id="tarteel-ai-feedback" style="display:none;margin-bottom:10px"></div>
       </div>
 
-      <!-- Recording Controls -->
-      <div id="tarteel-rec-area" style="display:none;margin-bottom:12px">
-        <div class="glass-card pad">
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-            <button class="btn btn-primary" id="btn-tarteel-record">🎙️ ابدأ التلاوة</button>
-            <div id="tarteel-rec-status" style="font-size:.82rem;color:var(--text-2)"></div>
+      <!-- ════ TAB 2: Recording Studio ════ -->
+      <div id="rtab-studio" style="display:none">
+        <!-- Single ayah practice -->
+        <div class="glass-card pad" style="margin-bottom:12px">
+          <div style="font-size:.85rem;color:var(--text-2);margin-bottom:8px;font-weight:600">🎯 تدريب على آية واحدة</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="studio-surah" class="field-input" style="flex:1;min-width:150px">
+              <option value="">اختر سورة...</option>
+            </select>
+            <input id="studio-ayah" class="field-input" type="number" min="1" placeholder="رقم الآية" style="width:100px">
+            <button class="btn btn-secondary" id="btn-studio-load">تحميل</button>
           </div>
-          <canvas id="tarteel-waveform" height="56" style="width:100%;height:56px;border-radius:8px;background:rgba(0,0,0,.3);display:block"></canvas>
-          <!-- Live transcript -->
-          <div id="tarteel-live-transcript" style="margin-top:8px;min-height:28px;font-size:.78rem;color:#a5b4fc;padding:6px 8px;background:rgba(99,102,241,.07);border-radius:8px;display:none"></div>
+        </div>
+        <div id="studio-verse-display" style="display:none;margin-bottom:12px"></div>
+        <div class="glass-card pad" style="margin-bottom:12px">
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="btn-studio-record">🎙️ ابدأ التسجيل</button>
+            <div id="studio-rec-status" style="font-size:.85rem;color:var(--text-2)"></div>
+          </div>
+          <canvas id="studio-waveform" width="800" height="72" style="width:100%;height:72px;border-radius:10px;background:rgba(0,0,0,.3);display:block"></canvas>
+        </div>
+        <div id="studio-result" style="display:none;margin-bottom:12px"></div>
+
+        <!-- Range recording -->
+        <div class="glass-card pad" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.2)">
+          <div style="font-size:.88rem;font-weight:700;color:var(--gold);margin-bottom:6px">📖 تسجيل نطاق كامل (سورة / عدة آيات)</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-bottom:8px">اتلُ النطاق كاملاً — الذكاء الاصطناعي يحلّله تلقائياً</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <select id="studio-range-surah" class="field-input" style="flex:2;min-width:150px">
+              <option value="">اختر سورة...</option>
+            </select>
+            <input id="studio-range-from" class="field-input" type="number" min="1" placeholder="من" style="width:70px">
+            <input id="studio-range-to" class="field-input" type="number" min="1" placeholder="إلى" style="width:70px">
+            <button class="btn btn-secondary btn-sm" id="btn-studio-range-load">تحميل</button>
+          </div>
+          <div id="studio-range-display"></div>
+          <button class="btn btn-primary" id="btn-studio-range-record" style="display:none;margin:6px 0">🎙️ سجّل النطاق</button>
+          <div id="studio-range-status" style="font-size:.82rem;color:var(--text-2);margin-top:4px"></div>
+          <canvas id="studio-range-waveform" height="56" style="width:100%;height:56px;display:none;border-radius:8px;background:rgba(0,0,0,.3);margin-top:8px"></canvas>
+          <div id="studio-range-result" style="margin-top:10px"></div>
+        </div>
+
+        <h3 style="margin:12px 6px 8px;font-size:.88rem">🗂️ تسجيلاتي التدريبية</h3>
+        <div id="studio-recordings-list"></div>
+      </div>
+
+      <!-- ════ TAB 3: Progress ════ -->
+      <div id="rtab-progress" style="display:none">
+        <div id="studio-progress-wrap" class="glass-card pad" style="margin-bottom:12px;display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:.9rem;font-weight:700">📊 مخطط تقدمي في التلاوة</span>
+            <span id="studio-progress-count" style="font-size:.75rem;color:var(--text-3)"></span>
+          </div>
+          <canvas id="studio-progress-chart" height="90" style="width:100%;height:90px;display:block;border-radius:8px;background:rgba(0,0,0,.2)"></canvas>
+          <div id="studio-progress-summary" style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap"></div>
+        </div>
+        <div id="tarteel-history-wrap" style="display:none">
+          <h3 style="margin:14px 6px 8px;font-size:.88rem">📋 سجل جلسات التسميع الذكي</h3>
+          <div id="tarteel-history-list"></div>
         </div>
       </div>
 
-      <!-- Session Result (shown after session ends) -->
-      <div id="tarteel-result" style="display:none;margin-bottom:12px"></div>
-
-      <!-- Whisper AI inline result (transcript + feedback) -->
-      <div id="tarteel-ai-result-inline" style="margin-bottom:10px"></div>
-
-      <!-- AI Feedback Panel -->
-      <div id="tarteel-ai-feedback" style="display:none;margin-bottom:12px"></div>
-
-      <!-- History -->
-      <div id="tarteel-history-wrap" style="display:none">
-        <h3 style="margin:14px 6px 8px">📊 سجل جلسات التلاوة</h3>
-        <div id="tarteel-history-list"></div>
-      </div>
     </div>
   </section>
 
