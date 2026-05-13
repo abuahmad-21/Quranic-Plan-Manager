@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 32,
+      "total_users": 33,
       "total_sessions_today": 19,
       "total_pages_memorized_alltime": 4.47
     },
@@ -3542,6 +3542,60 @@
           "created_at": "2026-05-13T04:25:17.679Z"
         }
       ]
+    },
+    "migrationtest": {
+      "username": "migrationtest",
+      "password_hash": "7e6e0c3079a08c5cc6036789b57e951f65f82383913ba1a49ae992544f1b4b6e",
+      "display_name": "Migration Test",
+      "created_at": "2026-05-13T11:02:22.439Z",
+      "last_active": "2026-05-13T11:02:23.328Z",
+      "avatar_color": "#0d2bc3",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [
+        {
+          "at": "2026-05-13T11:02:23.328Z",
+          "remember_me": false
+        }
+      ]
     }
   },
   "chats": {},
@@ -3708,6 +3762,16 @@
       "username": "gfggfg",
       "expires": 1781238227056,
       "created_at": "2026-05-13T04:23:47.056Z"
+    },
+    "76d0ecd414b63bb7ec0263348bb7db5297b12f15d44fa464": {
+      "username": "migrationtest",
+      "expires": 1778756542439,
+      "created_at": "2026-05-13T11:02:22.439Z"
+    },
+    "7158ad7128459c3359882310c3a8eb26c97ff06dc120f464": {
+      "username": "migrationtest",
+      "expires": 1778756543328,
+      "created_at": "2026-05-13T11:02:23.328Z"
     }
   }
 }
