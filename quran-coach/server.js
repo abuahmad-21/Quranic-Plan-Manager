@@ -234,6 +234,7 @@ R('POST','/api/auth/logout', async (req,res)=>{
   send(res,200,{ok:true});
 });
 
+
 R('GET','/api/auth/check-username', async (req,res,_,q)=>{
   const u = String(q.username||'').toLowerCase().trim();
   if (!/^[a-z0-9_]{3,20}$/.test(u)) return send(res,200,{available:false,reason:'invalid'});

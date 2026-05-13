@@ -37,8 +37,8 @@
       }
     ],
     "stats": {
-      "total_users": 25,
-      "total_sessions_today": 15,
+      "total_users": 27,
+      "total_sessions_today": 18,
       "total_pages_memorized_alltime": 2.6
     },
     "sheikh_requests": {
@@ -2813,6 +2813,159 @@
           "remember_me": true
         }
       ]
+    },
+    "demo_tester": {
+      "username": "demo_tester",
+      "password_hash": "41c4e7b575fc00d620cdd39cd07abf70659bc9a2b683eb541b731ef2ddedfe77",
+      "display_name": "مختبر الميزات",
+      "created_at": "2026-05-13T03:56:19.964Z",
+      "last_active": "2026-05-13T03:56:19.964Z",
+      "avatar_color": "#0c155c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-13T03:57:49.242Z",
+        "current_daily_pages": 0.2,
+        "phase": "absence_soft_reset",
+        "phase_start_date": "2026-05-13T03:58:09.221Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 3,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-13",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-13T03:58:09.148Z",
+          "pages_done": 0,
+          "difficulty": "medium",
+          "duration_minutes": 25,
+          "technique_used": null,
+          "mood_score": 5
+        },
+        {
+          "date": "2026-05-13T03:58:09.186Z",
+          "pages_done": 0,
+          "difficulty": "easy",
+          "duration_minutes": 30,
+          "technique_used": null,
+          "mood_score": 5
+        },
+        {
+          "date": "2026-05-13T03:58:09.220Z",
+          "pages_done": 0,
+          "difficulty": "hard",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 5
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 1.92,
+          "interval": 1,
+          "reps": 0,
+          "next_review": "2026-05-14T03:58:09.220Z"
+        }
+      },
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
+    },
+    "ahmad_hafiz": {
+      "username": "ahmad_hafiz",
+      "password_hash": "9a822d8c183329f622346e98dd1ef736fecd00aead70442ce1fe2797eb9ee94c",
+      "display_name": "أحمد الحافظ",
+      "created_at": "2026-05-13T04:00:47.635Z",
+      "last_active": "2026-05-13T04:00:47.895Z",
+      "avatar_color": "#0bb88f",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [
+        {
+          "at": "2026-05-13T04:00:47.895Z",
+          "remember_me": true
+        }
+      ]
     }
   },
   "chats": {},
@@ -2914,6 +3067,21 @@
       "username": "testuser99",
       "expires": 1781154023705,
       "created_at": "2026-05-12T05:00:23.705Z"
+    },
+    "71a983ff57645db7a40375309d306f1756721627a258fcef": {
+      "username": "demo_tester",
+      "expires": 1781236579964,
+      "created_at": "2026-05-13T03:56:19.964Z"
+    },
+    "ab5940427bbbb2e1a1ca9aed122858ef391abd4ed692172a": {
+      "username": "ahmad_hafiz",
+      "expires": 1781236847635,
+      "created_at": "2026-05-13T04:00:47.635Z"
+    },
+    "fe695b6b217af95485203f9b04bc131ecd3059239d2d707a": {
+      "username": "ahmad_hafiz",
+      "expires": 1781236847895,
+      "created_at": "2026-05-13T04:00:47.895Z"
     }
   }
 }
