@@ -834,7 +834,6 @@
       <!-- Tab bar -->
       <div class="recitation-tabbar">
         <button class="recitation-tab rtab-active" data-rtab="smart">🎯 تسميع ذكي</button>
-        <button class="recitation-tab" data-rtab="studio">🎤 استوديو</button>
         <button class="recitation-tab" data-rtab="progress">📊 تقدمي</button>
       </div>
 
@@ -929,53 +928,7 @@
         <div id="tarteel-ai-feedback" style="display:none;margin-bottom:10px"></div>
       </div>
 
-      <!-- ════ TAB 2: Recording Studio ════ -->
-      <div id="rtab-studio" style="display:none">
-        <!-- Single ayah practice -->
-        <div class="glass-card pad" style="margin-bottom:12px">
-          <div style="font-size:.85rem;color:var(--text-2);margin-bottom:8px;font-weight:600">🎯 تدريب على آية واحدة</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <select id="studio-surah" class="field-input" style="flex:1;min-width:150px">
-              <option value="">اختر سورة...</option>
-            </select>
-            <input id="studio-ayah" class="field-input" type="number" min="1" placeholder="رقم الآية" style="width:100px">
-            <button class="btn btn-secondary" id="btn-studio-load">تحميل</button>
-          </div>
-        </div>
-        <div id="studio-verse-display" style="display:none;margin-bottom:12px"></div>
-        <div class="glass-card pad" style="margin-bottom:12px">
-          <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-            <button class="btn btn-primary" id="btn-studio-record">🎙️ ابدأ التسجيل</button>
-            <div id="studio-rec-status" style="font-size:.85rem;color:var(--text-2)"></div>
-          </div>
-          <canvas id="studio-waveform" width="800" height="72" style="width:100%;height:72px;border-radius:10px;background:rgba(0,0,0,.3);display:block"></canvas>
-        </div>
-        <div id="studio-result" style="display:none;margin-bottom:12px"></div>
-
-        <!-- Range recording -->
-        <div class="glass-card pad" style="margin-bottom:12px;border:1px solid rgba(245,158,11,.2)">
-          <div style="font-size:.88rem;font-weight:700;color:var(--gold);margin-bottom:6px">📖 تسجيل نطاق كامل (سورة / عدة آيات)</div>
-          <div style="font-size:.78rem;color:var(--text-3);margin-bottom:8px">اتلُ النطاق كاملاً — الذكاء الاصطناعي يحلّله تلقائياً</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-            <select id="studio-range-surah" class="field-input" style="flex:2;min-width:150px">
-              <option value="">اختر سورة...</option>
-            </select>
-            <input id="studio-range-from" class="field-input" type="number" min="1" placeholder="من" style="width:70px">
-            <input id="studio-range-to" class="field-input" type="number" min="1" placeholder="إلى" style="width:70px">
-            <button class="btn btn-secondary btn-sm" id="btn-studio-range-load">تحميل</button>
-          </div>
-          <div id="studio-range-display"></div>
-          <button class="btn btn-primary" id="btn-studio-range-record" style="display:none;margin:6px 0">🎙️ سجّل النطاق</button>
-          <div id="studio-range-status" style="font-size:.82rem;color:var(--text-2);margin-top:4px"></div>
-          <canvas id="studio-range-waveform" height="56" style="width:100%;height:56px;display:none;border-radius:8px;background:rgba(0,0,0,.3);margin-top:8px"></canvas>
-          <div id="studio-range-result" style="margin-top:10px"></div>
-        </div>
-
-        <h3 style="margin:12px 6px 8px;font-size:.88rem">🗂️ تسجيلاتي التدريبية</h3>
-        <div id="studio-recordings-list"></div>
-      </div>
-
-      <!-- ════ TAB 3: Progress ════ -->
+      <!-- ════ TAB 2: Progress ════ -->
       <div id="rtab-progress" style="display:none">
         <div id="studio-progress-wrap" class="glass-card pad" style="margin-bottom:12px;display:none">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">

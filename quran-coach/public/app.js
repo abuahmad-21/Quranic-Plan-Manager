@@ -3349,6 +3349,7 @@ const TarteelMode = {
   srec: null,
   mediaRec: null,
   mediaChunks: [],
+  _stream: null,
   audioCtx: null,
   analyser: null,
   animFrame: null,
@@ -3407,25 +3408,16 @@ const TarteelMode = {
         sel.appendChild(o);
       });
     }
-    // Populate studio surah selects
-    ['studio-surah','studio-range-surah'].forEach(id=>{
-      const s2 = document.getElementById(id);
-      if (s2 && s2.options.length <= 1 && surahs.length){
-        surahs.forEach(s=>{ const o=document.createElement('option'); o.value=s.number; o.textContent=`${s.number}. ${s.name}`; s2.appendChild(o); });
-      }
-    });
 
-    /* ── Tab switching ── */
+    /* ── Tab switching (smart / progress only) ── */
     const switchTab = (t)=>{
       document.querySelectorAll('.recitation-tab').forEach(bt=>{
-        const active = bt.dataset.rtab === t;
-        bt.classList.toggle('rtab-active', active);
+        bt.classList.toggle('rtab-active', bt.dataset.rtab === t);
       });
-      ['smart','studio','progress'].forEach(name=>{
+      ['smart','progress'].forEach(name=>{
         const el = document.getElementById('rtab-'+name);
         if (el) el.style.display = name === t ? '' : 'none';
       });
-      if (t==='studio') TarteelMode._loadStudioTab();
       if (t==='progress') TarteelMode._loadProgressTab();
     };
     document.querySelectorAll('.recitation-tab').forEach(tab=>{
@@ -3453,18 +3445,7 @@ const TarteelMode = {
       if (qs) qs.value = e.target.value;
     });
 
-    /* ── Studio wiring ── */
-    document.getElementById('btn-studio-load')?.addEventListener('click', VoiceStudio.loadVerse);
-    document.getElementById('btn-studio-record')?.addEventListener('click', VoiceStudio.toggleRecord);
-    document.getElementById('btn-studio-range-load')?.addEventListener('click', VoiceStudio.loadRange);
-    document.getElementById('btn-studio-range-record')?.addEventListener('click', VoiceStudio.toggleRangeRecord);
-    if (VoiceStudio.practiceVerse) VoiceStudio.showVerse();
-
     TarteelMode.loadHistory();
-  },
-
-  async _loadStudioTab(){
-    await VoiceStudio.loadRecordings();
   },
 
   async _loadProgressTab(){
@@ -3536,7 +3517,7 @@ const TarteelMode = {
     let prevAyah = -1;
     TarteelMode.words.forEach((w, i)=>{
       if (w.ayahIdx !== prevAyah && prevAyah !== -1){
-        html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em;margin:0 5px">﴿${TarteelMode.ayahs[w.ayahIdx-1]?.numberInSurah||''}﴾</span> `;
+        html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.7);font-size:.68em;margin:0 6px;opacity:.9">﴿${TarteelMode.ayahs[w.ayahIdx-1]?.numberInSurah||''}﴾</span> `;
       }
       prevAyah = w.ayahIdx;
       const isActive = (i === TarteelMode.cursor && TarteelMode.active);
@@ -3544,13 +3525,18 @@ const TarteelMode = {
       if (isActive) cls += ' tw-active';
       if (w._interim) cls += ' tw-interim';
       if (memMode && w.state === 'pending' && !w._interim) cls += ' tw-hidden';
-      html += `<span class="${cls}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
+      html += `<span class="${cls}" id="tw-${i}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
     });
     if (TarteelMode.ayahs.length){
       const last = TarteelMode.ayahs[TarteelMode.ayahs.length-1];
-      html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em">﴿${last.numberInSurah}﴾</span>`;
+      html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.7);font-size:.68em">﴿${last.numberInSurah}﴾</span>`;
     }
     el.innerHTML = html;
+    // Auto-scroll active word into center view
+    if (TarteelMode.active){
+      const activeEl = document.getElementById('tw-' + TarteelMode.cursor);
+      if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'center'});
+    }
   },
 
   updateProgress(){
@@ -3608,74 +3594,159 @@ const TarteelMode = {
   },
 
   async startRecord(){
-    if (!TarteelMode.words.length) return toast('حمّل آيات أولاً','error');
+    if (!TarteelMode.words.length) return toast('اختر سورة واضغط "تحميل" أولاً','error');
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return toast('المتصفح لا يدعم التعرف على الصوت — جرّب Chrome','error');
+    if (!SR) return toast('متصفحك لا يدعم التعرف على الصوت — استخدم Google Chrome','error');
+
+    // UI: show loading state
+    const btn = document.getElementById('btn-tarteel-record');
+    const st  = document.getElementById('tarteel-rec-status');
+    if (btn){ btn.disabled=true; btn.textContent='⏳ جارٍ الاتصال...'; }
+    if (st)  st.textContent = '🔄 جارٍ طلب إذن الميكروفون...';
+
     TarteelMode.active = true;
     TarteelMode.startedAt = Date.now();
     TarteelMode._interimBuf = '';
-    // Activate first word
-    if (TarteelMode.cursor === 0) TarteelMode.words.forEach(w=>w.state='pending');
+    if (TarteelMode.cursor === 0) TarteelMode.words.forEach(w=>{ w.state='pending'; w._interim=false; w._errCount=0; });
+
+    // ── Step 1: Request microphone ──
+    let stream;
     try {
-      /* MediaRecorder for waveform + audio save */
-      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      TarteelMode.mediaChunks = [];
-      const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported(t))||'';
-      TarteelMode.mediaRec = new MediaRecorder(stream, mimeType?{mimeType}:{});
+      stream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+    } catch(e){
+      TarteelMode.active = false;
+      if (btn){ btn.disabled=false; btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
+      if (st) st.textContent='';
+      const errMsg =
+        (e.name==='NotAllowedError' || e.name==='PermissionDeniedError')
+          ? 'تم رفض إذن الميكروفون — اضغط على 🔒 في شريط العنوان وامنح إذن الصوت'
+        : e.name==='NotFoundError'
+          ? 'لم يُعثر على ميكروفون — تأكد من توصيله بالجهاز'
+        : e.name==='NotReadableError'
+          ? 'الميكروفون مستخدم بتطبيق آخر — أغلقه وحاول مجدداً'
+        : 'لا يمكن الوصول للميكروفون: ' + (e.message || e.name);
+      toast(errMsg, 'error', 6000);
+      return;
+    }
+
+    // ── Step 2: Setup MediaRecorder (for waveform + audio save) ──
+    TarteelMode.mediaChunks = [];
+    const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4']
+      .find(t=>MediaRecorder.isTypeSupported(t)) || '';
+    try {
+      TarteelMode.mediaRec = new MediaRecorder(stream, mimeType ? {mimeType} : {});
       TarteelMode.mediaRec.ondataavailable = e=>{ if(e.data&&e.data.size>0) TarteelMode.mediaChunks.push(e.data); };
-      TarteelMode.mediaRec.onstop = ()=>stream.getTracks().forEach(t=>t.stop());
+      TarteelMode.mediaRec.onstop = ()=>{ try{ stream.getTracks().forEach(t=>t.stop()); }catch(_){} };
       TarteelMode.mediaRec.start(200);
-      TarteelMode.startWaveform(stream);
-      /* SpeechRecognition continuous */
-      const sr = new SR();
-      sr.lang = 'ar-SA'; sr.continuous = true; sr.interimResults = true;
-      sr.onresult = ev=>{
-        let interim='', final='';
-        for(let i=ev.resultIndex;i<ev.results.length;i++){
-          if (ev.results[i].isFinal) final += ev.results[i][0].transcript + ' ';
-          else interim += ev.results[i][0].transcript;
-        }
-        if (final.trim()){
-          TarteelMode._totalTranscript += final;
-          TarteelMode.processChunk(final.trim(), false);
-        }
-        // Process interim for real-time word highlighting
-        if (interim.trim()){
-          TarteelMode.processChunk(interim.trim(), true);
-        }
-        // Live display
-        const live = document.getElementById('tarteel-live-transcript');
-        if (live){
-          live.style.display = 'block';
-          live.textContent = interim ? '🎤 ' + interim : (final.trim() ? '✅ ' + final.trim().slice(0,80) : '');
-        }
+    } catch(_){}
+    TarteelMode.startWaveform(stream);
+    TarteelMode._stream = stream;
+
+    // ── Step 3: SpeechRecognition ──
+    const sr = new SR();
+    sr.lang = 'ar-SA';
+    sr.continuous = true;
+    sr.interimResults = true;
+    sr.maxAlternatives = 3;
+
+    sr.onresult = ev=>{
+      if (!TarteelMode.active) return;
+      let interim='', final='';
+      for(let i=ev.resultIndex; i<ev.results.length; i++){
+        const top = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) final += top + ' ';
+        else interim += top;
+      }
+      if (final.trim()){
+        TarteelMode._totalTranscript += final;
+        TarteelMode.processChunk(final.trim(), false);
+      }
+      if (interim.trim()){
+        TarteelMode.processChunk(interim.trim(), true);
+      }
+      const live = document.getElementById('tarteel-live-transcript');
+      if (live){
+        live.style.display = 'block';
+        live.innerHTML = interim
+          ? `<span style="color:#fcd34d">🎤 ${escapeHTML(interim)}</span>`
+          : final.trim()
+          ? `<span style="color:#34d399">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`
+          : '';
+      }
+    };
+
+    sr.onerror = ev=>{
+      const silentErrors = new Set(['no-speech','aborted']);
+      if (silentErrors.has(ev.error)) return;
+      const errMap = {
+        'audio-capture': 'تعذّر التقاط الصوت — تحقق من الميكروفون',
+        'not-allowed':   'تم رفض إذن الميكروفون',
+        'network':       'خطأ في الشبكة — تحقق من اتصالك بالإنترنت',
+        'service-not-allowed': 'خدمة التعرف على الصوت غير مسموح بها في هذا المتصفح',
       };
-      sr.onerror = ev=>{ if(ev.error!=='no-speech') toast('خطأ في التعرف على الصوت: '+ev.error,'error',2000); };
-      sr.onend = ()=>{
-        // Restart if session still active (browser auto-stops SR after silence)
-        if (TarteelMode.active) try{ sr.start(); }catch(e){}
-      };
+      const msg = errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error;
+      toast(msg, 'error', 3500);
+      console.warn('[SR] error:', ev.error);
+    };
+
+    sr.onend = ()=>{
+      // Auto-restart if session still active (browser stops SR after silence/30s)
+      if (TarteelMode.active && TarteelMode.srec === sr){
+        setTimeout(()=>{
+          if (TarteelMode.active && TarteelMode.srec === sr){
+            try { sr.start(); } catch(e){ console.warn('[SR] restart failed:', e.message); }
+          }
+        }, 250);
+      }
+    };
+
+    // ── Step 4: Start SR ──
+    try {
       sr.start();
-      TarteelMode.srec = sr;
-    } catch(e){ toast('لا يمكن الوصول للميكروفون','error'); TarteelMode.active=false; return; }
-    const btn = document.getElementById('btn-tarteel-record');
-    if (btn){ btn.textContent='⏹ إيقاف التلاوة'; btn.classList.add('btn-recording'); }
-    const st = document.getElementById('tarteel-rec-status');
-    if (st) st.textContent='🔴 يستمع... اتلُ كلمةً كلمة بوضوح';
+    } catch(e){
+      TarteelMode.active = false;
+      try{ stream.getTracks().forEach(t=>t.stop()); }catch(_){}
+      if (btn){ btn.disabled=false; btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
+      if (st) st.textContent='';
+      toast('فشل تشغيل التعرف على الصوت: ' + e.message, 'error', 4000);
+      return;
+    }
+
+    TarteelMode.srec = sr;
+
+    // ── Step 5: Update UI ──
+    if (btn){ btn.disabled=false; btn.textContent='⏹ إيقاف التلاوة'; btn.classList.add('btn-recording'); }
+    if (st) st.textContent = '🔴 يستمع... اتلُ كلمةً كلمة بوضوح';
     TarteelMode.renderWords();
+    // Scroll first word into view
+    const firstEl = document.getElementById('tw-' + TarteelMode.cursor);
+    if (firstEl) firstEl.scrollIntoView({behavior:'smooth', block:'center'});
   },
 
   stopRecord(){
     TarteelMode.active = false;
-    if (TarteelMode.srec){ try{ TarteelMode.srec.stop(); }catch(e){} TarteelMode.srec=null; }
-    if (TarteelMode.mediaRec && TarteelMode.mediaRec.state==='recording') TarteelMode.mediaRec.stop();
+    // Stop SR first (suppress any restart attempts)
+    const sr = TarteelMode.srec;
+    TarteelMode.srec = null;
+    if (sr){ try{ sr.abort(); }catch(e){} }
+    // Stop MediaRecorder
+    if (TarteelMode.mediaRec && TarteelMode.mediaRec.state === 'recording'){
+      try{ TarteelMode.mediaRec.stop(); }catch(e){}
+    }
+    // Stop stream directly if mediaRec didn't
+    if (TarteelMode._stream){
+      try{ TarteelMode._stream.getTracks().forEach(t=>t.stop()); }catch(_){}
+      TarteelMode._stream = null;
+    }
     TarteelMode.stopWaveform();
     const btn = document.getElementById('btn-tarteel-record');
-    if (btn){ btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
+    if (btn){ btn.disabled=false; btn.textContent='🎙️ ابدأ التلاوة'; btn.classList.remove('btn-recording'); }
     const st = document.getElementById('tarteel-rec-status');
     if (st) st.textContent='';
     const live = document.getElementById('tarteel-live-transcript');
-    if (live) live.style.display='none';
+    if (live){ live.style.display='none'; live.innerHTML=''; }
+    // Clear interim flags
+    TarteelMode.words.forEach(w=>{ w._interim=false; });
     TarteelMode.renderWords();
     // Show results if something was attempted
     if (TarteelMode.correct + TarteelMode.errors > 0) TarteelMode.endSession();
@@ -3715,6 +3786,8 @@ const TarteelMode = {
             if (TarteelMode.words[i].state === 'pending'){
               TarteelMode.words[i].state = 'error';
               TarteelMode.errors++;
+              // Vibrate: short triple for each skipped/wrong word
+              if (navigator.vibrate) navigator.vibrate([40,20,40]);
             }
           }
           TarteelMode.words[bestIdx]._interim = false;
@@ -3722,6 +3795,8 @@ const TarteelMode = {
           TarteelMode.correct++;
           TarteelMode.cursor = bestIdx + 1;
           didAdvance = true;
+          // Short pleasant buzz for correct word
+          if (navigator.vibrate) navigator.vibrate(30);
           if (TarteelMode.cursor >= TarteelMode.words.length){
             setTimeout(()=>{ TarteelMode.stopRecord(); toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500); },300);
           }
@@ -3732,7 +3807,8 @@ const TarteelMode = {
             w._errCount = (w._errCount||0) + 1;
             w.state = 'error';
             if (w._errCount === 1) TarteelMode.errors++;
-            if (navigator.vibrate) navigator.vibrate([50,30,50]);
+            // Long vibrate pattern for wrong word
+            if (navigator.vibrate) navigator.vibrate([60,30,60,30,60]);
             if (w._errCount >= 2){ TarteelMode.cursor++; didAdvance=true; }
           }
         }
@@ -3743,8 +3819,9 @@ const TarteelMode = {
     TarteelMode.renderWords();
     TarteelMode.updateProgress();
     if (didAdvance){
-      const activeEl = document.querySelector('.tarteel-word.tw-active');
-      if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+      // Scroll new active word into center using ID (renderWords already handles this, but fallback)
+      const nextEl = document.getElementById('tw-' + TarteelMode.cursor);
+      if (nextEl) nextEl.scrollIntoView({behavior:'smooth', block:'center'});
     }
   },
 
