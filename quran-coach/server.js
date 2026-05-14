@@ -281,6 +281,13 @@ R('PATCH','/qqc/me', async (req,res)=>{
   if (typeof b.bio==='string') u.bio=b.bio.slice(0,300);
   if (typeof b.avatar_color==='string' && /^#[0-9a-f]{6}$/i.test(b.avatar_color)) u.avatar_color=b.avatar_color;
   if (typeof b.avatar_emoji==='string') u.avatar_emoji=b.avatar_emoji.slice(0,8)||null;
+  if (typeof b.avatar_url==='string'){
+    if (b.avatar_url==='' || b.avatar_url==='remove'){
+      u.avatar_url = null;
+    } else if (/^data:image\/(jpeg|png|webp|gif);base64,/.test(b.avatar_url) && b.avatar_url.length<400000){
+      u.avatar_url = b.avatar_url;
+    }
+  }
   if (typeof b.plan_mode==='string' && ['both','memorization_only','review_only'].includes(b.plan_mode)){
     if(!u.onboarding) u.onboarding={};
     u.onboarding.plan_mode = b.plan_mode;

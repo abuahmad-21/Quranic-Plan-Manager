@@ -101,7 +101,7 @@ body{background:var(--bg);color:var(--text-1);font-family:'Tajawal',sans-serif;m
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin:10px;border-radius:var(--r-md);flex-wrap:wrap;gap:6px}
 .user-pill{display:flex;align-items:center;gap:10px}
 .user-pill-name{font-size:.95rem;font-weight:600}
-.avatar-dot{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));flex-shrink:0;box-shadow:0 0 10px var(--blue-glow);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem}
+.avatar-dot{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));flex-shrink:0;box-shadow:0 0 10px var(--blue-glow);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.95rem;position:relative}
 .top-bar-actions{display:flex;gap:6px;flex-wrap:wrap}
 .icon-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-2);padding:8px 11px;cursor:pointer;font-size:1rem;transition:all var(--t-fast) ease}
 .icon-btn:hover{color:var(--text-1);border-color:var(--border-active)}
@@ -494,6 +494,128 @@ textarea.field-input{
 @keyframes rec-pulse{
   0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}
   50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}
+}
+
+/* ══════════════════════════════════
+   TARTEEL INTERIM (real-time word highlight)
+══════════════════════════════════ */
+.tarteel-word.tw-interim{
+  background:rgba(245,158,11,.22);
+  color:#fcd34d;
+  border-radius:5px;
+  box-shadow:0 0 10px rgba(245,158,11,.35);
+  animation:interim-glow .6s ease-in-out infinite alternate;
+}
+@keyframes interim-glow{
+  from{background:rgba(245,158,11,.15)}
+  to{background:rgba(245,158,11,.35)}
+}
+
+/* ══════════════════════════════════
+   RECITATION CENTER — مركز التلاوة
+══════════════════════════════════ */
+.recitation-tabbar{
+  display:flex;
+  gap:3px;
+  margin-bottom:14px;
+  padding:4px;
+  background:rgba(255,255,255,.06);
+  border-radius:14px;
+}
+.recitation-tab{
+  flex:1;
+  padding:9px 6px;
+  border-radius:11px;
+  border:none;
+  background:transparent;
+  color:var(--text-2);
+  cursor:pointer;
+  font-size:.8rem;
+  font-family:'Tajawal','IBM Plex Sans Arabic',sans-serif;
+  transition:all .2s;
+  font-weight:500;
+}
+.recitation-tab.rtab-active{
+  background:rgba(99,102,241,.28);
+  color:#e0e7ff;
+  font-weight:700;
+  box-shadow:0 2px 8px rgba(99,102,241,.2);
+}
+.recitation-tab:not(.rtab-active):hover{
+  background:rgba(255,255,255,.08);
+  color:var(--text-1);
+}
+
+/* ══════════════════════════════════
+   QURAN CLEAN VIEW — صفحة القرآن
+══════════════════════════════════ */
+.quran-clean-view{
+  padding:0 !important;
+  padding-bottom:80px !important;
+}
+#quran-ctrl-bar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(13,17,35,.97);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:8px 10px 4px;
+}
+.quran-toprow{
+  display:flex;
+  gap:5px;
+  align-items:center;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding-bottom:2px;
+}
+.quran-toprow::-webkit-scrollbar{ display:none; }
+.quran-title-lbl{
+  font-size:.88rem;
+  font-weight:700;
+  color:var(--gold);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.quran-surah-sel{
+  flex:1;
+  min-width:110px;
+  max-width:200px;
+  font-size:.8rem !important;
+}
+#quran-settings-panel{
+  padding-top:8px;
+  margin-top:6px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.quran-settings-inner{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:6px;
+}
+.quran-quick-btns{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  margin-bottom:6px;
+}
+.quran-khatma-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:8px 10px;
+  background:rgba(129,140,248,.1);
+  border-radius:8px;
+  border:1px solid rgba(129,140,248,.25);
+}
+#quran-display{
+  padding:0 6px;
 }
 
 /* ═══════════════════ KHATMA STYLES ═══════════════════ */

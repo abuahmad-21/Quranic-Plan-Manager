@@ -330,6 +330,7 @@ const Auth = {
 
   onLogin(r, rememberMe=true){
     S.token=r.token; S.username=r.username;
+    Library.db = null;
     LS.set('qqc_token', r.token);
     LS.set('qqc_user', r.username);
     LS.set('qqc_remember', rememberMe ? 'true' : 'false');
@@ -543,13 +544,21 @@ const Profile = {
 
   renderAvatar(el, user){
     if (!el) return;
-    if (user.avatar_emoji){
-      el.textContent = user.avatar_emoji;
-      el.style.background = user.avatar_color || '#1e3a5f';
-      el.style.fontSize = '2rem';
+    el.style.background = user.avatar_color || '#1e3a5f';
+    const imgEl = el.querySelector('img');
+    // Set or clear text node (first text node in the element)
+    let tn = null;
+    for (const n of el.childNodes) { if (n.nodeType === 3){ tn = n; break; } }
+    if (!tn){ tn = document.createTextNode(''); el.insertBefore(tn, el.firstChild); }
+    if (user.avatar_url && imgEl){
+      imgEl.src = user.avatar_url;
+      imgEl.style.display = 'block';
+      tn.textContent = '';
     } else {
-      el.textContent = (user.display_name||'?')[0].toUpperCase();
-      el.style.background = user.avatar_color || '#1e3a5f';
+      if (imgEl) imgEl.style.display = 'none';
+      const label = user.avatar_emoji || (user.display_name||'?')[0].toUpperCase();
+      tn.textContent = label;
+      el.style.fontSize = user.avatar_emoji ? '1.6rem' : '';
     }
   },
 
@@ -607,6 +616,37 @@ const Profile = {
       });
     }
 
+    // Photo upload handler
+    const photoInput = document.getElementById('pf-photo-input');
+    if (photoInput){
+      photoInput.onchange = async e=>{
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5*1024*1024) return toast('الصورة أكبر من 5MB، اختر صورة أصغر','error');
+        const dataUrl = await new Promise(res=>{
+          const canvas = document.createElement('canvas');
+          const img = new Image();
+          img.onload = ()=>{
+            const MAX = 256;
+            let {width:w, height:h} = img;
+            if (w>h){ h=Math.round(h*MAX/w); w=MAX; } else { w=Math.round(w*MAX/h); h=MAX; }
+            canvas.width=w; canvas.height=h;
+            canvas.getContext('2d').drawImage(img,0,0,w,h);
+            res(canvas.toDataURL('image/jpeg',0.85));
+          };
+          img.src = URL.createObjectURL(file);
+        });
+        const r2 = await Api.patch('/me', {avatar_url: dataUrl});
+        if (r2.error) return toast('فشل رفع الصورة','error');
+        S.user = r2.user;
+        Profile.renderAvatar(av, r2.user);
+        toast('تم تحديث الصورة ✅','success');
+        // Also update header avatar
+        const headerAv = document.getElementById('user-avatar');
+        if (headerAv) Profile.renderAvatar(headerAv, r2.user);
+      };
+    }
+
     // Avatar click → emoji panel toggle (same as emoji grid in form)
     if (av) av.onclick = ()=>{ emojiGrid?.scrollIntoView({behavior:'smooth',block:'nearest'}); };
 
@@ -649,6 +689,18 @@ const Profile = {
       else { statusEl.textContent = res.reason==='invalid' ? '⚠ تنسيق غير صحيح' : '❌ محجوز بالفعل'; statusEl.style.color='#ef4444'; }
     };
 
+    // Remove photo button
+    document.getElementById('btn-remove-photo')?.addEventListener('click', async ()=>{
+      if (!S.user?.avatar_url) return toast('لا توجد صورة شخصية','info');
+      const r2 = await Api.patch('/me', {avatar_url: 'remove'});
+      if (r2.error) return toast('فشل الحذف','error');
+      S.user = r2.user;
+      Profile.renderAvatar(av, r2.user);
+      const headerAv = document.getElementById('user-avatar');
+      if (headerAv) Profile.renderAvatar(headerAv, r2.user);
+      toast('تم حذف الصورة الشخصية','success');
+    });
+
     document.getElementById('btn-save-profile').onclick = async ()=>{
       const newUsername = usernameEl?.value.toLowerCase().trim();
       const payload = {
@@ -668,10 +720,12 @@ const Profile = {
         toast('تم الحفظ ✅','success');
       }
       S.user = r2.user;
-      Profile.load();
-      // Update header display
+      // Update header avatar
+      const headerAv = document.getElementById('user-avatar');
+      if (headerAv) Profile.renderAvatar(headerAv, r2.user);
       const dn = document.getElementById('dash-display-name');
       if (dn) dn.textContent = r2.user.display_name;
+      Profile.load();
     };
     document.getElementById('my-posts').innerHTML = (u.posts||[]).slice().reverse().map(p=>Feed.renderPost(p,true)).join('') || '<p style="color:var(--text-2)">لا توجد منشورات بعد.</p>';
     document.querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{
@@ -985,7 +1039,8 @@ const Library = {
   async open(){
     if (this.db) return this.db;
     return new Promise((res,rej)=>{
-      const req = indexedDB.open('qqc_library', 1);
+      const dbName = 'qqc_library_' + (S.username || 'guest');
+      const req = indexedDB.open(dbName, 1);
       req.onupgradeneeded = e=>{
         const db = e.target.result;
         if (!db.objectStoreNames.contains('audio')) db.createObjectStore('audio',{keyPath:'id',autoIncrement:true});
@@ -2774,11 +2829,14 @@ const VoiceStudio = {
     const st = document.getElementById('studio-rec-status');
     if (st) st.textContent='⏳ جارٍ تحميل الآية…';
     try {
-      const r = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNum}:${ayahNum}`);
+      const r = await fetch(`${API}/quran/surah/${surahNum}`);
       const d = await r.json();
-      if (!d.data){ if(st) st.textContent=''; return toast('رقم الآية خارج النطاق','error'); }
+      const surahData = d.data;
+      if (!surahData?.ayahs){ if(st) st.textContent=''; return toast('خطأ في تحميل السورة','error'); }
+      const ayah = surahData.ayahs.find(a=>a.numberInSurah===ayahNum);
+      if (!ayah){ if(st) st.textContent=''; return toast('رقم الآية خارج النطاق','error'); }
       const surah = QuranBrowser.surahs.find(s=>s.number===surahNum);
-      VoiceStudio.practiceVerse = { surahNum, ayahNum, text:d.data.text, surahName:surah?.name||`سورة ${surahNum}`, globalNum:d.data.number };
+      VoiceStudio.practiceVerse = { surahNum, ayahNum, text:ayah.text, surahName:surah?.name||`سورة ${surahNum}`, globalNum:ayah.number };
       VoiceStudio.showVerse();
       if (st) st.textContent='';
     } catch(e){ if(st) st.textContent=''; toast('خطأ في تحميل الآية','error'); }
@@ -3138,9 +3196,9 @@ const VoiceStudio = {
     const disp = document.getElementById('studio-range-display');
     if (st) st.textContent='⏳ جارٍ تحميل الآيات...';
     try {
-      const r = await fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`);
+      const r = await fetch(`${API}/quran/surah/${surahNum}`);
       const d = await r.json();
-      if (!d.data){ if(st) st.textContent=''; return toast('خطأ في التحميل','error'); }
+      if (!d.data?.ayahs){ if(st) st.textContent=''; return toast('خطأ في التحميل','error'); }
       let ayahs = d.data.ayahs;
       if (fromA) ayahs = ayahs.filter(a=>a.numberInSurah>=fromA);
       if (toA)   ayahs = ayahs.filter(a=>a.numberInSurah<=toA);
@@ -3478,17 +3536,16 @@ const TarteelMode = {
     let prevAyah = -1;
     TarteelMode.words.forEach((w, i)=>{
       if (w.ayahIdx !== prevAyah && prevAyah !== -1){
-        const aNum = TarteelMode.ayahs[w.ayahIdx]?.numberInSurah;
         html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em;margin:0 5px">﴿${TarteelMode.ayahs[w.ayahIdx-1]?.numberInSurah||''}﴾</span> `;
       }
       prevAyah = w.ayahIdx;
       const isActive = (i === TarteelMode.cursor && TarteelMode.active);
       let cls = 'tarteel-word tw-' + w.state;
       if (isActive) cls += ' tw-active';
-      if (memMode && w.state === 'pending') cls += ' tw-hidden';
+      if (w._interim) cls += ' tw-interim';
+      if (memMode && w.state === 'pending' && !w._interim) cls += ' tw-hidden';
       html += `<span class="${cls}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
     });
-    // Last ayah marker
     if (TarteelMode.ayahs.length){
       const last = TarteelMode.ayahs[TarteelMode.ayahs.length-1];
       html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.6);font-size:.7em">﴿${last.numberInSurah}﴾</span>`;
@@ -3578,10 +3635,20 @@ const TarteelMode = {
           if (ev.results[i].isFinal) final += ev.results[i][0].transcript + ' ';
           else interim += ev.results[i][0].transcript;
         }
-        if (final){ TarteelMode._totalTranscript += final; TarteelMode.processChunk(final.trim()); }
-        // Show live interim
+        if (final.trim()){
+          TarteelMode._totalTranscript += final;
+          TarteelMode.processChunk(final.trim(), false);
+        }
+        // Process interim for real-time word highlighting
+        if (interim.trim()){
+          TarteelMode.processChunk(interim.trim(), true);
+        }
+        // Live display
         const live = document.getElementById('tarteel-live-transcript');
-        if (live){ live.style.display='block'; live.textContent = '🎤 ' + interim; }
+        if (live){
+          live.style.display = 'block';
+          live.textContent = interim ? '🎤 ' + interim : (final.trim() ? '✅ ' + final.trim().slice(0,80) : '');
+        }
       };
       sr.onerror = ev=>{ if(ev.error!=='no-speech') toast('خطأ في التعرف على الصوت: '+ev.error,'error',2000); };
       sr.onend = ()=>{
@@ -3615,39 +3682,70 @@ const TarteelMode = {
   },
 
   /* ── Process a transcript chunk against expected words ── */
-  processChunk(transcript){
+  /* isInterim=true: realtime highlight only, no permanent state change */
+  processChunk(transcript, isInterim=false){
     if (!transcript || !TarteelMode.active) return;
     const spokenWords = transcript.trim().split(/\s+/).filter(Boolean);
+    let didAdvance = false;
+
+    // Clear previous interim flags
+    if (isInterim) TarteelMode.words.forEach(w=>{ w._interim=false; });
+
     spokenWords.forEach(sw=>{
       if (TarteelMode.cursor >= TarteelMode.words.length) return;
-      const expected = TarteelMode.words[TarteelMode.cursor];
-      const sim = TarteelMode.wordSim(sw, expected.raw);
-      if (sim >= 0.80){
-        expected.state = 'correct';
-        TarteelMode.correct++;
-        TarteelMode.cursor++;
-        // Auto-advance through remaining if all done
-        if (TarteelMode.cursor >= TarteelMode.words.length){
-          TarteelMode.stopRecord();
-          toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500);
-        }
-      } else if (sim < 0.50){
-        // Not matching — mark error, vibrate, but don't advance
-        expected.state = 'error';
-        TarteelMode.errors++;
-        if (navigator.vibrate) navigator.vibrate([60,40,60]);
-        // After 2 errors on same word, skip
-        if (TarteelMode.words.filter((w,i)=>i===TarteelMode.cursor&&w.state==='error').length>=2){
-          TarteelMode.cursor++;
-        }
+
+      // Look-ahead up to 3 words — handles skipped/mispronounced words
+      let bestSim = 0, bestIdx = TarteelMode.cursor;
+      const ahead = Math.min(4, TarteelMode.words.length - TarteelMode.cursor);
+      for (let la=0; la<ahead; la++){
+        const wi = TarteelMode.cursor + la;
+        if (TarteelMode.words[wi].state === 'correct') continue;
+        const sim = TarteelMode.wordSim(sw, TarteelMode.words[wi].raw);
+        if (sim > bestSim){ bestSim=sim; bestIdx=wi; }
       }
-      // else: partial match — keep trying
+
+      if (isInterim){
+        // Interim: only highlight if very confident (0.85) — no state change
+        if (bestSim >= 0.85) TarteelMode.words[bestIdx]._interim = true;
+      } else {
+        // Final: commit if threshold met (0.70 is generous for Arabic TTS)
+        if (bestSim >= 0.70){
+          // Mark any skipped words between cursor and bestIdx as errors
+          for (let i=TarteelMode.cursor; i<bestIdx; i++){
+            if (TarteelMode.words[i].state === 'pending'){
+              TarteelMode.words[i].state = 'error';
+              TarteelMode.errors++;
+            }
+          }
+          TarteelMode.words[bestIdx]._interim = false;
+          TarteelMode.words[bestIdx].state = 'correct';
+          TarteelMode.correct++;
+          TarteelMode.cursor = bestIdx + 1;
+          didAdvance = true;
+          if (TarteelMode.cursor >= TarteelMode.words.length){
+            setTimeout(()=>{ TarteelMode.stopRecord(); toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500); },300);
+          }
+        } else if (bestSim < 0.45){
+          // Low confidence — count error on current word, skip after 2 fails
+          const w = TarteelMode.words[TarteelMode.cursor];
+          if (w.state !== 'correct'){
+            w._errCount = (w._errCount||0) + 1;
+            w.state = 'error';
+            if (w._errCount === 1) TarteelMode.errors++;
+            if (navigator.vibrate) navigator.vibrate([50,30,50]);
+            if (w._errCount >= 2){ TarteelMode.cursor++; didAdvance=true; }
+          }
+        }
+        // 0.45–0.70: ambiguous — keep cursor, let user retry
+      }
     });
+
     TarteelMode.renderWords();
     TarteelMode.updateProgress();
-    // Scroll active word into view
-    const activeEl = document.querySelector('.tarteel-word.tw-active');
-    if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+    if (didAdvance){
+      const activeEl = document.querySelector('.tarteel-word.tw-active');
+      if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
   },
 
   /* ── End session: calculate score, sync with ai_core.js ── */

@@ -119,7 +119,7 @@
   <!-- TOP BAR -->
   <header class="top-bar glass-card">
     <div class="user-pill">
-      <div class="avatar-dot" id="user-avatar">?</div>
+      <div class="avatar-dot" id="user-avatar" style="position:relative;overflow:hidden"><img id="user-avatar-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
       <div><div class="user-pill-name" id="user-name">—</div>
         <div class="mono" style="font-size:.7rem;color:var(--text-3)" id="user-mode">NORMAL</div>
       </div>
@@ -264,7 +264,9 @@
       <div class="glass-card" style="padding:18px;margin-bottom:12px">
         <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
           <div style="position:relative;flex-shrink:0">
-            <div class="avatar-dot" id="profile-avatar" style="width:72px;height:72px;font-size:1.9rem;cursor:pointer" title="انقر لاختيار إيموجي"></div>
+            <div class="avatar-dot" id="profile-avatar" style="width:72px;height:72px;font-size:1.9rem;cursor:pointer;overflow:hidden;position:relative" title="انقر لاختيار إيموجي"><img id="profile-avatar-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%"></div>
+            <label for="pf-photo-input" style="position:absolute;bottom:0;right:0;width:22px;height:22px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;border:2px solid var(--bg-1);box-shadow:0 2px 8px rgba(0,0,0,.5)" title="تغيير الصورة">📷</label>
+            <input type="file" id="pf-photo-input" accept="image/*" style="display:none">
             <div id="avatar-emoji-panel" style="display:none;position:absolute;top:78px;right:0;z-index:200;background:rgba(10,15,30,.98);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:10px;width:260px;display:none;flex-wrap:wrap;gap:4px;box-shadow:0 8px 40px rgba(0,0,0,.8)"></div>
           </div>
           <div style="flex:1;min-width:0">
@@ -299,6 +301,7 @@
         <input id="pf-color" type="color" class="field-input" style="height:44px;margin-bottom:6px">
         <label class="field-label" style="margin-top:6px">إيموجي الأفاتار (اختياري)</label>
         <div id="pf-emoji-grid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;padding:8px;background:rgba(255,255,255,.04);border-radius:8px"></div>
+        <button class="btn btn-ghost btn-sm" id="btn-remove-photo" style="margin-bottom:8px;color:var(--text-3)">🗑 حذف الصورة الشخصية</button>
         <button class="btn btn-primary btn-full" id="btn-save-profile">حفظ التعديلات</button>
       </div>
       <h3 style="margin:14px 6px 8px">منشوراتي</h3>

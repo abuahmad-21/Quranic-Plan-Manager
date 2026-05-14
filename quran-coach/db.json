@@ -37,9 +37,9 @@
       }
     ],
     "stats": {
-      "total_users": 34,
-      "total_sessions_today": 20,
-      "total_pages_memorized_alltime": 4.64
+      "total_users": 35,
+      "total_sessions_today": 23,
+      "total_pages_memorized_alltime": 5.03
     },
     "sheikh_requests": {
       "455": {
@@ -85,6 +85,17 @@
         "status": "approved",
         "pages": 0,
         "sessions": 0
+      },
+      "goo": {
+        "username": "goo",
+        "display_name": "goo",
+        "phone": "Gfcf",
+        "bio": "Vvv",
+        "time_pref": "Vv",
+        "submitted_at": "2026-05-13T12:08:03.869Z",
+        "status": "approved",
+        "pages": 0.05,
+        "sessions": 1
       }
     },
     "memorization_plans": [
@@ -2265,7 +2276,16 @@
           "local_ref": "local:image:1",
           "created_at": "2026-05-10T04:59:23.915Z",
           "likes": [
-            "jdjdjd"
+            "jdjdjd",
+            "goo"
+          ],
+          "comments": [
+            {
+              "id": "8e4276f7cfc0d010",
+              "from": "goo",
+              "text": "عيري بطيزك",
+              "created_at": "2026-05-13T12:07:11.584Z"
+            }
           ]
         }
       ]
@@ -3602,7 +3622,7 @@
       "password_hash": "672fbedd977b0aff1cbc9162eda282c8da95c8e469db5a9bf729b5c30f8b7964",
       "display_name": "Hdhdhdhd",
       "created_at": "2026-05-13T11:37:27.425Z",
-      "last_active": "2026-05-13T11:58:40.350Z",
+      "last_active": "2026-05-13T12:02:00.369Z",
       "avatar_color": "#0de55d",
       "bio": "",
       "is_banned": false,
@@ -3620,9 +3640,9 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-13T11:37:31.176Z",
-        "current_daily_pages": 0.25,
-        "phase": "ramp_up",
-        "phase_start_date": "2026-05-13T11:37:31.176Z",
+        "current_daily_pages": 0.2,
+        "phase": "absence_soft_reset",
+        "phase_start_date": "2026-05-13T12:01:32.537Z",
         "phase_days_elapsed": 0,
         "manual_override": false,
         "override_target": null,
@@ -3631,8 +3651,8 @@
         ]
       },
       "progress": {
-        "total_pages_memorized": 0.24,
-        "total_sessions_completed": 1,
+        "total_pages_memorized": 0.72,
+        "total_sessions_completed": 3,
         "current_streak_days": 1,
         "longest_streak_days": 1,
         "last_session_date": "2026-05-13",
@@ -3650,6 +3670,22 @@
           "duration_minutes": 1,
           "technique_used": "tarteel_smart_classifier",
           "mood_score": 5
+        },
+        {
+          "date": "2026-05-13T12:01:19.632Z",
+          "pages_done": 0.175,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 5
+        },
+        {
+          "date": "2026-05-13T12:01:32.536Z",
+          "pages_done": 0.175,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 5
         }
       ],
       "review_system": {
@@ -3657,8 +3693,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 0,
-        "afi": 71,
+        "friction": 5.45,
+        "afi": 73,
         "history": [
           100,
           100,
@@ -3674,10 +3710,10 @@
       },
       "sr_state": {
         "1": {
-          "ef": 1.96,
+          "ef": 1.3,
           "interval": 1,
           "reps": 0,
-          "next_review": "2026-05-14T11:39:48.426Z"
+          "next_review": "2026-05-14T12:01:32.537Z"
         }
       },
       "ml_state": {
@@ -3732,8 +3768,171 @@
           "mode": "memorize",
           "transcript": "‏بسم الله الرحمن الرحيم ‏بسم الله الرحمن الرحيم ‏الحمد لله رب العالمين",
           "created_at": "2026-05-13T11:39:48.227Z"
+        },
+        {
+          "surah_name": "سُورَةُ ٱلْفَاتِحَةِ",
+          "from_ayah": 1,
+          "to_ayah": 7,
+          "word_count": 31,
+          "correct_words": 0,
+          "error_words": 1,
+          "score": 0,
+          "duration_minutes": 1,
+          "mode": "memorize",
+          "transcript": "‏بسم الله الرحمن الرحيم ‏الحمد لله رب العالمين ‏الرحمن الرحيم ‏مالك يوم الدين إياك نعبد وإياك نستعين اهدنا الصراط المستقيم صراط الذين انعمت عليهم غير المغضوب عليهم ولا الضالين",
+          "created_at": "2026-05-13T12:01:19.411Z"
+        },
+        {
+          "surah_name": "سُورَةُ ٱلْفَاتِحَةِ",
+          "from_ayah": 1,
+          "to_ayah": 7,
+          "word_count": 31,
+          "correct_words": 0,
+          "error_words": 1,
+          "score": 0,
+          "duration_minutes": 1,
+          "mode": "memorize",
+          "transcript": "‏بسم الله الرحمن الرحيم ‏الحمد لله رب العالمين ‏الرحمن الرحيم ‏مالك يوم الدين إياك نعبد وإياك نستعين اهدنا الصراط المستقيم صراط الذين انعمت عليهم غير المغضوب عليهم ولا الضالين",
+          "created_at": "2026-05-13T12:01:32.284Z"
         }
       ]
+    },
+    "goo": {
+      "username": "goo",
+      "password_hash": "56c1f182720a5fbf350b0b835479cb00e0e5633c9c7d27c3b7593679e075458d",
+      "display_name": "goo",
+      "created_at": "2026-05-13T12:02:38.003Z",
+      "last_active": "2026-05-13T12:08:34.295Z",
+      "avatar_color": "#0c7229",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": true,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-13T12:02:39.755Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-13T12:02:39.755Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0.05,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-13",
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [
+        {
+          "date": "2026-05-13T12:06:24.800Z",
+          "pages_done": 0.05,
+          "difficulty": "easy",
+          "duration_minutes": 1,
+          "technique_used": "recitation_studio",
+          "mood_score": 8
+        }
+      ],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 8.45,
+        "afi": 58,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {
+        "1": {
+          "ef": 2.6,
+          "interval": 1,
+          "reps": 1,
+          "next_review": "2026-05-14T12:06:24.800Z"
+        }
+      },
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "3857748c7428860f",
+          "type": "sheikh_approved",
+          "text": "🏅 تهانينا! تمت الموافقة على طلبك وأصبحت شيخاً مُعتمداً. يمكنك الآن إنشاء شُعبتك.",
+          "ref": "view-channels",
+          "read": false,
+          "created_at": "2026-05-13T12:08:14.641Z"
+        }
+      ],
+      "posts": [],
+      "login_history": [
+        {
+          "at": "2026-05-13T12:02:52.322Z",
+          "remember_me": true
+        }
+      ],
+      "khatma": {
+        "id": "4ae8926f5a27134f",
+        "created_at": "2026-05-13T12:03:49.989Z",
+        "start_date": "2026-05-13",
+        "target_days": 5,
+        "pages_per_day": 120.8,
+        "daily_log": {
+          "2026-05-13": {
+            "completed": true,
+            "at": "2026-05-13T12:03:55.011Z"
+          }
+        },
+        "total_pages_read": 121,
+        "completions": 0
+      }
     }
   },
   "chats": {},
@@ -3747,7 +3946,16 @@
       "local_ref": "local:image:1",
       "created_at": "2026-05-10T04:59:23.915Z",
       "likes": [
-        "jdjdjd"
+        "jdjdjd",
+        "goo"
+      ],
+      "comments": [
+        {
+          "id": "8e4276f7cfc0d010",
+          "from": "goo",
+          "text": "عيري بطيزك",
+          "created_at": "2026-05-13T12:07:11.584Z"
+        }
       ]
     }
   ],
@@ -3828,6 +4036,26 @@
       "review_sessions": [],
       "created_at": "2026-05-09T01:40:12.200Z",
       "last_message_at": null
+    },
+    "dbb5d349df7cda8f": {
+      "id": "dbb5d349df7cda8f",
+      "name": "Ff",
+      "description": "Cc",
+      "sheikh_username": "goo",
+      "join_code": "881M1G",
+      "max_members": 50,
+      "is_public": true,
+      "members": [
+        "goo"
+      ],
+      "announcements": [],
+      "messages": [],
+      "plan_override": null,
+      "plan_template": null,
+      "invite_tokens": [],
+      "review_sessions": [],
+      "created_at": "2026-05-13T12:08:38.952Z",
+      "last_message_at": null
     }
   },
   "sessions": {
@@ -3876,11 +4104,6 @@
       "expires": 1781237703009,
       "created_at": "2026-05-13T04:15:03.009Z"
     },
-    "cf7220242342c5785411818e2b6150d415375058ec9f3a66": {
-      "username": "ahmad_hafiz",
-      "expires": 1778732103283,
-      "created_at": "2026-05-13T04:15:03.283Z"
-    },
     "46916752d9056fe35463d42d99e18ff4c5c63a4b0fe2fb00": {
       "username": "ahmad_hafiz",
       "expires": 1781237828433,
@@ -3911,10 +4134,10 @@
       "expires": 1778756543328,
       "created_at": "2026-05-13T11:02:23.328Z"
     },
-    "a1233f592b42902fa370410eb6a6e23d2d8d8b2bc23dab32": {
-      "username": "suudud",
-      "expires": 1781264247425,
-      "created_at": "2026-05-13T11:37:27.425Z"
+    "29188c64996ce86a57bfe706260f710dfbffe3bd94904bc4": {
+      "username": "goo",
+      "expires": 1781265772322,
+      "created_at": "2026-05-13T12:02:52.322Z"
     }
   }
 }
