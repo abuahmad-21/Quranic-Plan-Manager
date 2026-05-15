@@ -4212,64 +4212,73 @@ const TarteelMode = {
     TarteelMode._stream = stream;
 
     // ── Step 3: SpeechRecognition ──
-    const sr = new SR();
-    sr.lang = 'ar-SA';
-    sr.continuous = true;
-    sr.interimResults = true;
-    sr.maxAlternatives = 3;
+    /* ── SR auto-restart factory ──
+       المشكلة: المتصفح يوقف SR بعد أول نتيجة نهائية أو بعد صمت.
+       الحل: نُنشئ instance جديداً تماماً في كل مرة بدلاً من restart. */
+    const makeSR = ()=>{
+      const rec = new SR();
+      rec.lang = 'ar-SA';
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.maxAlternatives = 3;
 
-    sr.onresult = ev=>{
-      if (!TarteelMode.active) return;
-      let interim='', final='';
-      for(let i=ev.resultIndex; i<ev.results.length; i++){
-        const top = ev.results[i][0].transcript;
-        if (ev.results[i].isFinal) final += top + ' ';
-        else interim += top;
-      }
-      if (final.trim()){
-        TarteelMode._totalTranscript += final;
-        TarteelMode.processChunk(final.trim(), false);
-      }
-      if (interim.trim()){
-        TarteelMode.processChunk(interim.trim(), true);
-      }
-      const live = document.getElementById('tarteel-live-transcript');
-      if (live){
-        live.style.display = 'block';
-        live.innerHTML = interim
-          ? `<span style="color:#fcd34d">🎤 ${escapeHTML(interim)}</span>`
-          : final.trim()
-          ? `<span style="color:#34d399">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`
-          : '';
-      }
-    };
-
-    sr.onerror = ev=>{
-      const silentErrors = new Set(['no-speech','aborted']);
-      if (silentErrors.has(ev.error)) return;
-      const errMap = {
-        'audio-capture': 'تعذّر التقاط الصوت — تحقق من الميكروفون',
-        'not-allowed':   'تم رفض إذن الميكروفون',
-        'network':       'خطأ في الشبكة — تحقق من اتصالك بالإنترنت',
-        'service-not-allowed': 'خدمة التعرف على الصوت غير مسموح بها في هذا المتصفح',
+      rec.onresult = ev=>{
+        if (!TarteelMode.active) return;
+        let interim='', final='';
+        for(let i=ev.resultIndex; i<ev.results.length; i++){
+          const top = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) final += top + ' ';
+          else interim += top;
+        }
+        if (final.trim()){
+          TarteelMode._totalTranscript += final;
+          TarteelMode.processChunk(final.trim(), false);
+        }
+        if (interim.trim()){
+          TarteelMode.processChunk(interim.trim(), true);
+        }
+        const live = document.getElementById('tarteel-live-transcript');
+        if (live){
+          live.style.display = 'block';
+          live.innerHTML = interim
+            ? `<span style="color:#fcd34d">🎤 ${escapeHTML(interim)}</span>`
+            : final.trim()
+            ? `<span style="color:#34d399">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`
+            : '';
+        }
       };
-      const msg = errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error;
-      toast(msg, 'error', 3500);
-      console.warn('[SR] error:', ev.error);
-    };
 
-    sr.onend = ()=>{
-      // Auto-restart if session still active (browser stops SR after silence/30s)
-      if (TarteelMode.active && TarteelMode.srec === sr){
+      rec.onerror = ev=>{
+        const silentErrors = new Set(['no-speech','aborted']);
+        if (silentErrors.has(ev.error)) return;
+        const errMap = {
+          'audio-capture': 'تعذّر التقاط الصوت — تحقق من الميكروفون',
+          'not-allowed':   'تم رفض إذن الميكروفون',
+          'network':       'خطأ في الشبكة — تحقق من اتصالك',
+          'service-not-allowed': 'خدمة التعرف على الصوت غير مسموح بها',
+        };
+        console.warn('[SR] error:', ev.error);
+        if (!silentErrors.has(ev.error)) toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);
+      };
+
+      rec.onend = ()=>{
+        /* أنشئ instance جديداً كلياً — هذا يحل مشكلة التوقف بعد أول نتيجة */
+        if (!TarteelMode.active) return;
         setTimeout(()=>{
-          if (TarteelMode.active && TarteelMode.srec === sr){
-            try { sr.start(); } catch(e){ console.warn('[SR] restart failed:', e.message); }
-          }
-        }, 250);
-      }
+          if (!TarteelMode.active) return;
+          try {
+            const fresh = makeSR();
+            fresh.start();
+            TarteelMode.srec = fresh;
+          } catch(e){ console.warn('[SR] re-create failed:', e.message); }
+        }, 120);
+      };
+
+      return rec;
     };
 
     // ── Step 4: Start SR ──
+    const sr = makeSR();
     try {
       sr.start();
     } catch(e){
@@ -4321,41 +4330,49 @@ const TarteelMode = {
     if (TarteelMode.correct + TarteelMode.errors > 0) TarteelMode.endSession();
   },
 
-  /* ── Process a transcript chunk against expected words ── */
-  /* isInterim=true: realtime highlight only, no permanent state change */
+  /* ── Process a transcript chunk against expected words ──
+     الإصلاح الجوهري: إضافة penalty موضعي للكلمات المكررة.
+     المشكلة: كلمة "الله" مثلاً تظهر مرات كثيرة في الصفحة.
+     الحل: كل خطوة للأمام تُقلل النتيجة بمعامل 0.82 تصاعدياً
+     فالكلمة عند cursor=0 تكسب 1.0×sim, عند cursor+1 تكسب 0.82×sim, وهكذا.
+     بهذا لا تقفز الكلمات لمواضع بعيدة إلا إن لم تُوجد في المكان الصحيح.
+  */
   processChunk(transcript, isInterim=false){
     if (!transcript || !TarteelMode.active) return;
     const spokenWords = transcript.trim().split(/\s+/).filter(Boolean);
     let didAdvance = false;
 
-    // Clear previous interim flags
     if (isInterim) TarteelMode.words.forEach(w=>{ w._interim=false; });
 
     spokenWords.forEach(sw=>{
       if (TarteelMode.cursor >= TarteelMode.words.length) return;
 
-      // Look-ahead up to 3 words — handles skipped/mispronounced words
-      let bestSim = 0, bestIdx = TarteelMode.cursor;
-      const ahead = Math.min(4, TarteelMode.words.length - TarteelMode.cursor);
+      /* ── Positional look-ahead with exponential penalty ──
+         نبحث بحد أقصى 5 كلمات للأمام، لكن كل خطوة تُقلل النتيجة.
+         هذا يضمن أن الكلمة الصحيحة في موضعها تكسب دائماً على
+         كلمة مطابقة لكنها في موضع متقدم. */
+      let bestScore = 0, bestIdx = TarteelMode.cursor;
+      const ahead = Math.min(5, TarteelMode.words.length - TarteelMode.cursor);
       for (let la=0; la<ahead; la++){
         const wi = TarteelMode.cursor + la;
         if (TarteelMode.words[wi].state === 'correct') continue;
         const sim = TarteelMode.wordSim(sw, TarteelMode.words[wi].raw);
-        if (sim > bestSim){ bestSim=sim; bestIdx=wi; }
+        // penalty: 18% لكل خطوة للأمام — يمنع القفز لكلمات بعيدة متطابقة
+        const posScore = sim * Math.pow(0.82, la);
+        if (posScore > bestScore){ bestScore=posScore; bestIdx=wi; }
       }
+      // sim الحقيقي بدون penalty لمقارنة العتبة
+      const trueSim = TarteelMode.wordSim(sw, TarteelMode.words[bestIdx].raw);
 
       if (isInterim){
-        // Interim: only highlight if very confident (0.85) — no state change
-        if (bestSim >= 0.85) TarteelMode.words[bestIdx]._interim = true;
+        if (bestScore >= 0.78) TarteelMode.words[bestIdx]._interim = true;
       } else {
-        // Final: commit if threshold met (0.70 is generous for Arabic TTS)
-        if (bestSim >= 0.70){
-          // Mark any skipped words between cursor and bestIdx as errors
+        if (trueSim >= 0.70){
+          // صح: احسب الكلمات المتخطاة بين cursor و bestIdx كأخطاء
           for (let i=TarteelMode.cursor; i<bestIdx; i++){
             if (TarteelMode.words[i].state === 'pending'){
               TarteelMode.words[i].state = 'error';
               TarteelMode.errors++;
-              // Vibrate: short triple for each skipped/wrong word
               if (navigator.vibrate) navigator.vibrate([40,20,40]);
             }
           }
@@ -4364,31 +4381,28 @@ const TarteelMode = {
           TarteelMode.correct++;
           TarteelMode.cursor = bestIdx + 1;
           didAdvance = true;
-          // Short pleasant buzz for correct word
           if (navigator.vibrate) navigator.vibrate(30);
           if (TarteelMode.cursor >= TarteelMode.words.length){
             setTimeout(()=>{ TarteelMode.stopRecord(); toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500); },300);
           }
-        } else if (bestSim < 0.45){
-          // Low confidence — count error on current word, skip after 2 fails
+        } else if (trueSim < 0.40){
+          // خطأ واضح — عدّ الخطأ وتجاوز بعد محاولتين
           const w = TarteelMode.words[TarteelMode.cursor];
           if (w.state !== 'correct'){
             w._errCount = (w._errCount||0) + 1;
             w.state = 'error';
             if (w._errCount === 1) TarteelMode.errors++;
-            // Long vibrate pattern for wrong word
             if (navigator.vibrate) navigator.vibrate([60,30,60,30,60]);
-            if (w._errCount >= 2){ TarteelMode.cursor++; didAdvance=true; }
+            if (w._errCount >= 3){ TarteelMode.cursor++; didAdvance=true; }
           }
         }
-        // 0.45–0.70: ambiguous — keep cursor, let user retry
+        // 0.40–0.70: غامض — اترك cursor، دع المستخدم يُعيد
       }
     });
 
     TarteelMode.renderWords();
     TarteelMode.updateProgress();
     if (didAdvance){
-      // Scroll new active word into center using ID (renderWords already handles this, but fallback)
       const nextEl = document.getElementById('tw-' + TarteelMode.cursor);
       if (nextEl) nextEl.scrollIntoView({behavior:'smooth', block:'center'});
     }
@@ -4450,6 +4464,15 @@ const TarteelMode = {
       const fromA = TarteelMode.ayahs[0]?.numberInSurah || 1;
       const toA   = TarteelMode.ayahs[TarteelMode.ayahs.length-1]?.numberInSurah || 1;
       // 1. Log Tarteel session (gets ai_core decision back)
+      // تجميع الكلمات الخاطئة فعلياً لإرسالها للسيرفر ولـ Hermes Agent
+      const wrongWordsList = TarteelMode.words
+        .filter(w=>w.state==='error')
+        .map(w=>w.raw)
+        .slice(0,50);
+      const correctWordsList = TarteelMode.words
+        .filter(w=>w.state==='correct')
+        .map(w=>w.raw)
+        .slice(0,50);
       const logRes = await Api.post('/tarteel/log', {
         surah_name: surahName,
         from_ayah: fromA,
@@ -4461,6 +4484,9 @@ const TarteelMode = {
         duration_minutes: durationMin,
         mode: TarteelMode.mode,
         transcript: TarteelMode._totalTranscript.trim().slice(0,500),
+        wrong_words: wrongWordsList,
+        correct_word_list: correctWordsList,
+        expected_text: TarteelMode.ayahs.map(a=>a.text).join(' ').slice(0,1000),
       });
       // 2. Also record as a memorization session so ai_core trains on it
       Api.post('/session/complete',{

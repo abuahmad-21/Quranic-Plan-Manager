@@ -1646,7 +1646,9 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'save_skill', description:'حفظ مهارة/نمط تعلّمه الوكيل لاستخدامه في الدورات القادمة.', parameters:{ type:'object', properties:{ title:{ type:'string' }, content:{ type:'string' }, tags:{ type:'array', items:{ type:'string' } }, applies_to:{ type:'string', enum:['users','algorithm','recitation','plan','general'] } }, required:['title','content'] } } },
   { type:'function', function:{ name:'log_insight', description:'تسجيل رؤية/استنتاج مهم في الذاكرة.', parameters:{ type:'object', properties:{ insight:{ type:'string' }, category:{ type:'string', enum:['user_behavior','algorithm','plan','coaching','recitation','general'] }, impact:{ type:'string', enum:['high','medium','low'] } }, required:['insight','category'] } } },
   { type:'function', function:{ name:'update_hermes_cfg', description:'تحديث إعدادات Hermes نفسه: تواتر الدورات، الحد الأقصى لاستدعاءات الأدوات، إلخ.', parameters:{ type:'object', properties:{ max_tool_calls:{ type:'number' }, focus_mode:{ type:'string', enum:['full_analysis','quick_scan','coaching_only','algorithm_only'] } }, required:[] } } },
-  { type:'function', function:{ name:'done', description:'إنهاء دورة التحليل مع ملخص شامل.', parameters:{ type:'object', properties:{ summary:{ type:'string' }, actions_taken:{ type:'array', items:{ type:'string' } }, next_run_focus:{ type:'string' } }, required:['summary'] } } }
+  { type:'function', function:{ name:'done', description:'إنهاء دورة التحليل مع ملخص شامل.', parameters:{ type:'object', properties:{ summary:{ type:'string' }, actions_taken:{ type:'array', items:{ type:'string' } }, next_run_focus:{ type:'string' } }, required:['summary'] } } },
+  { type:'function', function:{ name:'get_recitation_skill_data', description:'تحليل بيانات التلاوة لكل المستخدمين: أكثر الكلمات خطأً، دقة كل مستخدم، السور الأصعب، ربط بروابط صوتيات الشيوخ للمراجعة.', parameters:{ type:'object', properties:{ top_n_words:{ type:'number', description:'عدد الكلمات الأكثر خطأ (افتراضي 20)' } } } } },
+  { type:'function', function:{ name:'generate_recitation_coaching', description:'توليد خطة تدريب تلاوة مخصصة لمستخدم بناءً على أخطائه + روابط صوتيات الشيوخ للكلمات الأصعب.', parameters:{ type:'object', properties:{ username:{ type:'string' }, reciter_id:{ type:'string', enum:['ar.alafasy','ar.husary','ar.minshawi','ar.sudais','ar.basfar'], description:'الشيخ المرجعي للتدريب (افتراضي ar.alafasy)' } }, required:['username'] } } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -1856,6 +1858,100 @@ async function executeHermesTool(toolName, args, mem){
 
     case 'done': {
       return {finished:true, summary:String(args.summary||'').slice(0,600), actions_taken:args.actions_taken||[], next_run_focus:args.next_run_focus||''};
+    }
+
+    case 'get_recitation_skill_data': {
+      /* قراءة سجلات التلاوة وتجميع إحصائيات الكلمات الأكثر خطأ مع روابط الشيوخ */
+      const records = readLogFile('recitation_errors.jsonl', 500);
+      const topN = Math.min(30, +args.top_n_words||20);
+      const wordErrors = {};        // word → count
+      const userStats = {};         // username → {sessions, totalAcc, wrongWords}
+      const surahErrors = {};       // surah → count
+      let globalAcc = 0, accCount = 0;
+      records.forEach(r=>{
+        if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{ wordErrors[w]=(wordErrors[w]||0)+1; });
+        if(r.accuracy_pct){ globalAcc+=r.accuracy_pct; accCount++; }
+        if(r.username){
+          if(!userStats[r.username]) userStats[r.username]={sessions:0,totalAcc:0,topErrors:{}};
+          userStats[r.username].sessions++;
+          userStats[r.username].totalAcc+=r.accuracy_pct||0;
+          if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{
+            userStats[r.username].topErrors[w]=(userStats[r.username].topErrors[w]||0)+1;
+          });
+        }
+        if(r.surah_name) surahErrors[r.surah_name]=(surahErrors[r.surah_name]||0)+1;
+      });
+      const topErrors = Object.entries(wordErrors).sort((a,b)=>b[1]-a[1]).slice(0,topN);
+      // بناء روابط صوتيات للكلمات — Hermes يستخدمها للتدريب
+      const RECITER_FOLDERS = {
+        'ar.alafasy':'Alafasy_128kbps','ar.husary':'Husary_128kbps',
+        'ar.minshawi':'Minshawi_128kbps','ar.sudais':'Abdurrahmaan_As-Sudais_192kbps',
+        'ar.basfar':'Abdullah_Basfar_192kbps'
+      };
+      // احفظ بيانات التلاوة في ذاكرة Hermes
+      if(!mem.recitation_data) mem.recitation_data={};
+      mem.recitation_data.top_error_words = topErrors.slice(0,20).map(([w,c])=>({word:w,count:c}));
+      mem.recitation_data.global_avg_accuracy = accCount ? +(globalAcc/accCount).toFixed(1) : 0;
+      mem.recitation_data.total_recitation_sessions = records.length;
+      mem.recitation_data.reciter_folders = RECITER_FOLDERS;
+      mem.recitation_data.last_analyzed = now();
+      return {
+        total_sessions: records.length,
+        global_avg_accuracy: mem.recitation_data.global_avg_accuracy,
+        top_error_words: topErrors.map(([w,c])=>({word:w,count:c})),
+        users_analyzed: Object.keys(userStats).length,
+        hardest_surahs: Object.entries(surahErrors).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,c])=>({surah:s,errors:c})),
+        per_user_summary: Object.entries(userStats).slice(0,10).map(([u,s])=>({
+          username:u, sessions:s.sessions,
+          avg_accuracy:s.sessions?+(s.totalAcc/s.sessions).toFixed(1):0,
+          top_errors:Object.entries(s.topErrors).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([w,c])=>({word:w,count:c}))
+        })),
+        reciter_audio_url_pattern: 'https://everyayah.com/data/{reciter_folder}/{surahNum3digits}{ayahNum3digits}.mp3',
+        available_reciters: RECITER_FOLDERS,
+      };
+    }
+
+    case 'generate_recitation_coaching': {
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
+      // اجمع أخطاء المستخدم من السجلات
+      const userRecords = readLogFile('recitation_errors.jsonl', 200).filter(r=>r.username===args.username);
+      const wordErr = {};
+      userRecords.forEach(r=>{ if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{ wordErr[w]=(wordErr[w]||0)+1; }); });
+      const topErrWords = Object.entries(wordErr).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([w,c])=>({word:w,count:c}));
+      const avgAcc = userRecords.length ? +(userRecords.reduce((s,r)=>s+(r.accuracy_pct||0),0)/userRecords.length).toFixed(1) : 0;
+      const reciterId = args.reciter_id || 'ar.alafasy';
+      const FOLDERS = {'ar.alafasy':'Alafasy_128kbps','ar.husary':'Husary_128kbps','ar.minshawi':'Minshawi_128kbps','ar.sudais':'Abdurrahmaan_As-Sudais_192kbps','ar.basfar':'Abdullah_Basfar_192kbps'};
+      const reciterFolder = FOLDERS[reciterId] || 'Alafasy_128kbps';
+      const sysP=`أنت Hermes Agent — مدرب تلاوة قرآنية متخصص يعمل بالذكاء الاصطناعي. 
+لديك بيانات أخطاء حقيقية لمستخدم وأنت مرتبط بصوتيات خمسة شيوخ.
+مهمتك: خطة تدريبية دقيقة ومخصصة. الرد بالعربية، منظم، 8-12 سطر.`;
+      const userP=`المستخدم: ${u.display_name||u.username}
+عدد جلسات التسميع: ${userRecords.length}
+متوسط الدقة: ${avgAcc}%
+الكلمات الأكثر خطأ: ${topErrWords.map(e=>`"${e.word}"(${e.count})`).join('، ')||'لا بيانات بعد'}
+الشيخ المرجعي المختار: ${reciterId} — يمكن سماعه على: https://everyayah.com/data/${reciterFolder}/
+نمط رابط الصوت: https://everyayah.com/data/${reciterFolder}/[رقم_السورة3أرقام][رقم_الآية3أرقام].mp3
+مثال سورة الفاتحة آية 1: https://everyayah.com/data/${reciterFolder}/001001.mp3
+
+قدّم:
+١) تشخيص نقاط الضعف بناءً على الكلمات الخاطئة
+٢) خطة تدريب أسبوعية (5 نقاط)
+٣) روابط صوتية محددة للآيات التي تحتوي أكثر الكلمات خطأ
+٤) تقنية الترديد مع الشيخ لكل كلمة مشكلة
+٥) هدف دقة قابل للقياس للأسبوع القادم`;
+      const reply = await callAI(sysP, userP);
+      if(reply){
+        addNotif(u.username,'hermes_insight','🎙️ خطة تدريب تلاوتك جاهزة! '+reply.slice(0,150),'view-tarteel');
+        persist();
+      }
+      // احفظ الخطة في ذاكرة Hermes
+      if(!mem.recitation_data) mem.recitation_data={};
+      if(!mem.recitation_data.user_plans) mem.recitation_data.user_plans={};
+      mem.recitation_data.user_plans[args.username]={ plan:reply||'', generated_at:now(), avg_accuracy:avgAcc, top_errors:topErrWords.slice(0,5), reciter:reciterId };
+      mem.stats.users_helped++;
+      return {ok:true, username:args.username, avg_accuracy:avgAcc, top_errors:topErrWords, coaching_plan:reply||'تعذّر توليد الخطة', reciter_used:reciterId, base_audio_url:`https://everyayah.com/data/${reciterFolder}/`};
     }
 
     default: return {error:`unknown_tool: ${toolName}`};
