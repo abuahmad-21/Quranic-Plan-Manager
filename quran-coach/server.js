@@ -2456,7 +2456,8 @@ R('GET','/qqc/config/audio', async(req,res)=>{
    يسجّل: أخطاء الموقع | أخطاء الذكاء الاصطناعي | أخطاء التسميع
    الملفات: logs/errors.jsonl | logs/ai_errors.jsonl | logs/recitation_errors.jsonl | logs/ai_training_data.jsonl
 ════════════════════════════════════════════════════════════════ */
-const LOGS_DIR = path.join(ROOT, '..', 'logs');
+const LOGS_DIR = path.join(ROOT, 'logs');
+if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
 
 function appendLog(filename, record){
   try {
