@@ -2050,6 +2050,233 @@ R('POST','/qqc/logs/recitation', async(req,res)=>{
   send(res,200,{ok:true});
 });
 
+/* ════════════════════════════════════════════════════════════════
+   AI MEMORY + RAG LAYER — الذاكرة الذكية + الاسترجاع التعزيزي
+   ════════════════════════════════════════════════════════════════ */
+
+const AI_MEMORY_PATH = path.join(ROOT, 'ai_memory.json');
+
+function readAiMemory(){
+  try { return JSON.parse(fs.readFileSync(AI_MEMORY_PATH,'utf8')); }
+  catch{ return { interactions:[], corrections:[], user_notes:{}, global_notes:[], last_updated:null, version:1 }; }
+}
+
+function writeAiMemory(mem){
+  try {
+    mem.last_updated = now();
+    fs.writeFileSync(AI_MEMORY_PATH+'.tmp', JSON.stringify(mem,null,2));
+    fs.renameSync(AI_MEMORY_PATH+'.tmp', AI_MEMORY_PATH);
+  } catch(e){ console.error('AI Memory write failed',e.message); }
+}
+
+function buildUserContext(u){
+  if (!u) return '';
+  const prog = u.progress||{};
+  const recentSessions = (u.studio_history||[]).slice(-5);
+  const avgScore = recentSessions.filter(s=>s.ai_score!=null).reduce((a,b)=>a+(b.ai_score||0),0) / Math.max(1,recentSessions.filter(s=>s.ai_score!=null).length);
+  const khatma = u.khatma;
+  const plan = u.active_plan;
+
+  return `== بيانات المستخدم الحقيقية ==
+الاسم: ${u.display_name||u.username}
+الحروف المحفوظة: ${u.hifz?.memorized_juzaa?.join(', ')||'لا توجد بيانات'}
+الصفحات المحفوظة: ${prog.total_pages_memorized||0}
+إجمالي الجلسات: ${prog.total_sessions_completed||0}
+السلسلة الحالية: ${prog.current_streak_days||0} يوم
+أفضل سلسلة: ${prog.best_streak_days||0} يوم
+متوسط درجة التسميع (آخر 5): ${Math.round(avgScore)||'—'}%
+${khatma ? `خطة الختمة: ${Math.round((khatma.total_pages_read/604)*100)||0}% مكتملة (${khatma.total_pages_read||0}/604 صفحة)` : 'لا توجد خطة ختمة نشطة'}
+${plan ? `خطة الحفظ: ${plan.name||'غير محددة'} — الهدف: ${plan.daily_pages||'?'} صفحة/يوم` : ''}
+آخر 5 جلسات تسميع: ${recentSessions.map(s=>`${s.surah_name||'?'} آية ${s.ayah_num||'?'} — ${s.ai_score!=null?s.ai_score+'%':'بدون درجة'}`).join(' | ')||'لا يوجد'}`;
+}
+
+function buildMemoryContext(mem, username){
+  const userNotes = (mem.user_notes||{})[username]||[];
+  const recent = (mem.interactions||[]).filter(i=>i.username===username).slice(-8);
+  const corrections = (mem.corrections||[]).filter(c=>c.username===username).slice(-5);
+  let ctx = '';
+  if (userNotes.length) ctx += `== ملاحظاتي عن هذا المستخدم ==\n${userNotes.join('\n')}\n\n`;
+  if (corrections.length) ctx += `== تصحيحات سابقة ==\n${corrections.map(c=>`❌ قلت: "${c.wrong}" ✅ الصحيح: "${c.correct}"`).join('\n')}\n\n`;
+  if (recent.length) ctx += `== آخر محادثات ==\n${recent.map(i=>`س: ${i.q.slice(0,80)} | ج: ${i.a.slice(0,120)}`).join('\n')}`;
+  return ctx;
+}
+
+/* ── AI Coach — RAG + Tool Calling ── */
+R('POST','/qqc/ai/coach', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const question = String(b.question||b.message||'').slice(0,1500);
+  if (!question) return send(res,400,{error:'no_question'});
+
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if (!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured', reply:'عذراً، الذكاء الاصطناعي غير متاح حالياً.'});
+
+  const mem = readAiMemory();
+  const userContext = buildUserContext(u);
+  const memContext  = buildMemoryContext(mem, u.username);
+
+  // Read recent recitation errors from JSONL log
+  let recitationContext = '';
+  try {
+    const recLogs = readLogFile('recitation_errors.jsonl', 5);
+    const userLogs = recLogs.filter(r=>r && r.method);
+    if (userLogs.length){
+      recitationContext = `== أحدث أخطاء التسميع ==\n${userLogs.map(r=>`${r.surah_name||''} آية ${r.ayah_number||''}: دقة ${r.accuracy_pct||0}% — ${r.error_type||''}`).join('\n')}`;
+    }
+  } catch{}
+
+  const systemPrompt = `أنت "الحافظ الذكي" — مساعد شخصي متخصص في تحفيظ القرآن الكريم. 
+لديك بيانات حقيقية ومحدّثة من قاعدة بيانات المستخدم. أجب دائماً بالعربية.
+كن موجزاً ومحدداً وعملياً (4-8 أسطر كحد أقصى إلا إذا طُلب التفصيل).
+
+${userContext}
+
+${memContext}
+
+${recitationContext}
+
+== قدراتك ==
+يمكنك اقتراح أدوات للتنفيذ. إذا أراد المستخدم تعديلاً فعلياً، أضف في نهاية ردك JSON على سطر منفصل:
+TOOL:{"action":"update_plan","params":{"daily_pages":2}} 
+أو TOOL:{"action":"mark_complete","params":{"note":"أكمل الفاتحة"}}
+أو TOOL:{"action":"reschedule","params":{"delay_days":1,"reason":"مريض"}}
+أو TOOL:{"action":"save_note","params":{"note":"المستخدم يعاني من مخرج الحاء"}}
+
+لا تخترع معلومات غير موجودة في البيانات أعلاه.`;
+
+  try {
+    const resp = await fetch(`${baseUrl}/chat/completions`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages:[{role:'system',content:systemPrompt},{role:'user',content:question}],
+        max_completion_tokens: 600,
+        temperature: 0.7
+      })
+    });
+    if (!resp.ok){
+      const t=await resp.text();
+      return send(res,200,{reply:'تعذّر الاتصال بالذكاء الاصطناعي. حاول لاحقاً.',error:'api_error',detail:t.slice(0,200)});
+    }
+    const data = await resp.json();
+    let reply = data.choices?.[0]?.message?.content || 'لم يُنتج الذكاء الاصطناعي ردّاً.';
+
+    // Extract and execute tool calls
+    let toolResult = null;
+    const toolMatch = reply.match(/TOOL:\s*(\{[^}]+\})/);
+    if (toolMatch){
+      reply = reply.replace(/TOOL:\s*\{[^}]+\}/, '').trim();
+      try {
+        const tool = JSON.parse(toolMatch[1]);
+        toolResult = await executeAiTool(u, tool.action, tool.params||{});
+        if (toolResult) persist();
+      } catch(e){ console.error('Tool parse error',e.message); }
+    }
+
+    // Log interaction to memory
+    if (!mem.interactions) mem.interactions=[];
+    mem.interactions.push({ username:u.username, q:question.slice(0,200), a:reply.slice(0,300), ts:Date.now() });
+    if (mem.interactions.length > 2000) mem.interactions = mem.interactions.slice(-2000);
+    writeAiMemory(mem);
+
+    // Also log to DB for user
+    if (!u.ai_history) u.ai_history = [];
+    u.ai_history.push({ q:question.slice(0,200), a:reply.slice(0,300), ts:now() });
+    if (u.ai_history.length > 200) u.ai_history = u.ai_history.slice(-200);
+    persist();
+
+    send(res,200,{ reply, tool_executed: toolResult, source:'gpt-rag' });
+  } catch(e){
+    console.error('AI Coach error',e.message);
+    send(res,500,{reply:'حدث خطأ داخلي. حاول لاحقاً.',error:e.message});
+  }
+});
+
+/* Execute AI tool action */
+async function executeAiTool(u, action, params){
+  switch(action){
+    case 'update_plan':
+      if (!u.active_plan) u.active_plan={};
+      if (params.daily_pages) u.active_plan.daily_pages=+params.daily_pages;
+      if (params.name) u.active_plan.name=String(params.name).slice(0,100);
+      u.active_plan.updated_at = now();
+      return { action, status:'done', applied:params };
+
+    case 'mark_complete':
+      if (!u.progress) u.progress={};
+      if (!u.ai_completions) u.ai_completions=[];
+      u.ai_completions.push({ note:String(params.note||'').slice(0,200), ts:now() });
+      return { action, status:'done', applied:params };
+
+    case 'reschedule':
+      if (!u.schedule_adjustments) u.schedule_adjustments=[];
+      u.schedule_adjustments.push({ delay_days:+params.delay_days||1, reason:String(params.reason||'').slice(0,200), ts:now() });
+      return { action, status:'done', applied:params };
+
+    case 'save_note': {
+      const mem2 = readAiMemory();
+      if (!mem2.user_notes) mem2.user_notes={};
+      if (!mem2.user_notes[u.username]) mem2.user_notes[u.username]=[];
+      mem2.user_notes[u.username].push(String(params.note||'').slice(0,300));
+      if (mem2.user_notes[u.username].length>50) mem2.user_notes[u.username]=mem2.user_notes[u.username].slice(-50);
+      writeAiMemory(mem2);
+      return { action, status:'done', applied:params };
+    }
+    default: return null;
+  }
+}
+
+/* ── GET AI Memory (admin) ── */
+R('GET','/qqc/admin/ai-memory', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const mem = readAiMemory();
+  const stats = {
+    total_interactions: (mem.interactions||[]).length,
+    total_corrections: (mem.corrections||[]).length,
+    users_with_notes: Object.keys(mem.user_notes||{}).length,
+    global_notes: (mem.global_notes||[]).length,
+    last_updated: mem.last_updated,
+  };
+  send(res,200,{ stats, recent_interactions: (mem.interactions||[]).slice(-20).reverse(), corrections: (mem.corrections||[]).slice(-20).reverse(), global_notes: mem.global_notes||[] });
+});
+
+/* ── Store correction (when AI was wrong) ── */
+R('POST','/qqc/ai/memory/correct', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const wrong   = String(b.wrong||'').slice(0,500);
+  const correct = String(b.correct||'').slice(0,500);
+  if (!wrong||!correct) return send(res,400,{error:'missing_fields'});
+  const mem = readAiMemory();
+  if (!mem.corrections) mem.corrections=[];
+  mem.corrections.push({ username:u.username, wrong, correct, ts:Date.now() });
+  if (mem.corrections.length>5000) mem.corrections=mem.corrections.slice(-5000);
+  writeAiMemory(mem);
+  send(res,200,{ok:true});
+});
+
+/* ── GET user AI history ── */
+R('GET','/qqc/ai/history', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  send(res,200,{ history: (u.ai_history||[]).slice().reverse().slice(0,50) });
+});
+
+/* ── Execute a tool directly (from frontend) ── */
+R('POST','/qqc/ai/execute-tool', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const action = String(b.action||'').slice(0,50);
+  const params = b.params||{};
+  if (!action) return send(res,400,{error:'no_action'});
+  try {
+    const result = await executeAiTool(u, action, params);
+    if (result) persist();
+    send(res,200,{ ok:!!result, result });
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
 /* ── Admin: عرض السجلات ── */
 R('GET','/qqc/admin/logs/:type', async(req,res,p)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});

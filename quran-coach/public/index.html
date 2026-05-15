@@ -783,6 +783,9 @@
         <div id="quran-playing-info" class="qpb-now-playing"></div>
         <div class="qpb-sheikh-name" id="qpb-sheikh-label">مشاري العفاسي</div>
       </div>
+      <!-- Audio progress bar (seekable) -->
+      <input type="range" id="qpb-progress" min="0" max="100" value="0"
+        style="width:100%;height:3px;margin:4px 0 6px;accent-color:#16a34a;cursor:pointer;opacity:0;transition:opacity .3s">
       <div class="qpb-controls">
         <button class="qpb-btn" id="btn-quran-stop" disabled title="إيقاف">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
@@ -790,11 +793,8 @@
         <button class="qpb-btn" id="btn-quran-prev-play" title="السابقة">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="4" x2="5" y2="20" stroke="currentColor" stroke-width="2"/></svg>
         </button>
-        <button class="qpb-btn qpb-play" id="btn-quran-play-all" disabled title="تشغيل">
+        <button class="qpb-btn qpb-play" id="btn-quran-play-all" disabled title="تشغيل/إيقاف">
           <svg id="qpb-play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-        </button>
-        <button class="qpb-btn" id="btn-quran-pause" disabled title="إيقاف مؤقت" style="display:none">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         </button>
         <button class="qpb-btn" id="btn-quran-next-play" title="التالية">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="4" x2="19" y2="20" stroke="currentColor" stroke-width="2"/></svg>
@@ -802,6 +802,8 @@
         <button class="qpb-btn qpb-repeat" id="btn-quran-repeat" title="تكرار">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
         </button>
+        <button class="qpb-btn" id="btn-quran-speed" title="سرعة التشغيل" style="font-size:.78rem;font-weight:700;font-family:'Tajawal',sans-serif;width:38px;height:38px">1×</button>
+        <button class="qpb-btn" id="btn-quran-sleep" title="منبّه النوم" style="font-size:.82rem;font-family:'Tajawal',sans-serif;width:38px;height:38px">⏱</button>
         <button class="qpb-btn" id="btn-quran-settings-toggle" title="إعدادات التشغيل">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
         </button>
@@ -818,11 +820,20 @@
           <div class="qsheet-label">القارئ</div>
           <select id="quran-sheikh-select" class="field-input">
             <option value="ar.alafasy">مشاري العفاسي</option>
-            <option value="ar.abdulbasitmurattal">عبد الباسط (مرتل)</option>
+            <option value="ar.abdulbasitmurattal">عبد الباسط عبد الصمد (مرتل)</option>
             <option value="ar.husary">محمود خليل الحصري</option>
             <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
             <option value="ar.saudalshuraym">سعود الشريم</option>
             <option value="ar.minshawi">محمد صديق المنشاوي</option>
+            <option value="ar.sudais">عبد الرحمن السديس</option>
+            <option value="ar.ghamdi">سعد الغامدي</option>
+            <option value="ar.tablawi">محمد الطبلاوي</option>
+            <option value="ar.dosari">ياسر الدوسري</option>
+            <option value="ar.shatree">أبو بكر الشاطري</option>
+            <option value="ar.basfar">عبد الله بصفر</option>
+            <option value="ar.khalil">وديع اليمني</option>
+            <option value="ar.ayyub">أيوب خاكواني</option>
+            <option value="ar.hatem">هاتم فريد</option>
           </select>
         </div>
         <div class="qsheet-section">

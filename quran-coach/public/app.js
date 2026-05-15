@@ -1985,10 +1985,15 @@ const ChannelRoom = {
   }
 };
 
-/* ══ AI COACH ══ */
+/* ════════════════════════════════════════════════════
+   AI COACH — RAG + Memory + Tool Calling
+   (الحافظ الذكي — يقرأ بياناتك الحقيقية قبل كل رد)
+   ════════════════════════════════════════════════════ */
 const AiCoach = {
   _inited: false,
   messages: [],
+  _sending: false,
+
   init(){
     if(AiCoach._inited){ AiCoach.render(); return; }
     AiCoach._inited = true;
@@ -1996,33 +2001,67 @@ const AiCoach = {
     const sendBtn = document.getElementById('btn-send-ai');
     const aiInput = document.getElementById('ai-input');
     if(sendBtn) sendBtn.onclick = AiCoach.send;
-    if(aiInput) aiInput.onkeydown = e=>{ if(e.key==='Enter') AiCoach.send(); };
+    if(aiInput) aiInput.onkeydown = e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); AiCoach.send(); } };
     document.querySelectorAll('.ai-quick').forEach(b=>b.onclick=()=>{
       const aiInp = document.getElementById('ai-input');
       if(aiInp) aiInp.value = b.dataset.q; AiCoach.send();
     });
     AiCoach.render();
   },
+
   async send(){
+    if(AiCoach._sending) return;
     const inp = document.getElementById('ai-input');
     const text = (inp?.value||'').trim(); if(!text) return;
     if(inp) inp.value='';
-    AiCoach.messages.push({from:'user',text});
+    AiCoach._sending = true;
+    AiCoach.messages.push({from:'user', text});
     AiCoach.render();
-    const r = await Api.post('/ai-coach',{message:text});
-    AiCoach.messages.push({from:'ai',text:r.reply||'...'});
+    // Typing indicator
+    const typingId = `typing_${Date.now()}`;
+    AiCoach.messages.push({from:'ai', text:'', typing:true, id:typingId});
+    AiCoach.render();
+    try {
+      // Use new RAG endpoint — sends real user data + memory to GPT
+      const r = await Api.post('/ai/coach', {question:text});
+      // Remove typing indicator
+      AiCoach.messages = AiCoach.messages.filter(m=>m.id!==typingId);
+      const toolNote = r.tool_executed ? `\n\n✅ تم تنفيذ الإجراء: ${JSON.stringify(r.tool_executed.action)}` : '';
+      AiCoach.messages.push({ from:'ai', text:(r.reply||'عذراً، لم أتمكن من الرد.') + toolNote, correctable: true });
+    } catch(e){
+      AiCoach.messages = AiCoach.messages.filter(m=>m.id!==typingId);
+      AiCoach.messages.push({from:'ai', text:'تعذّر الاتصال. تحقق من الإنترنت وحاول مجدداً.'});
+      ErrorLogger.logAiError('AiCoach.send failed: '+String(e?.message||e));
+    }
+    AiCoach._sending = false;
     AiCoach.render();
   },
+
+  async correct(wrongText, idx){
+    const correct = prompt('ما هو الرد الصحيح؟');
+    if (!correct) return;
+    await Api.post('/ai/memory/correct', { wrong: wrongText, correct }).catch(()=>{});
+    toast('شكراً! تم تسجيل التصحيح لتحسين الذكاء الاصطناعي ✅','success',2000);
+  },
+
   render(){
     const box = document.getElementById('ai-messages');
     if(!box) return;
     if(!AiCoach.messages.length){
-      box.innerHTML='<div style="color:var(--text-2);text-align:center;padding:50px 0">👋 أهلاً! كيف أساعدك في رحلة حفظ القرآن اليوم؟</div>';
+      box.innerHTML=`<div style="color:var(--text-2);text-align:center;padding:40px 10px">
+        <div style="font-size:2rem;margin-bottom:8px">🧠</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--text-1);margin-bottom:6px">الحافظ الذكي</div>
+        <div style="font-size:.8rem;line-height:1.6">أسألني عن خطة حفظك، أخطاء تسميعك،<br>أفضل وقت للمراجعة، أو أي شيء يخص القرآن</div>
+      </div>`;
       return;
     }
-    box.innerHTML = AiCoach.messages.map(m=>{
-      const mine=m.from==='user';
-      return `<div class="msg ${mine?'msg-mine':'msg-other'}">${escapeHTML(m.text)}</div>`;
+    box.innerHTML = AiCoach.messages.map((m,i)=>{
+      const mine = m.from==='user';
+      if(m.typing) return `<div class="msg msg-other"><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span></div>`;
+      return `<div class="msg ${mine?'msg-mine':'msg-other'}" dir="${mine?'ltr':'rtl'}">
+        <div style="white-space:pre-wrap;line-height:1.7">${escapeHTML(m.text)}</div>
+        ${(!mine&&m.correctable)?`<button onclick="AiCoach.correct(${JSON.stringify(m.text)},${i})" style="margin-top:6px;font-size:.7rem;color:var(--text-3);background:none;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;padding:2px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.08)">⚠️ تصحيح</button>`:''}
+      </div>`;
     }).join('');
     box.scrollTop = box.scrollHeight;
   }
@@ -2151,11 +2190,33 @@ const QuranBrowser = {
   playIndex: 0,
   loopRemain: 0,
   audioEl: null,
+  preloadAudio: null,
   ayahMap: new Map(),
+  speed: 1,
+  sleepTimerEnd: null,
+  sleepTimerInterval: null,
 
   get sheikh(){ return document.getElementById('quran-sheikh-select')?.value || 'ar.alafasy'; },
-  /* Sheikh identifier map — CDN-validated identifiers */
-  SHEIKHS: ['ar.alafasy','ar.husary','ar.abdulbasitmurattal','ar.mahermuaiqly','ar.saudalshuraym'],
+
+  /* 15+ Reciters — verses.quran.com (primary) + everyayah.com (fallback) */
+  RECITERS: {
+    'ar.alafasy':           { nameAr:'مشاري العفاسي',          qc:'Alafasy',         ev:'Alafasy_128kbps' },
+    'ar.abdulbasitmurattal':{ nameAr:'عبد الباسط (مرتل)',       qc:'AbdulSamad',      ev:'Abdul_Basit_Murattal_192kbps' },
+    'ar.husary':            { nameAr:'محمود خليل الحصري',      qc:'Husary',          ev:'Husary_128kbps' },
+    'ar.mahermuaiqly':      { nameAr:'ماهر المعيقلي',           qc:'MaherAlMuaiqly',  ev:'Maher_AlMuaiqly_128kbps' },
+    'ar.saudalshuraym':     { nameAr:'سعود الشريم',             qc:'Shuraim',         ev:'Saud_Al-Shuraim_128kbps' },
+    'ar.minshawi':          { nameAr:'محمد صديق المنشاوي',     qc:'Minshawi',        ev:'Minshawi_128kbps' },
+    'ar.sudais':            { nameAr:'عبد الرحمن السديس',       qc:'Sudais',          ev:'Abdurrahmaan_As-Sudais_192kbps' },
+    'ar.ghamdi':            { nameAr:'سعد الغامدي',             qc:'Ghamdi',          ev:'Saad_Al-Ghamdi_128kbps' },
+    'ar.tablawi':           { nameAr:'محمد الطبلاوي',           qc:'Tablawi',         ev:'Mohammad_al_Tablawi_128kbps' },
+    'ar.dosari':            { nameAr:'ياسر الدوسري',            qc:'YasserAD',        ev:'Yasser_Ad-Dussary_128kbps' },
+    'ar.ayyub':             { nameAr:'أيوب خاكواني',            qc:'AyubKhakwani',    ev:'' },
+    'ar.khalil':            { nameAr:'وديع اليمني',             qc:'WadieAlYamani',   ev:'Wadi_Al-Yamani_128kbps' },
+    'ar.shatree':           { nameAr:'أبو بكر الشاطري',         qc:'Shatree',         ev:'Abu_Bakr_Ash-Shaatree_128kbps' },
+    'ar.basfar':            { nameAr:'عبد الله بصفر',           qc:'Basfar',          ev:'Abdullah_Basfar_192kbps' },
+    'ar.hatem':             { nameAr:'هاتم فريد',               qc:'HatemFarid',      ev:'Hani_Rifai_192kbps' },
+  },
+
   get loop(){ return +(document.getElementById('quran-loop-select')?.value ?? 1); },
   get ayahRepeat(){ return +(document.getElementById('quran-ayah-repeat-select')?.value ?? 1); },
   ayahRepeatRemain: 1,
@@ -2166,6 +2227,7 @@ const QuranBrowser = {
       sheikh: document.getElementById('quran-sheikh-select')?.value || 'ar.alafasy',
       loop:   document.getElementById('quran-loop-select')?.value   || '1',
       ayah_repeat: document.getElementById('quran-ayah-repeat-select')?.value || '1',
+      speed: QuranBrowser.speed || 1,
     };
     LS.set(`qqc_quran_${S.username}`, JSON.stringify(settings));
   },
@@ -2181,7 +2243,67 @@ const QuranBrowser = {
       if (sheikh && saved.sheikh) sheikh.value = saved.sheikh;
       if (loop   && saved.loop)   loop.value   = saved.loop;
       if (ayahR  && saved.ayah_repeat) ayahR.value = saved.ayah_repeat;
+      if (saved.speed){ QuranBrowser.speed = +saved.speed || 1; const sb=document.getElementById('btn-quran-speed'); if(sb) sb.textContent=`${QuranBrowser.speed}×`; }
+      // Update sheikh label
+      const r = QuranBrowser.RECITERS[saved.sheikh];
+      const lbl = document.getElementById('qpb-sheikh-label');
+      if (lbl && r) lbl.textContent = r.nameAr;
     } catch(e){}
+  },
+
+  /* Speed cycle: 0.75x → 1x → 1.25x → 1.5x → 0.75x */
+  cycleSpeed(){
+    const speeds = [0.75, 1, 1.25, 1.5];
+    const idx = speeds.indexOf(QuranBrowser.speed);
+    QuranBrowser.speed = speeds[(idx+1) % speeds.length];
+    if (QuranBrowser.audioEl) QuranBrowser.audioEl.playbackRate = QuranBrowser.speed;
+    const btn = document.getElementById('btn-quran-speed');
+    if (btn) btn.textContent = `${QuranBrowser.speed}×`;
+    toast(`سرعة التشغيل: ${QuranBrowser.speed}×`, 'info', 1200);
+    QuranBrowser.saveSettings();
+  },
+
+  /* Sleep timer (منبّه النوم) */
+  setSleepTimer(minutes){
+    if (QuranBrowser.sleepTimerInterval){ clearInterval(QuranBrowser.sleepTimerInterval); QuranBrowser.sleepTimerInterval=null; }
+    QuranBrowser.sleepTimerEnd = null;
+    const btn = document.getElementById('btn-quran-sleep');
+    if (minutes === 0){ if (btn) btn.textContent='⏱'; return; }
+    QuranBrowser.sleepTimerEnd = Date.now() + minutes*60000;
+    if (btn) btn.textContent = `⏱${minutes}`;
+    QuranBrowser.sleepTimerInterval = setInterval(()=>{
+      if (!QuranBrowser.sleepTimerEnd) return;
+      const rem = Math.max(0, QuranBrowser.sleepTimerEnd - Date.now());
+      const mins = Math.ceil(rem/60000);
+      if (btn) btn.textContent = mins > 0 ? `⏱${mins}` : '⏱';
+      if (rem <= 0){
+        clearInterval(QuranBrowser.sleepTimerInterval); QuranBrowser.sleepTimerEnd=null;
+        // 3-second fade out
+        if (QuranBrowser.audioEl){
+          const el=QuranBrowser.audioEl; const startVol=el.volume; let step=0;
+          const fade=setInterval(()=>{ step++; if(el) el.volume=Math.max(0,startVol*(1-step/30)); if(step>=30){ clearInterval(fade); QuranBrowser.stopAll(); if(btn) btn.textContent='⏱'; } },100);
+        } else { QuranBrowser.stopAll(); if(btn) btn.textContent='⏱'; }
+      }
+    }, 10000);
+    toast(`منبّه النوم: ${minutes} دقيقة ⏱`, 'success', 2000);
+  },
+
+  openSleepSheet(){
+    const curr = QuranBrowser.sleepTimerEnd ? Math.ceil((QuranBrowser.sleepTimerEnd-Date.now())/60000) : 0;
+    const el=document.createElement('div');
+    el.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.65);display:flex;align-items:flex-end';
+    el.innerHTML=`<div style="width:100%;background:#0f1729;border-radius:22px 22px 0 0;padding:20px 16px 32px;border:1px solid rgba(255,255,255,.12)">
+      <div style="text-align:center;font-weight:700;color:#e5e7eb;margin-bottom:14px;font-size:1rem">⏱ منبّه النوم</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${[15,30,60,90,120].map(m=>`<button data-sleep="${m}" style="padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#e5e7eb;font-size:.92rem;cursor:pointer;font-family:'Tajawal',sans-serif;direction:rtl">${m} دقيقة</button>`).join('')}
+        ${curr>0?`<button data-sleep="0" style="padding:13px;border-radius:12px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#ef4444;font-size:.92rem;cursor:pointer;font-family:'Tajawal',sans-serif">❌ إلغاء المنبّه (${curr} د متبقية)</button>`:''}
+        <button data-sleep-close style="padding:10px;border-radius:12px;border:none;background:transparent;color:#6b7280;font-size:.88rem;cursor:pointer;font-family:'Tajawal',sans-serif">إغلاق</button>
+      </div>
+    </div>`;
+    document.body.appendChild(el);
+    el.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{ QuranBrowser.setSleepTimer(+b.dataset.sleep); el.remove(); });
+    el.querySelector('[data-sleep-close]').onclick=()=>el.remove();
+    el.addEventListener('click',e=>{ if(e.target===el) el.remove(); });
   },
 
   async loadSurahs(){
@@ -2280,10 +2402,21 @@ const QuranBrowser = {
     });
     document.getElementById('quran-loop-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
     document.getElementById('quran-ayah-repeat-select')?.addEventListener('change', ()=>QuranBrowser.saveSettings());
-    // Playback controls
-    document.getElementById('btn-quran-play-all')?.addEventListener('click', QuranBrowser.playAll);
+    // Playback controls — play button acts as play/pause toggle
+    document.getElementById('btn-quran-play-all')?.addEventListener('click', ()=>{
+      if (!QuranBrowser.playing || QuranBrowser.paused) {
+        if (QuranBrowser.paused) QuranBrowser.togglePause();
+        else QuranBrowser.playAll();
+      } else {
+        QuranBrowser.togglePause();
+      }
+    });
     document.getElementById('btn-quran-pause')?.addEventListener('click', QuranBrowser.togglePause);
     document.getElementById('btn-quran-stop')?.addEventListener('click', QuranBrowser.stopAll);
+    // Speed control
+    document.getElementById('btn-quran-speed')?.addEventListener('click', ()=>QuranBrowser.cycleSpeed());
+    // Sleep timer
+    document.getElementById('btn-quran-sleep')?.addEventListener('click', ()=>QuranBrowser.openSleepSheet());
     // Khatma
     QuranBrowser.loadKhatmaWidget();
     document.getElementById('btn-quran-khatma-complete')?.addEventListener('click', async()=>{
@@ -2664,16 +2797,18 @@ const QuranBrowser = {
   },
 
   togglePause(){
-    const btn = document.getElementById('btn-quran-pause');
+    const playBtn = document.getElementById('btn-quran-play-all');
+    const pauseIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>';
+    const resumeIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>';
     if (!QuranBrowser.paused){
       QuranBrowser.paused = true;
       if (QuranBrowser.audioEl) QuranBrowser.audioEl.pause();
-      if (btn) btn.textContent = '▶ استمر';
+      if (playBtn) playBtn.innerHTML = resumeIcon;
       const info = document.getElementById('quran-playing-info');
       if (info) info.textContent = '⏸ متوقف مؤقتاً';
     } else {
       QuranBrowser.paused = false;
-      if (btn) btn.textContent = '⏸ إيقاف';
+      if (playBtn) playBtn.innerHTML = pauseIcon;
       if (QuranBrowser.audioEl && QuranBrowser.audioEl.paused) QuranBrowser.audioEl.play().catch(()=>{});
       else QuranBrowser.playNext();
     }
@@ -2708,67 +2843,105 @@ const QuranBrowser = {
     if (playBtn) playBtn.textContent = '▶';
   },
 
-  SHEIKH_EVERYAYAH: {
-    'ar.alafasy':           'Alafasy_128kbps',
-    'ar.abdulbasitmurattal':'Abdul_Basit_Murattal_192kbps',
-    'ar.husary':            'Husary_128kbps',
-    'ar.mahermuaiqly':      'Maher_AlMuaiqly_128kbps',
-    'ar.saudalshuraym':     'Saud_Al-Shuraim_128kbps',
-  },
-
   playAudioSeq(gNum, onEnd){
     // Tear down any existing audio element first
     if (QuranBrowser.audioEl){
       const old = QuranBrowser.audioEl;
-      old.onended = null; old.onerror = null; old.ontimeupdate = null; old.oncanplay = null;
+      old.onended=null; old.onerror=null; old.ontimeupdate=null; old.oncanplay=null;
       old.pause(); old.src='';
       QuranBrowser.audioEl = null;
     }
     document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
     const sheikh = QuranBrowser.sheikh;
     const info = QuranBrowser.ayahMap.get(gNum);
-    document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b._origText=b.textContent; b.textContent='⏳'; b.disabled=true; });
-    const resetBtns = ()=>document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b.textContent=b._origText||'🔊'; b.disabled=false; });
-    const evId = QuranBrowser.SHEIKH_EVERYAYAH[sheikh];
+    const reciter = QuranBrowser.RECITERS[sheikh] || { qc:'Alafasy', ev:'Alafasy_128kbps' };
     const sNum = String(info?.surahNum||1).padStart(3,'0');
-    const aNum = String(info?.ayahNum||gNum).padStart(3,'0');
-    const urls = [];
-    if (evId) urls.push(`https://everyayah.com/data/${evId}/${sNum}${aNum}.mp3`);
+    const aNum = String(info?.ayahNum||1).padStart(3,'0');
+    // URL priority: verses.quran.com → everyayah.com → islamic.network
+    const urls = [`https://verses.quran.com/${reciter.qc}/mp3/${sNum}${aNum}.mp3`];
+    if (reciter.ev) urls.push(`https://everyayah.com/data/${reciter.ev}/${sNum}${aNum}.mp3`);
     urls.push(`https://cdn.islamic.network/quran/audio/128/${sheikh}/${gNum}.mp3`);
     urls.push(`https://cdn.islamic.network/quran/audio/64/${sheikh}/${gNum}.mp3`);
+
+    document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b._origText=b.textContent; b.textContent='⏳'; b.disabled=true; });
+    const resetBtns = ()=>document.querySelectorAll(`.ayah-play-btn[data-play-ayah="${gNum}"]`).forEach(b=>{ b.textContent=b._origText||'▶'; b.disabled=false; });
+
     let urlIdx = 0;
-    let done = false; // guard against double-fire (onerror + play().catch)
+    let done = false;
     const au = new Audio();
     au.preload = 'auto';
+    au.playbackRate = QuranBrowser.speed || 1;
     QuranBrowser.audioEl = au;
+
     const finish = ()=>{
       if (done) return;
       done = true;
       resetBtns();
       document.querySelectorAll('.quran-word.word-playing').forEach(e=>e.classList.remove('word-playing'));
-      if (!QuranBrowser.paused && onEnd) onEnd();
+      const pb = document.getElementById('qpb-progress');
+      if (pb){ pb.value=0; pb.style.opacity='0'; }
+      // 300ms silence gap between ayahs (+ respect pause state)
+      if (!QuranBrowser.paused && onEnd) setTimeout(onEnd, 300);
     };
+
     const tryNext = ()=>{
       urlIdx++;
-      if (urlIdx >= urls.length){ finish(); return; }
+      if (urlIdx >= urls.length){
+        toast('تعذّر تحميل الصوت، تحقق من الاتصال بالإنترنت ⚠️','error',3500);
+        finish(); return;
+      }
       au.src = urls[urlIdx];
       au.load();
-      au.play().catch(()=>{}); // onerror will handle failures
+      au.play().catch(()=>{});
     };
-    au.oncanplay = ()=>resetBtns();
+
+    au.oncanplay = ()=>{
+      resetBtns();
+      const pb = document.getElementById('qpb-progress');
+      if (pb) pb.style.opacity='1';
+      // Preload next ayah while this one plays
+      const nextIdx = QuranBrowser.playIndex + 1;
+      if (nextIdx < QuranBrowser.playQueue.length){
+        const nextGNum = QuranBrowser.playQueue[nextIdx];
+        const nInfo = QuranBrowser.ayahMap.get(nextGNum);
+        if (nInfo){
+          const ns = String(nInfo.surahNum||1).padStart(3,'0');
+          const na = String(nInfo.ayahNum||1).padStart(3,'0');
+          if (!QuranBrowser.preloadAudio) QuranBrowser.preloadAudio = new Audio();
+          QuranBrowser.preloadAudio.src = `https://verses.quran.com/${reciter.qc}/mp3/${ns}${na}.mp3`;
+          QuranBrowser.preloadAudio.preload = 'auto';
+          QuranBrowser.preloadAudio.load();
+        }
+      }
+    };
+
     au.onended = finish;
     au.onerror = ()=>tryNext();
+
     au.ontimeupdate = ()=>{
       if (!au.duration||au.duration<=0) return;
       const prog = au.currentTime/au.duration;
+      // Progress bar
+      const pb = document.getElementById('qpb-progress');
+      if (pb) pb.value = Math.round(prog*100);
+      // Word-by-word highlight
       const words = document.querySelectorAll(`.quran-word[data-global="${gNum}"]`);
       if (!words.length) return;
       const idx = Math.min(Math.floor(prog*words.length), words.length-1);
       words.forEach((w,i)=>w.classList.toggle('word-playing', i===idx));
     };
+
+    // Allow seeking by clicking progress bar
+    const pb = document.getElementById('qpb-progress');
+    if (pb){
+      pb._seekHandler && pb.removeEventListener('input', pb._seekHandler);
+      pb._seekHandler = ()=>{ if (au.duration) au.currentTime = (pb.value/100)*au.duration; };
+      pb.addEventListener('input', pb._seekHandler);
+    }
+
     au.src = urls[0];
     au.load();
-    au.play().catch(()=>{}); // onerror handles failures
+    au.play().catch(()=>{});
   },
 
   playAudio(gNum){

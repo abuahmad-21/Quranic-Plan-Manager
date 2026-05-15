@@ -152,6 +152,13 @@ body{background:var(--bg);color:var(--text-1);font-family:'Tajawal',sans-serif;m
 .msg{padding:10px 14px;border-radius:14px;margin:6px 0;max-width:78%;word-wrap:break-word;font-size:.95rem;line-height:1.5}
 .msg-mine{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;margin-right:auto;margin-left:0;border-bottom-right-radius:4px}
 .msg-other{background:rgba(255,255,255,.06);color:var(--text-1);margin-left:auto;margin-right:0;border-bottom-left-radius:4px}
+/* AI typing animation */
+.ai-typing-dot{display:inline-block;width:7px;height:7px;background:var(--text-2);border-radius:50%;margin:0 2px;animation:ai-bounce .9s infinite}
+.ai-typing-dot:nth-child(2){animation-delay:.2s}
+.ai-typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes ai-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+/* Word highlight during playback */
+.quran-word.word-playing{background:rgba(34,197,94,.25);border-radius:4px;color:#86efac;transition:background .15s}
 .msg-time{font-size:.7rem;color:var(--text-3);margin-top:3px}
 
 /* ADMIN */

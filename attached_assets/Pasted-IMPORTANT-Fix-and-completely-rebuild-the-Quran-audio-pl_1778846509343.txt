@@ -1,0 +1,139 @@
+IMPORTANT: Fix and completely rebuild the Quran audio player.
+There are BUGS and we need to be BETTER than Tarteel app.
+
+=== BUG 1: LAST WORDS CUT OFF ===
+The current audio cuts off the last words of ayahs.
+ROOT CAUSE: everyayah.com MP3 files have silence trimmed 
+too aggressively.
+
+FIX: Switch to Quran.com CDN audio which has proper endings:
+https://verses.quran.com/{reciterSlug}/{surah3}{ayah3}.mp3
+
+Example for Alafasy, Surah 1, Ayah 1:
+https://verses.quran.com/Alafasy/mp3/001001.mp3
+
+Also add 300ms silence at end before playing next ayah:
+audioElement.onended = () => {
+  setTimeout(() => playNextAyah(), 300)
+}
+
+=== BUG 2: GAPS BETWEEN AYAHS ===
+There is silence/gap between ayahs during continuous play.
+
+FIX: Use Audio preloading - while ayah N plays, preload N+1:
+const preloadAudio = new Audio()
+preloadAudio.src = getAudioUrl(nextSurah, nextAyah, reciter)
+preloadAudio.preload = 'auto'
+
+=== BUG 3: AUDIO FAILS SILENTLY ===
+If audio URL fails, nothing happens. User doesn't know.
+
+FIX: Add fallback chain:
+1. Try verses.quran.com first
+2. If fails → try everyayah.com as backup  
+3. If both fail → show error toast in Arabic: 
+   "تعذّر تحميل الصوت، تحقق من الاتصال"
+
+=== NEW FEATURE 1: WORD BY WORD HIGHLIGHT ===
+While audio plays, highlight each WORD (not ayah) in gold.
+
+Use timing data from:
+https://raw.githubusercontent.com/cpfair/quran-align/master/
+quran-align/data/{surah}.json
+
+Format: { surah, ayah, segments: [wordIndex, wordIndex, startMs, endMs] }
+
+Implementation:
+- Split ayah text into individual words (split by space)
+- Wrap each word in <span id="word-{ayahNum}-{wordIndex}">
+- During playback, check currentTime every 50ms
+- Highlight current word: background #C4A882, scale 1.05
+- Remove highlight from previous word
+
+=== NEW FEATURE 2: 15+ RECITERS ===
+Create /client/lib/reciters.ts with this list:
+
+export const RECITERS = [
+  { id: 'Alafasy', nameAr: 'مشاري العفاسي', nameEn: 'Alafasy', 
+    url: 'https://verses.quran.com/Alafasy/mp3/' },
+  { id: 'AbdulSamad', nameAr: 'عبد الباسط عبد الصمد', nameEn: 'Abdul Samad',
+    url: 'https://verses.quran.com/AbdulSamad/mp3/' },
+  { id: 'Husary', nameAr: 'محمود خليل الحصري', nameEn: 'Husary',
+    url: 'https://verses.quran.com/Husary/mp3/' },
+  { id: 'Minshawi', nameAr: 'محمد صديق المنشاوي', nameEn: 'Minshawi',
+    url: 'https://verses.quran.com/Minshawi/mp3/' },
+  { id: 'Sudais', nameAr: 'عبد الرحمن السديس', nameEn: 'Sudais',
+    url: 'https://verses.quran.com/Sudais/mp3/' },
+  { id: 'Shuraim', nameAr: 'سعود الشريم', nameEn: 'Shuraim',
+    url: 'https://verses.quran.com/Shuraim/mp3/' },
+  { id: 'MaherAlMuaiqly', nameAr: 'ماهر المعيقلي', nameEn: 'Maher',
+    url: 'https://verses.quran.com/MaherAlMuaiqly/mp3/' },
+  { id: 'AyubKhakwani', nameAr: 'أيوب خاكواني', nameEn: 'Ayub',
+    url: 'https://verses.quran.com/AyubKhakwani/mp3/' },
+]
+
+=== NEW FEATURE 3: REPEAT MODES ===
+Add repeat controls BETTER than Tarteel:
+
+Create component RepeatControls.tsx:
+- Repeat OFF (default)
+- Repeat THIS AYAH: loops current ayah N times (1,2,3,5,10,∞)
+- Repeat RANGE: from ayah X to ayah Y, repeat N times
+- Repeat SURAH: whole surah on loop
+
+UI: Small icons below audio player
+🔁 (off) → 🔂 (one) → 🔁1 🔁2 🔁3 (count)
+
+=== NEW FEATURE 4: SLEEP TIMER ===
+Feature Tarteel doesn't have:
+- Timer: 15min, 30min, 1hr, end of surah, end of juz
+- Shows countdown in audio bar: "ينتهي بعد ٤٥ دقيقة"
+- Fades out audio slowly before stopping (3 second fade)
+
+=== NEW FEATURE 5: SPEED CONTROL ===
+Playback speed: 0.5x, 0.75x, 1x, 1.25x, 1.5x
+audioElement.playbackRate = speed
+Show speed button in audio bar: "1x"
+
+=== AUDIO PLAYER UI ===
+Completely rebuild /client/components/AudioPlayer.tsx:
+
+Bottom bar layout:
+┌─────────────────────────────────────────┐
+│ [القارئ ▾] [━━━●━━━━━] [◀ ▶ ▶▶] [🔁] [⏱] [1x] │
+└─────────────────────────────────────────┘
+
+- Progress bar: shows position within ayah
+- Tap progress bar to seek within ayah
+- Previous ayah ◀ / Play-Pause ▶ / Next ayah ▶▶
+- Currently playing ayah highlighted in gold on screen
+- Smooth scroll to keep playing ayah visible
+
+=== AUDIO STATE MANAGEMENT ===
+Create /client/lib/audioStore.ts using Zustand (free):
+npm install zustand
+
+Store:
+{
+  currentSurah: number
+  currentAyah: number  
+  isPlaying: boolean
+  reciter: Reciter
+  speed: number
+  repeatMode: 'off' | 'one' | 'range' | 'surah'
+  repeatCount: number
+  sleepTimer: number | null
+  playAyah: (surah, ayah) => void
+  pause: () => void
+  resume: () => void
+  next: () => void
+  previous: () => void
+}
+
+=== MAKE SURE ===
+- All UI text in Arabic (RTL)
+- No audio starts without user interaction (browser policy)
+- Works on mobile Safari and Chrome
+- No console errors
+- Test: play Surah Fatiha all 7 ayahs continuously - 
+  last words must NOT be cut off
