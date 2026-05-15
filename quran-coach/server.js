@@ -1940,3 +1940,146 @@ R('DELETE','/qqc/khatma', async(req,res)=>{
   persist();
   send(res,200,{ok:true});
 });
+
+/* ════════════════════════════════════════════════════════════════
+   AUDIO CONFIG — يرجع إعدادات مصادر الصوت للفرونت إند والذكاء الاصطناعي
+════════════════════════════════════════════════════════════════ */
+let AUDIO_CONFIG = null;
+try {
+  AUDIO_CONFIG = JSON.parse(fs.readFileSync(path.join(ROOT,'..','config','audio_sources.json')));
+} catch(e) { AUDIO_CONFIG = {}; }
+
+R('GET','/qqc/config/audio', async(req,res)=>{
+  send(res,200,{ config: AUDIO_CONFIG });
+});
+
+/* ════════════════════════════════════════════════════════════════
+   ERROR & RECITATION LOGGING SYSTEM
+   يسجّل: أخطاء الموقع | أخطاء الذكاء الاصطناعي | أخطاء التسميع
+   الملفات: logs/errors.jsonl | logs/ai_errors.jsonl | logs/recitation_errors.jsonl | logs/ai_training_data.jsonl
+════════════════════════════════════════════════════════════════ */
+const LOGS_DIR = path.join(ROOT, '..', 'logs');
+
+function appendLog(filename, record){
+  try {
+    const line = JSON.stringify({ ...record, logged_at: now() }) + '\n';
+    fs.appendFileSync(path.join(LOGS_DIR, filename), line, 'utf8');
+  } catch(e){ console.error('Log write error:', e.message); }
+}
+
+function readLogFile(filename, limit=500){
+  try {
+    const fp = path.join(LOGS_DIR, filename);
+    if (!fs.existsSync(fp)) return [];
+    const lines = fs.readFileSync(fp,'utf8').trim().split('\n').filter(Boolean);
+    return lines.slice(-limit).map(l=>{ try{ return JSON.parse(l); }catch{ return null; } }).filter(Boolean);
+  } catch(e){ return []; }
+}
+
+function clearLogFile(filename){
+  try { fs.writeFileSync(path.join(LOGS_DIR, filename), '', 'utf8'); } catch(e){}
+}
+
+/* ── تسجيل خطأ الموقع أو الذكاء الاصطناعي ── */
+R('POST','/qqc/logs/error', async(req,res)=>{
+  const b = await readBody(req);
+  const type    = String(b.type||'website'); // website | ai | system
+  const message = String(b.message||'').slice(0,2000);
+  const context = b.context || {};
+  const username = (() => { try { const u=authUser(req); return u?.username||'anonymous'; } catch{ return 'anonymous'; } })();
+  const record = { type, message, context, username, url: String(b.url||'').slice(0,500), user_agent: req.headers['user-agent']?.slice(0,200)||'' };
+  if (type === 'ai') {
+    appendLog('ai_errors.jsonl', record);
+  } else {
+    appendLog('errors.jsonl', record);
+  }
+  send(res,200,{ok:true});
+});
+
+/* ── تسجيل خطأ التسميع (أهم شيء) ── */
+R('POST','/qqc/logs/recitation', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const record = {
+    username: u.username,
+    surah_name:   String(b.surah_name||'').slice(0,100),
+    surah_number: +b.surah_number||0,
+    ayah_number:  +b.ayah_number||0,
+    from_ayah:    +b.from_ayah||0,
+    to_ayah:      +b.to_ayah||0,
+    error_type:   String(b.error_type||'recitation').slice(0,50), // recitation|tajweed|memorization|skip
+    wrong_words:  Array.isArray(b.wrong_words) ? b.wrong_words.slice(0,50) : [],
+    expected_text: String(b.expected_text||'').slice(0,2000),
+    actual_text:   String(b.actual_text||'').slice(0,2000),
+    accuracy_pct:  +b.accuracy_pct||0,
+    ai_feedback:   String(b.ai_feedback||'').slice(0,1000),
+    method:        String(b.method||'speech_recognition').slice(0,50), // speech_recognition | whisper | manual
+    session_id:    String(b.session_id||uid()).slice(0,32),
+  };
+  appendLog('recitation_errors.jsonl', record);
+
+  // حفظ كبيانات تدريب للذكاء الاصطناعي إذا كان فيه نص متوقع ونص فعلي
+  if (record.expected_text && record.actual_text) {
+    appendLog('ai_training_data.jsonl', {
+      type: 'recitation_correction',
+      input: record.actual_text,
+      expected_output: record.expected_text,
+      metadata: {
+        surah: record.surah_name,
+        ayah: record.ayah_number,
+        accuracy_pct: record.accuracy_pct,
+        wrong_words: record.wrong_words,
+        username: u.username,
+      }
+    });
+    // أيضاً احفظ في DB للإحصائيات
+    if (!DB.admin.tarteel_training) DB.admin.tarteel_training = [];
+    DB.admin.tarteel_training.push({
+      id: uid(), username: u.username,
+      transcript: record.actual_text,
+      expected_text: record.expected_text.slice(0,1000),
+      surah_name: record.surah_name,
+      from_ayah: record.from_ayah, to_ayah: record.to_ayah,
+      accuracy_pct: record.accuracy_pct,
+      wrong_words: record.wrong_words,
+      created_at: now()
+    });
+    if (DB.admin.tarteel_training.length > 20000) DB.admin.tarteel_training = DB.admin.tarteel_training.slice(-20000);
+    persist();
+  }
+  send(res,200,{ok:true});
+});
+
+/* ── Admin: عرض السجلات ── */
+R('GET','/qqc/admin/logs/:type', async(req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const allowed = ['errors','ai_errors','recitation_errors','ai_training_data'];
+  const type = p.type.replace(/[^a-z_]/g,'');
+  if (!allowed.includes(type)) return send(res,400,{error:'invalid_type'});
+  const records = readLogFile(`${type}.jsonl`, 1000);
+  send(res,200,{ type, count: records.length, records });
+});
+
+/* ── Admin: مسح سجل معين ── */
+R('DELETE','/qqc/admin/logs/:type', async(req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const allowed = ['errors','ai_errors','recitation_errors','ai_training_data'];
+  const type = p.type.replace(/[^a-z_]/g,'');
+  if (!allowed.includes(type)) return send(res,400,{error:'invalid_type'});
+  clearLogFile(`${type}.jsonl`);
+  send(res,200,{ok:true});
+});
+
+/* ── Admin: إحصائيات السجلات ── */
+R('GET','/qqc/admin/logs-stats', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const stats = {};
+  for (const type of ['errors','ai_errors','recitation_errors','ai_training_data']) {
+    const fp = path.join(LOGS_DIR, `${type}.jsonl`);
+    try {
+      const content = fs.existsSync(fp) ? fs.readFileSync(fp,'utf8') : '';
+      stats[type] = { lines: content.trim().split('\n').filter(Boolean).length, size_kb: Math.round(Buffer.byteLength(content)/1024) };
+    } catch{ stats[type] = { lines:0, size_kb:0 }; }
+  }
+  send(res,200,{ stats });
+});

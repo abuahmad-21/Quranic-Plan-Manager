@@ -728,44 +728,38 @@
 
   <!-- QURAN BROWSER -->
   <section id="view-quran" class="view quran-clean-view">
-    <!-- Sticky control bar -->
-    <div id="quran-ctrl-bar">
-      <div class="quran-toprow">
-        <button class="btn btn-ghost btn-xs" data-go="view-dashboard">⟵</button>
-        <span class="quran-title-lbl">📖 القرآن الكريم</span>
-        <button class="btn btn-ghost btn-xs" id="btn-quran-prev-surah" title="السورة السابقة">◀</button>
-        <select id="quran-surah-select" class="field-input quran-surah-sel">
-          <option value="">اختر سورة...</option>
-        </select>
-        <button class="btn btn-ghost btn-xs" id="btn-quran-next-surah" title="السورة التالية">▶</button>
-        <button class="btn btn-primary btn-xs" id="btn-quran-play-all" disabled>▶</button>
-        <button class="btn btn-ghost btn-xs" id="btn-quran-pause" disabled>⏸</button>
-        <button class="btn btn-ghost btn-xs" id="btn-quran-stop" disabled>⏹</button>
-        <button class="btn btn-ghost btn-xs" id="btn-quran-settings-toggle" title="إعدادات">⚙️</button>
-        <button class="btn btn-ghost btn-xs" data-go="view-khatma" title="ختمتي" style="color:#a5b4fc">📿</button>
-      </div>
-      <!-- Collapsible settings panel -->
-      <div id="quran-settings-panel" style="display:none">
-        <div class="quran-settings-inner">
-          <select id="quran-sheikh-select" class="field-input">
-            <option value="ar.alafasy">مشاري العفاسي</option>
-            <option value="ar.abdulbasitmurattal">عبد الباسط (مرتل)</option>
-            <option value="ar.husary">الحصري</option>
-            <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
-            <option value="ar.saudalshuraym">سعود الشريم</option>
-          </select>
-          <select id="quran-loop-select" class="field-input" style="width:90px">
-            <option value="1">×1</option><option value="2">×2</option>
-            <option value="3">×3</option><option value="5">×5</option>
-            <option value="0">∞</option>
-          </select>
-          <select id="quran-ayah-repeat-select" class="field-input" style="width:90px">
-            <option value="1">آية ×1</option><option value="2">×2</option>
-            <option value="3">×3</option><option value="5">×5</option>
-          </select>
-          <button class="btn btn-secondary btn-xs" id="btn-load-surah">تطبيق</button>
+
+    <!-- ═══ TOP BAR (Ayah-style) ═══ -->
+    <div id="quran-topbar">
+      <div class="qtb-row">
+        <button class="qtb-btn" data-go="view-dashboard" title="رجوع">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="qtb-center">
+          <span id="qtb-surah-name" class="qtb-surah">القرآن الكريم</span>
+          <span id="qtb-ayah-ref" class="qtb-ayah-ref"></span>
         </div>
-        <div class="quran-quick-btns">
+        <div class="qtb-actions">
+          <button class="qtb-btn" id="btn-quran-search-toggle" title="بحث">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </button>
+          <button class="qtb-btn" id="btn-quran-menu-toggle" title="قائمة">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar (hidden by default) -->
+      <div id="quran-search-bar" style="display:none;padding:6px 12px 8px">
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="quran-surah-select" class="field-input" style="flex:1;font-size:.85rem">
+            <option value="">اختر سورة...</option>
+          </select>
+          <button class="btn btn-ghost btn-xs" id="btn-quran-prev-surah">◀</button>
+          <button class="btn btn-ghost btn-xs" id="btn-quran-next-surah">▶</button>
+          <button class="btn btn-secondary btn-xs" id="btn-load-surah">تحميل</button>
+        </div>
+        <div class="quran-quick-btns" style="margin-top:6px">
           <button class="btn btn-xs btn-ghost" data-qs="1">الفاتحة</button>
           <button class="btn btn-xs btn-ghost" data-qs="2">البقرة</button>
           <button class="btn btn-xs btn-ghost" data-qs="18">الكهف</button>
@@ -777,8 +771,87 @@
           <button class="btn btn-xs btn-ghost" data-qs="113">الفلق</button>
           <button class="btn btn-xs btn-ghost" data-qs="114">الناس</button>
         </div>
-        <!-- Khatma mini-widget -->
-        <div id="quran-khatma-bar" style="display:none">
+      </div>
+    </div>
+
+    <!-- Main Quran Display -->
+    <div id="quran-display"></div>
+
+    <!-- ═══ BOTTOM PLAYER BAR ═══ -->
+    <div id="quran-player-bar">
+      <div class="qpb-sheikh-row">
+        <div id="quran-playing-info" class="qpb-now-playing"></div>
+        <div class="qpb-sheikh-name" id="qpb-sheikh-label">مشاري العفاسي</div>
+      </div>
+      <div class="qpb-controls">
+        <button class="qpb-btn" id="btn-quran-stop" disabled title="إيقاف">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        </button>
+        <button class="qpb-btn" id="btn-quran-prev-play" title="السابقة">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><line x1="5" y1="4" x2="5" y2="20" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="qpb-btn qpb-play" id="btn-quran-play-all" disabled title="تشغيل">
+          <svg id="qpb-play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <button class="qpb-btn" id="btn-quran-pause" disabled title="إيقاف مؤقت" style="display:none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        </button>
+        <button class="qpb-btn" id="btn-quran-next-play" title="التالية">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><line x1="19" y1="4" x2="19" y2="20" stroke="currentColor" stroke-width="2"/></svg>
+        </button>
+        <button class="qpb-btn qpb-repeat" id="btn-quran-repeat" title="تكرار">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <button class="qpb-btn" id="btn-quran-settings-toggle" title="إعدادات التشغيل">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS SHEET (playback settings) ═══ -->
+    <div id="quran-settings-sheet" class="qsheet-overlay" style="display:none">
+      <div class="qsheet-backdrop" id="qsheet-backdrop"></div>
+      <div class="qsheet">
+        <div class="qsheet-handle"></div>
+        <div class="qsheet-title">إعدادات التلاوة</div>
+        <div class="qsheet-section">
+          <div class="qsheet-label">القارئ</div>
+          <select id="quran-sheikh-select" class="field-input">
+            <option value="ar.alafasy">مشاري العفاسي</option>
+            <option value="ar.abdulbasitmurattal">عبد الباسط (مرتل)</option>
+            <option value="ar.husary">محمود خليل الحصري</option>
+            <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
+            <option value="ar.saudalshuraym">سعود الشريم</option>
+            <option value="ar.minshawi">محمد صديق المنشاوي</option>
+          </select>
+        </div>
+        <div class="qsheet-section">
+          <div class="qsheet-label">تكرار السورة / الصفحة</div>
+          <div class="qsheet-options">
+            <button class="qsheet-opt" data-loop="1">×١</button>
+            <button class="qsheet-opt" data-loop="2">×٢</button>
+            <button class="qsheet-opt" data-loop="3">×٣</button>
+            <button class="qsheet-opt" data-loop="5">×٥</button>
+            <button class="qsheet-opt" data-loop="0">∞</button>
+          </div>
+          <select id="quran-loop-select" class="field-input" style="display:none">
+            <option value="1">×1</option><option value="2">×2</option>
+            <option value="3">×3</option><option value="5">×5</option><option value="0">∞</option>
+          </select>
+        </div>
+        <div class="qsheet-section">
+          <div class="qsheet-label">تكرار الآية</div>
+          <div class="qsheet-options">
+            <button class="qsheet-opt" data-ayah-repeat="1">×١</button>
+            <button class="qsheet-opt" data-ayah-repeat="2">×٢</button>
+            <button class="qsheet-opt" data-ayah-repeat="3">×٣</button>
+            <button class="qsheet-opt" data-ayah-repeat="5">×٥</button>
+          </div>
+          <select id="quran-ayah-repeat-select" class="field-input" style="display:none">
+            <option value="1">×1</option><option value="2">×2</option><option value="3">×3</option><option value="5">×5</option>
+          </select>
+        </div>
+        <div id="quran-khatma-bar" style="display:none;margin-top:10px">
           <div class="quran-khatma-row">
             <div>
               <div style="font-size:.75rem;font-weight:700;color:#a5b4fc">📿 وردك اليوم</div>
@@ -788,17 +861,113 @@
           </div>
         </div>
       </div>
-      <div id="quran-playing-info" style="font-size:.72rem;color:var(--gold);text-align:center;padding:3px 0;min-height:14px"></div>
     </div>
 
-    <!-- Main text display (vertical, full-width) -->
-    <div id="quran-display"></div>
+    <!-- ═══ AYAH ACTION SHEET (like Ayah app) ═══ -->
+    <div id="quran-ayah-sheet" class="qsheet-overlay" style="display:none">
+      <div class="qsheet-backdrop" id="qayah-backdrop"></div>
+      <div class="qsheet qayah-sheet">
+        <div class="qsheet-handle"></div>
+        <!-- Header: Surah:Ayah + Edit -->
+        <div class="qayah-header">
+          <button class="qayah-close-btn" id="btn-ayah-sheet-close">✕</button>
+          <span id="qayah-header-ref" class="qayah-header-ref">البقرة: ١</span>
+          <button class="qayah-edit-btn">تعديل</button>
+        </div>
+
+        <!-- الفواصل -->
+        <div class="qayah-section-title">الفواصل</div>
+        <div class="qayah-row-2">
+          <button class="qayah-action-btn" id="btn-ayah-stopmarks-all">
+            <span class="qayah-icon">≡</span> الكل
+          </button>
+          <button class="qayah-action-btn" id="btn-ayah-stopmarks-red">
+            <span class="qayah-icon" style="color:#dc2626">🔖</span> الأحمر
+          </button>
+        </div>
+
+        <!-- التلاوة -->
+        <div class="qayah-section-title">التلاوة</div>
+        <div class="qayah-row-2">
+          <button class="qayah-action-btn qayah-primary" id="btn-ayah-play">
+            <span class="qayah-icon">▶</span> تشغيل
+          </button>
+          <button class="qayah-action-btn qayah-primary-outline" id="btn-ayah-play-to">
+            <span class="qayah-icon">▶</span> تشغيل إلى <span style="font-size:.7rem;opacity:.7">›</span>
+          </button>
+        </div>
+
+        <!-- التمييز -->
+        <div class="qayah-section-title">التمييز</div>
+        <div class="qayah-highlights">
+          <button class="qayah-hl-btn hl-locked" title="مميز بنفسجي" style="background:#7c3aed"></button>
+          <button class="qayah-hl-btn hl-locked" title="مميز أزرق" style="background:#2563eb"></button>
+          <button class="qayah-hl-btn hl-locked" title="مميز أخضر" style="background:#16a34a"></button>
+          <button class="qayah-hl-btn hl-locked" title="مميز ذهبي" style="background:#d97706"></button>
+          <button class="qayah-hl-btn hl-active" id="btn-ayah-hl-active" title="تمييز برتقالي" style="background:#ea580c"></button>
+          <button class="qayah-hl-btn" id="btn-ayah-hl-clear" title="مسح التمييز" style="background:transparent;border:2px solid rgba(255,255,255,.3)">✕</button>
+        </div>
+
+        <!-- المشاركة -->
+        <div class="qayah-section-title">المشاركة</div>
+        <div class="qayah-row-3">
+          <button class="qayah-action-btn" id="btn-ayah-share">
+            <span class="qayah-icon">↑</span> مشاركة
+          </button>
+          <button class="qayah-action-btn" id="btn-ayah-download">
+            <span class="qayah-icon">⬇</span> تحميل
+          </button>
+          <button class="qayah-action-btn" id="btn-ayah-copy">
+            <span class="qayah-icon">⎘</span> نسخ
+          </button>
+        </div>
+
+        <!-- التدريب -->
+        <div class="qayah-section-title">التسميع الذكي</div>
+        <div class="qayah-row-2">
+          <button class="qayah-action-btn qayah-green" id="btn-ayah-practice">
+            <span class="qayah-icon">🎙️</span> تسميع
+          </button>
+          <button class="qayah-action-btn" id="btn-ayah-studio">
+            <span class="qayah-icon">🎯</span> مركز التلاوة
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PLAY-TO SHEET ═══ -->
+    <div id="quran-playto-sheet" class="qsheet-overlay" style="display:none">
+      <div class="qsheet-backdrop" id="qplayto-backdrop"></div>
+      <div class="qsheet">
+        <div class="qsheet-handle"></div>
+        <div class="qsheet-title">تشغيل إلى</div>
+        <!-- Stop marks -->
+        <div class="playto-options">
+          <div class="playto-opt" id="playto-page-end">
+            <span>نهاية الصفحة</span><span class="playto-tag" id="playto-page-tag">١</span>
+          </div>
+          <div class="playto-opt" id="playto-surah-end">
+            <span>نهاية السورة</span><span class="playto-tag" id="playto-surah-tag">البقرة</span>
+          </div>
+          <div class="playto-opt" id="playto-continuous">
+            <span>تشغيل مستمر</span><span class="playto-tag">∞</span>
+          </div>
+        </div>
+        <!-- Tab: آية / صفحة / سورة -->
+        <div class="playto-tabs">
+          <button class="playto-tab playto-tab-active" data-ptab="ayah">آية</button>
+          <button class="playto-tab" data-ptab="page">صفحة</button>
+          <button class="playto-tab" data-ptab="surah">سورة</button>
+        </div>
+        <div id="playto-list"></div>
+      </div>
+    </div>
 
     <!-- Inline practice panel (sticky bottom) -->
-    <div id="quran-practice-panel" class="glass-card" style="display:none;position:sticky;bottom:76px;z-index:200;margin:0 8px;border:1px solid rgba(52,211,153,.4)">
+    <div id="quran-practice-panel" class="glass-card" style="display:none;position:fixed;bottom:80px;left:8px;right:8px;z-index:300;border:1px solid rgba(52,211,153,.4)">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
         <div>
-          <div style="font-size:.72rem;color:#34d399;font-weight:700">🎯 تدريب مباشر</div>
+          <div style="font-size:.72rem;color:#34d399;font-weight:700">🎙️ التسميع الذكي</div>
           <div id="qp-info" style="font-size:.74rem;color:var(--text-3);margin-top:2px"></div>
         </div>
         <div style="display:flex;gap:5px">

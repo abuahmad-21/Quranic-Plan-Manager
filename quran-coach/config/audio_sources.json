@@ -1,0 +1,94 @@
+{
+  "_comment": "إعدادات مصادر الصوت — يستخدمها الذكاء الاصطناعي والسيرفر",
+  "primary_source": "everyayah",
+  "fallback_sources": ["islamic_network_128", "islamic_network_64"],
+  "sources": {
+    "everyayah": {
+      "base_url": "https://everyayah.com/data",
+      "url_pattern": "{base_url}/{sheikh_folder}/{surah_padded}{ayah_padded}.mp3",
+      "api_key": null,
+      "requires_key": false,
+      "note": "مصدر مجاني — لا يحتاج مفتاح API"
+    },
+    "islamic_network_128": {
+      "base_url": "https://cdn.islamic.network/quran/audio/128",
+      "url_pattern": "{base_url}/{sheikh_id}/{global_ayah_number}.mp3",
+      "api_key": null,
+      "requires_key": false,
+      "note": "جودة 128kbps — مصدر احتياطي أول"
+    },
+    "islamic_network_64": {
+      "base_url": "https://cdn.islamic.network/quran/audio/64",
+      "url_pattern": "{base_url}/{sheikh_id}/{global_ayah_number}.mp3",
+      "api_key": null,
+      "requires_key": false,
+      "note": "جودة 64kbps — مصدر احتياطي ثانٍ"
+    },
+    "alquran_cloud_api": {
+      "base_url": "https://api.alquran.cloud/v1",
+      "endpoints": {
+        "surah": "/surah/{number}/{edition}",
+        "ayah": "/ayah/{reference}/{edition}",
+        "page": "/page/{number}/{edition}"
+      },
+      "api_key": null,
+      "requires_key": false,
+      "note": "API بيانات القرآن — مجاني بدون مفتاح"
+    }
+  },
+  "sheikhs": {
+    "ar.alafasy": {
+      "name_ar": "مشاري العفاسي",
+      "name_en": "Mishary Alafasy",
+      "everyayah_folder": "Alafasy_128kbps",
+      "islamic_network_id": "ar.alafasy",
+      "quality": "128kbps"
+    },
+    "ar.abdulbasitmurattal": {
+      "name_ar": "عبد الباسط (مرتل)",
+      "name_en": "Abdul Basit Murattal",
+      "everyayah_folder": "Abdul_Basit_Murattal_192kbps",
+      "islamic_network_id": "ar.abdulbasitmurattal",
+      "quality": "192kbps"
+    },
+    "ar.husary": {
+      "name_ar": "الحصري",
+      "name_en": "Mahmoud Khalil Al-Husary",
+      "everyayah_folder": "Husary_128kbps",
+      "islamic_network_id": "ar.husary",
+      "quality": "128kbps"
+    },
+    "ar.mahermuaiqly": {
+      "name_ar": "ماهر المعيقلي",
+      "name_en": "Maher Al-Muaiqly",
+      "everyayah_folder": "Maher_AlMuaiqly_128kbps",
+      "islamic_network_id": "ar.mahermuaiqly",
+      "quality": "128kbps"
+    },
+    "ar.saudalshuraym": {
+      "name_ar": "سعود الشريم",
+      "name_en": "Saud Al-Shuraim",
+      "everyayah_folder": "Saud_Al-Shuraim_128kbps",
+      "islamic_network_id": "ar.saudalshuraym",
+      "quality": "128kbps"
+    },
+    "ar.minshawi": {
+      "name_ar": "محمد صديق المنشاوي",
+      "name_en": "Mohamed Siddiq Al-Minshawi",
+      "everyayah_folder": "Minshawy_Murattal_128kbps",
+      "islamic_network_id": "ar.minshawi",
+      "quality": "128kbps"
+    }
+  },
+  "ai_training": {
+    "whisper_model": "whisper-1",
+    "whisper_language": "ar",
+    "evaluation_model": "gpt-4o-mini",
+    "training_data_path": "./logs/ai_training_data.jsonl",
+    "recitation_errors_path": "./logs/recitation_errors.jsonl",
+    "max_training_records": 50000,
+    "note": "بيانات التدريب للذكاء الاصطناعي — يُحدَّث تلقائياً عند كل تلاوة"
+  },
+  "last_updated": "2025-05-15",
+  "version": "2.0"
+}
