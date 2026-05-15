@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 37,
+      "total_users": 38,
       "total_sessions_today": 43,
       "total_pages_memorized_alltime": 8.05
     },
@@ -4346,6 +4346,95 @@
         "total_pages_read": 10,
         "completions": 0
       }
+    },
+    "fbgnfhg": {
+      "username": "fbgnfhg",
+      "password_hash": "cc6eb841cbc92bf31e9d265a274ceeb0fdee4be48338417856802972af83e93a",
+      "display_name": "Ayman Abujaish",
+      "created_at": "2026-05-15T17:23:04.809Z",
+      "last_active": "2026-05-15T17:24:37.934Z",
+      "avatar_color": "#0c533a",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-15T17:23:06.466Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-15T17:23:06.466Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 10,
+        "afi": 0,
+        "history": [
+          75,
+          93,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -4550,6 +4639,11 @@
       "username": "ksjdj",
       "expires": 1781437495316,
       "created_at": "2026-05-15T11:44:55.316Z"
+    },
+    "40bdddd58b9e852682ff0f28b5ac25765a42961de2622168": {
+      "username": "fbgnfhg",
+      "expires": 1781457784809,
+      "created_at": "2026-05-15T17:23:04.809Z"
     }
   }
 }
