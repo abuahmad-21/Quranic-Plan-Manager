@@ -37,7 +37,7 @@
       }
     ],
     "stats": {
-      "total_users": 38,
+      "total_users": 39,
       "total_sessions_today": 44,
       "total_pages_memorized_alltime": 8.2
     },
@@ -1934,7 +1934,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.179Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -1965,7 +1974,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "dbec39fae0f7b01f",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": []
     },
     "gffg": {
@@ -2679,7 +2697,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.180Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -2710,7 +2737,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "b71868e73e7469fd",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": []
     },
     "testflow2": {
@@ -2793,7 +2829,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.180Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -2824,7 +2869,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "90bd5eebb7ecd2a3",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": [],
       "login_history": [
         {
@@ -2946,7 +3000,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.180Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -2977,7 +3040,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "5d8c09d8a964629c",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": [],
       "login_history": [
         {
@@ -3016,7 +3088,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.180Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -3047,7 +3128,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "371f04f102c55955",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": [],
       "login_history": [
         {
@@ -3070,7 +3160,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.25,
+          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
+          "at": "2026-05-15T19:32:42.180Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -3101,7 +3200,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "27dce5f3ddb2dd12",
+          "type": "motivation",
+          "text": "مرحبًا! لقد تم تحديث خطتك التدريبية. لنبدأ تدريجياً مع 0.25 صفحة يومياً.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:32:42.180Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -4352,7 +4460,7 @@
       "password_hash": "cc6eb841cbc92bf31e9d265a274ceeb0fdee4be48338417856802972af83e93a",
       "display_name": "Ayman Abujaish",
       "created_at": "2026-05-15T17:23:04.809Z",
-      "last_active": "2026-05-15T19:25:56.522Z",
+      "last_active": "2026-05-15T19:33:06.187Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -4408,7 +4516,7 @@
       "energy": {
         "score": 100,
         "friction": 0,
-        "afi": 48,
+        "afi": 83,
         "history": [
           100,
           100,
@@ -4469,6 +4577,98 @@
           "created_at": "2026-05-15T17:34:40.062Z"
         }
       ]
+    },
+    "pldfopll": {
+      "username": "pldfopll",
+      "password_hash": "88d3a9976302b7bd6de6368f3c592bb88b155655d4d36bbadf63d6c719cad97e",
+      "display_name": "يسر",
+      "created_at": "2026-05-15T19:27:15.537Z",
+      "last_active": "2026-05-15T19:32:17.627Z",
+      "avatar_color": "#0d8890",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-15T19:27:18.007Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-15T19:27:18.007Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -4678,6 +4878,11 @@
       "username": "fbgnfhg",
       "expires": 1781457784809,
       "created_at": "2026-05-15T17:23:04.809Z"
+    },
+    "70453ac4178890a68033e32b8d1590968b7d9edc96f7005a": {
+      "username": "pldfopll",
+      "expires": 1781465235537,
+      "created_at": "2026-05-15T19:27:15.537Z"
     }
   }
 }
