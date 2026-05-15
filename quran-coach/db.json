@@ -38,8 +38,8 @@
     ],
     "stats": {
       "total_users": 37,
-      "total_sessions_today": 38,
-      "total_pages_memorized_alltime": 6.88
+      "total_sessions_today": 43,
+      "total_pages_memorized_alltime": 8.05
     },
     "sheikh_requests": {
       "455": {
@@ -3966,7 +3966,7 @@
       "password_hash": "cdea33c86bcba9110f05dc3cc2cf950ef171d32401ec79d407ee2aa70ec71927",
       "display_name": "بتبتتيت",
       "created_at": "2026-05-15T11:43:56.415Z",
-      "last_active": "2026-05-15T11:53:31.621Z",
+      "last_active": "2026-05-15T16:52:05.721Z",
       "avatar_color": "#0bb88f",
       "bio": "",
       "is_banned": false,
@@ -4013,11 +4013,14 @@
       "energy": {
         "score": 100,
         "friction": 0,
-        "afi": 78,
+        "afi": 71,
         "history": [
           75,
           85,
           96,
+          100,
+          100,
+          100,
           100,
           100,
           100
@@ -4054,7 +4057,7 @@
       "password_hash": "a4ef798ca3e83d4bf52752ff9418ada303974d956c6052782d47db0773198814",
       "display_name": "Hdhdhdh",
       "created_at": "2026-05-15T11:44:55.316Z",
-      "last_active": "2026-05-15T11:52:34.610Z",
+      "last_active": "2026-05-15T12:24:20.109Z",
       "avatar_color": "#0cede5",
       "bio": "",
       "is_banned": false,
@@ -4074,7 +4077,7 @@
         "start_date": "2026-05-15T11:44:57.140Z",
         "current_daily_pages": 0.1,
         "phase": "absence_soft_reset",
-        "phase_start_date": "2026-05-15T11:51:29.899Z",
+        "phase_start_date": "2026-05-15T12:23:17.816Z",
         "phase_days_elapsed": 0,
         "manual_override": false,
         "override_target": null,
@@ -4083,8 +4086,8 @@
         ]
       },
       "progress": {
-        "total_pages_memorized": 1.74,
-        "total_sessions_completed": 14,
+        "total_pages_memorized": 2.98,
+        "total_sessions_completed": 19,
         "current_streak_days": 1,
         "longest_streak_days": 1,
         "last_session_date": "2026-05-15",
@@ -4206,6 +4209,46 @@
           "duration_minutes": 1,
           "technique_used": null,
           "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T12:21:53.888Z",
+          "pages_done": 0.175,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 1
+        },
+        {
+          "date": "2026-05-15T12:22:58.286Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T12:23:02.036Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T12:23:05.493Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T12:23:17.816Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 2,
+          "technique_used": null,
+          "mood_score": 7
         }
       ],
       "review_system": {
@@ -4213,8 +4256,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 6.42,
-        "afi": 68,
+        "friction": 4.77,
+        "afi": 76,
         "history": [
           100,
           100,
@@ -4230,10 +4273,10 @@
       },
       "sr_state": {
         "1": {
-          "ef": 1.76,
-          "interval": 82,
-          "reps": 7,
-          "next_review": "2026-08-05T11:51:29.899Z"
+          "ef": 1.7,
+          "interval": 14,
+          "reps": 4,
+          "next_review": "2026-05-29T12:23:17.816Z"
         }
       },
       "ml_state": {
@@ -4273,8 +4316,36 @@
           "mode": "memorize",
           "transcript": "‏بسم الله الرحمن الرحيم ‏الرحيم ‏الرحيم ‏بسم الله الرحمن الرحيم ‏كم",
           "created_at": "2026-05-15T11:48:39.219Z"
+        },
+        {
+          "surah_name": "سُورَةُ ٱلْفَاتِحَةِ",
+          "from_ayah": 1,
+          "to_ayah": 7,
+          "word_count": 31,
+          "correct_words": 3,
+          "error_words": 0,
+          "score": 10,
+          "duration_minutes": 1,
+          "mode": "memorize",
+          "transcript": "‏بسم الله الرحمن الرحيم ‏الرحيم",
+          "created_at": "2026-05-15T12:21:53.690Z"
         }
-      ]
+      ],
+      "khatma": {
+        "id": "bce6a18d64ac4411",
+        "created_at": "2026-05-15T12:22:21.848Z",
+        "start_date": "2026-05-15",
+        "target_days": 60,
+        "pages_per_day": 10.066666666666666,
+        "daily_log": {
+          "2026-05-15": {
+            "completed": true,
+            "at": "2026-05-15T12:22:24.418Z"
+          }
+        },
+        "total_pages_read": 10,
+        "completions": 0
+      }
     }
   },
   "chats": {},
