@@ -38,8 +38,8 @@
     ],
     "stats": {
       "total_users": 38,
-      "total_sessions_today": 43,
-      "total_pages_memorized_alltime": 8.05
+      "total_sessions_today": 44,
+      "total_pages_memorized_alltime": 8.2
     },
     "sheikh_requests": {
       "455": {
@@ -4352,7 +4352,7 @@
       "password_hash": "cc6eb841cbc92bf31e9d265a274ceeb0fdee4be48338417856802972af83e93a",
       "display_name": "Ayman Abujaish",
       "created_at": "2026-05-15T17:23:04.809Z",
-      "last_active": "2026-05-15T17:28:47.746Z",
+      "last_active": "2026-05-15T17:40:02.446Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -4381,39 +4381,55 @@
         ]
       },
       "progress": {
-        "total_pages_memorized": 0,
-        "total_sessions_completed": 0,
-        "current_streak_days": 0,
-        "longest_streak_days": 0,
-        "last_session_date": null,
+        "total_pages_memorized": 0.25,
+        "total_sessions_completed": 1,
+        "current_streak_days": 1,
+        "longest_streak_days": 1,
+        "last_session_date": "2026-05-15",
         "juz_completed": [],
         "current_juz": 1,
         "current_page_in_juz": 1,
         "total_absences": 0,
         "consecutive_absences": 0
       },
-      "sessions": [],
+      "sessions": [
+        {
+          "date": "2026-05-15T17:34:40.251Z",
+          "pages_done": 0.15,
+          "difficulty": "hard",
+          "duration_minutes": 1,
+          "technique_used": "tarteel_smart_classifier",
+          "mood_score": 1
+        }
+      ],
       "review_system": {
         "active": false
       },
       "energy": {
         "score": 100,
         "friction": 0,
-        "afi": 83,
+        "afi": 100,
         "history": [
           100,
           100,
-          97,
-          93,
-          89,
-          84,
-          79,
-          73,
-          91,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
           100
         ]
       },
-      "sr_state": {},
+      "sr_state": {
+        "1": {
+          "ef": 1.96,
+          "interval": 1,
+          "reps": 0,
+          "next_review": "2026-05-16T17:34:40.251Z"
+        }
+      },
       "ml_state": {
         "W": [
           0.08,
@@ -4437,7 +4453,22 @@
       "voice_permissions_granted": [],
       "notifications": [],
       "posts": [],
-      "login_history": []
+      "login_history": [],
+      "tarteel_history": [
+        {
+          "surah_name": "سُورَةُ البَقَرَةِ",
+          "from_ayah": 1,
+          "to_ayah": 6,
+          "word_count": 52,
+          "correct_words": 3,
+          "error_words": 0,
+          "score": 6,
+          "duration_minutes": 1,
+          "mode": "memorize",
+          "transcript": "بسم الله الرحمن الرحيم.",
+          "created_at": "2026-05-15T17:34:40.062Z"
+        }
+      ]
     }
   },
   "chats": {},

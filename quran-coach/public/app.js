@@ -1614,6 +1614,133 @@ const Admin = {
         await Api.del('/admin/plans/'+b.dataset.delPlan,true); Admin.loadTab('plans');
       });
     }
+    if (name==='hermes'){
+      const el = document.getElementById('atab-hermes');
+      el.innerHTML = `<div style="text-align:center;color:var(--text-3);padding:20px 0;font-size:.85rem">جارٍ تحميل بيانات Hermes…</div>`;
+      let r;
+      try { r = await Api.get('/admin/hermes/status', true); } catch(e){ el.innerHTML='<p style="color:red">خطأ في الاتصال</p>'; return; }
+      const stats = r.stats||{};
+      const cfg = r.cfg||{};
+      const runs = r.recent_runs||[];
+      const insights = r.recent_insights||[];
+      const skills = r.skills||[];
+      const colorBadge=(v,good,bad)=>v>=good?'var(--mint)':v<=bad?'var(--red)':'var(--gold)';
+      el.innerHTML = `
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(167,139,250,.08));border:1px solid rgba(167,139,250,.25);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="font-size:1.6rem">🤖</div>
+          <div>
+            <div style="font-size:1rem;font-weight:700;color:#a78bfa">Hermes Agent v2</div>
+            <div style="font-size:.75rem;color:var(--text-3)">آخر دورة: ${r.last_run ? fmtTime(r.last_run) : 'لم يعمل بعد'}</div>
+          </div>
+          <div style="margin-right:auto;display:flex;gap:6px">
+            <button class="btn btn-sm" id="btn-hermes-run" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none">▶ تشغيل الآن</button>
+            <button class="btn btn-sm btn-ghost" id="btn-hermes-refresh">↻ تحديث</button>
+            <button class="btn btn-sm btn-danger" id="btn-hermes-reset" title="مسح ذاكرة Hermes">🗑️ مسح</button>
+          </div>
+        </div>
+        <!-- Stats grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          ${[['دورات','total_runs','💫'],['استدعاءات','total_tool_calls','🔧'],['مستخدمون ساعدهم','users_helped','❤️'],['خطط عُدّلت','plans_adjusted','📋'],['أوزان حُدّثت','weights_updated','⚖️'],['مهارات مكتسبة','skills_count','🧠']].map(([label,key,ico])=>{
+            const v = key==='skills_count'?skills.length:stats[key]||0;
+            return `<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px;text-align:center">
+              <div style="font-size:1.1rem;font-weight:700;color:#a78bfa">${ico} ${v}</div>
+              <div style="font-size:.65rem;color:var(--text-3)">${label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        ${r.next_run_focus?`<div style="margin-top:10px;padding:7px 10px;background:rgba(250,204,21,.06);border-radius:7px;border:1px solid rgba(250,204,21,.15);font-size:.78rem;color:var(--gold)">🎯 تركيز الدورة القادمة: ${escapeHTML(r.next_run_focus)}</div>`:''}
+        ${cfg.focus_mode?`<div style="margin-top:6px;font-size:.72rem;color:var(--text-3)">وضع: ${cfg.focus_mode} · الحد الأقصى: ${cfg.max_tool_calls||20} استدعاء</div>`:''}
+      </div>
+
+      <!-- Tabs inside Hermes -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡']].map(([t,l])=>
+          `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
+      </div>
+
+      <!-- Runs -->
+      <div id="h-runs">
+        ${runs.length===0?'<p style="color:var(--text-2);text-align:center;padding:20px">لم تُنفَّذ أي دورات بعد</p>':
+        runs.map(run=>`
+          <div class="glass-card" style="margin-bottom:8px;padding:12px;border-right:3px solid rgba(167,139,250,.5)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.78rem;color:#a78bfa;font-weight:600">دورة #${run.id?.slice(0,8)||'—'} · ${fmtTime(run.at)}</div>
+                <div style="font-size:.82rem;margin-top:4px;line-height:1.5">${escapeHTML(run.summary||'—')}</div>
+                ${(run.actions||[]).length?`<div style="margin-top:6px">${run.actions.map(a=>`<div style="font-size:.7rem;color:var(--text-3);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">• ${escapeHTML(a)}</div>`).join('')}</div>`:''}
+              </div>
+              <div style="text-align:left;flex-shrink:0">
+                <div style="font-size:.7rem;color:var(--text-3)">${run.tool_calls||0} أداة</div>
+                <div style="font-size:.7rem;color:var(--text-3)">${run.duration_ms?((run.duration_ms/1000).toFixed(1)+'ث'):'—'}</div>
+              </div>
+            </div>
+            ${run.next_run_focus?`<div style="margin-top:6px;font-size:.72rem;color:var(--gold)">→ التالية: ${escapeHTML(run.next_run_focus)}</div>`:''}
+          </div>`).join('')}
+      </div>
+
+      <!-- Skills -->
+      <div id="h-skills" style="display:none">
+        ${skills.length===0?'<p style="color:var(--text-2);text-align:center;padding:20px">لا مهارات مكتسبة بعد — شغّل Hermes ليبدأ التعلم</p>':
+        skills.map(sk=>`
+          <div class="glass-card" style="margin-bottom:8px;padding:10px;border-right:3px solid rgba(52,211,153,.4)">
+            <div style="font-size:.82rem;font-weight:700;color:var(--mint)">${escapeHTML(sk.title)}</div>
+            <div style="font-size:.75rem;color:var(--text-2);margin-top:4px;line-height:1.5">${escapeHTML(sk.content)}</div>
+            <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">
+              <span style="font-size:.65rem;padding:2px 6px;background:rgba(167,139,250,.12);border-radius:4px;color:#a78bfa">${sk.applies_to||'general'}</span>
+              ${(sk.tags||[]).map(t=>`<span style="font-size:.65rem;padding:2px 6px;background:rgba(255,255,255,.06);border-radius:4px;color:var(--text-3)">${escapeHTML(t)}</span>`).join('')}
+              ${sk.updated_count>1?`<span style="font-size:.65rem;padding:2px 6px;background:rgba(250,204,21,.08);border-radius:4px;color:var(--gold)">×${sk.updated_count}</span>`:''}
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <!-- Insights -->
+      <div id="h-insights" style="display:none">
+        ${insights.length===0?'<p style="color:var(--text-2);text-align:center;padding:20px">لا رؤى مسجّلة بعد</p>':
+        insights.map(ins=>{
+          const impColor=ins.impact==='high'?'var(--red)':ins.impact==='medium'?'var(--gold)':'var(--text-3)';
+          return `<div class="glass-card" style="margin-bottom:6px;padding:9px;border-right:3px solid ${impColor}40">
+            <div style="display:flex;gap:6px;align-items:flex-start">
+              <span style="font-size:.65rem;padding:2px 5px;background:${impColor}20;color:${impColor};border-radius:4px;flex-shrink:0;margin-top:2px">${ins.category}</span>
+              <div style="flex:1;font-size:.8rem;line-height:1.5">${escapeHTML(ins.text)}</div>
+              <div style="font-size:.65rem;color:var(--text-3);flex-shrink:0">${fmtTime(ins.at)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+      /* Tab switching inside Hermes */
+      el.querySelectorAll('[data-htab]').forEach(btn=>{
+        btn.onclick=()=>{
+          el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
+          btn.className='btn btn-sm btn-primary';
+          ['runs','skills','insights'].forEach(t=>{ const d=document.getElementById('h-'+t); if(d) d.style.display='none'; });
+          const target=document.getElementById('h-'+btn.dataset.htab);
+          if(target) target.style.display='block';
+        };
+      });
+
+      /* Run now */
+      document.getElementById('btn-hermes-run')?.addEventListener('click', async()=>{
+        const btn=document.getElementById('btn-hermes-run');
+        btn.disabled=true; btn.textContent='⏳ جارٍ التشغيل…';
+        const r2=await Api.post('/admin/hermes/run-now',{},true);
+        if(r2.ok){ toast('🤖 Hermes Agent يعمل الآن في الخلفية!','success'); setTimeout(()=>Admin.loadTab('hermes'),3000); }
+        else toast(r2.error||'خطأ','error');
+        btn.disabled=false; btn.textContent='▶ تشغيل الآن';
+      });
+
+      /* Refresh */
+      document.getElementById('btn-hermes-refresh')?.addEventListener('click', ()=>Admin.loadTab('hermes'));
+
+      /* Reset memory */
+      document.getElementById('btn-hermes-reset')?.addEventListener('click', async()=>{
+        if(!confirm('هل أنت متأكد؟ سيتم حذف ذاكرة Hermes (المهارات، الرؤى، الدورات) بالكامل.')) return;
+        const r3=await fetch(API+'/admin/hermes/memory',{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(r=>r.json());
+        if(r3.ok){ toast('تم مسح ذاكرة Hermes','success'); Admin.loadTab('hermes'); }
+      });
+    }
   }
 };
 

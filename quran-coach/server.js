@@ -1610,340 +1610,396 @@ const server = http.createServer(async (req,res)=>{
 });
 
 /* ══════════════════════════════════════════════════════════════════
-   HERMES AGENT — خدمة الوكيل الذكي الخلفية
+   HERMES AGENT v2 — وكيل الذكاء الاصطناعي الخلفي الكامل
    مستوحى من NousResearch/hermes-agent
-   يعمل تلقائياً كل ساعتين بحلقة tool-calling لتحليل المستخدمين
-   وتوليد توصيات شخصية ودفع إشعارات ذكية وتحسين الخطط
+   ─────────────────────────────────────────────────────────────────
+   يعمل تلقائياً كل ساعتين بحلقة tool-calling أصيلة:
+   • يقرأ ملفات الأخطاء الحقيقية (JSONL)
+   • يحلل بيانات التدريب والتلاوة
+   • يعدّل أوزان الخوارزمية مباشرة في قاعدة البيانات
+   • يعدّل نماذج ML للمستخدمين
+   • يولد نصائح تحفيزية عميقة
+   • يكتسب مهارات تتراكم عبر الدورات
 ══════════════════════════════════════════════════════════════════ */
 
 const HERMES_MEMORY_PATH = path.join(ROOT, 'hermes_memory.json');
 function readHermesMemory(){
   try { return JSON.parse(fs.readFileSync(HERMES_MEMORY_PATH,'utf8')); }
-  catch { return { skills:[], insights:[], runs:[], last_run:null, stats:{total_runs:0, total_tool_calls:0, users_helped:0} }; }
+  catch { return { skills:[], insights:[], runs:[], last_run:null, cfg_patches:{}, stats:{total_runs:0, total_tool_calls:0, users_helped:0, weights_updated:0, plans_adjusted:0} }; }
 }
 function writeHermesMemory(m){ try { fs.writeFileSync(HERMES_MEMORY_PATH, JSON.stringify(m,null,2)); } catch(e){ console.error('[Hermes] Memory write failed',e.message); } }
 
-/* ─── Tool definitions (OpenAI function calling format) ─── */
+/* ─── Tool definitions — 16 tools covering the full system ─── */
 const HERMES_TOOLS = [
-  {
-    type:'function',
-    function:{
-      name:'scan_users',
-      description:'مسح جميع المستخدمين وتحديد الحالات التي تحتاج تدخل. يُعيد قائمة بالمستخدمين مع إحصائياتهم.',
-      parameters:{
-        type:'object',
-        properties:{
-          filter:{ type:'string', enum:['all','struggling','inactive','high_performers','new_users'], description:'نوع التصفية' }
-        },
-        required:['filter']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'get_user_details',
-      description:'الحصول على تفاصيل مستخدم محدد: خطته، تقدمه، طاقته، تاريخ الجلسات.',
-      parameters:{
-        type:'object',
-        properties:{ username:{ type:'string' } },
-        required:['username']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'push_smart_notification',
-      description:'إرسال إشعار ذكي شخصي لمستخدم.',
-      parameters:{
-        type:'object',
-        properties:{
-          username:{ type:'string' },
-          type:{ type:'string', enum:['motivation','warning','tip','achievement','plan_update'] },
-          text:{ type:'string', description:'نص الإشعار بالعربية (max 200 حرف)' },
-          ref:{ type:'string', description:'الصفحة المرجعية مثل view-plan أو view-session' }
-        },
-        required:['username','type','text']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'adjust_user_plan',
-      description:'تعديل خطة المستخدم تلقائياً بناءً على التحليل.',
-      parameters:{
-        type:'object',
-        properties:{
-          username:{ type:'string' },
-          daily_pages:{ type:'number', description:'الصفحات اليومية الجديدة' },
-          reason:{ type:'string', description:'سبب التعديل (max 150 حرف)' }
-        },
-        required:['username','daily_pages','reason']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'save_skill',
-      description:'حفظ مهارة/معرفة جديدة تعلّمها الوكيل لاستخدامها مستقبلاً.',
-      parameters:{
-        type:'object',
-        properties:{
-          title:{ type:'string' },
-          content:{ type:'string', description:'محتوى المهارة (max 500 حرف)' },
-          tags:{ type:'array', items:{ type:'string' } }
-        },
-        required:['title','content']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'get_global_stats',
-      description:'الحصول على إحصائيات عامة عن التطبيق: عدد المستخدمين، الجلسات، الصفحات المحفوظة.',
-      parameters:{ type:'object', properties:{} }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'log_insight',
-      description:'تسجيل ملاحظة أو استنتاج مهم في الذاكرة للرجوع إليه لاحقاً.',
-      parameters:{
-        type:'object',
-        properties:{
-          insight:{ type:'string' },
-          category:{ type:'string', enum:['user_behavior','algorithm','plan','coaching','general'] }
-        },
-        required:['insight','category']
-      }
-    }
-  },
-  {
-    type:'function',
-    function:{
-      name:'done',
-      description:'إنهاء دورة التحليل الحالية.',
-      parameters:{
-        type:'object',
-        properties:{ summary:{ type:'string', description:'ملخص ما تم تنفيذه في هذه الدورة' } },
-        required:['summary']
-      }
-    }
-  }
+  { type:'function', function:{ name:'get_global_stats', description:'إحصائيات عامة شاملة: مستخدمون، جلسات، صفحات، طاقة متوسطة، أوزان الخوارزمية الحالية.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'scan_users', description:'مسح المستخدمين مع تصفية متقدمة.', parameters:{ type:'object', properties:{ filter:{ type:'string', enum:['all','struggling','inactive','high_performers','new_users','low_energy','high_absences'] } }, required:['filter'] } } },
+  { type:'function', function:{ name:'get_user_details', description:'تفاصيل كاملة لمستخدم: خطة، تقدم، طاقة، جلسات، نموذج ML، حالة SR.', parameters:{ type:'object', properties:{ username:{ type:'string' } }, required:['username'] } } },
+  { type:'function', function:{ name:'read_error_logs', description:'قراءة ملفات الأخطاء الحقيقية من السيرفر. النوع: errors | ai_errors | recitation_errors', parameters:{ type:'object', properties:{ log_type:{ type:'string', enum:['errors','ai_errors','recitation_errors','ai_training_data'] }, limit:{ type:'number', description:'عدد السجلات (max 50)' } }, required:['log_type'] } } },
+  { type:'function', function:{ name:'analyze_recitation_patterns', description:'تحليل أنماط أخطاء التلاوة من السجلات: الكلمات الأكثر خطأ، دقة المستخدمين، توصيات.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'modify_algorithm_weights', description:'تعديل أوزان الخوارزمية مباشرة في قاعدة البيانات. هذا تغيير حقيقي يؤثر على كل المستخدمين.', parameters:{ type:'object', properties:{ weights:{ type:'object', description:'كائن JSON بالأوزان المراد تغييرها', additionalProperties:{ type:'number' } }, reason:{ type:'string' } }, required:['weights','reason'] } } },
+  { type:'function', function:{ name:'update_user_ml_weights', description:'تحديث أوزان نموذج ML الخاص بمستخدم مباشرة لتحسين دقة التنبؤ.', parameters:{ type:'object', properties:{ username:{ type:'string' }, ml_weights:{ type:'array', items:{ type:'number' }, description:'مصفوفة 12 وزن للنموذج' }, reason:{ type:'string' } }, required:['username','ml_weights','reason'] } } },
+  { type:'function', function:{ name:'adjust_user_plan', description:'تعديل خطة مستخدم (صفحات يومية، طور الخطة).', parameters:{ type:'object', properties:{ username:{ type:'string' }, daily_pages:{ type:'number' }, phase:{ type:'string', enum:['ramp_up','steady','challenge','recovery'] }, reason:{ type:'string' } }, required:['username','daily_pages','reason'] } } },
+  { type:'function', function:{ name:'push_smart_notification', description:'إرسال إشعار شخصي ذكي لمستخدم.', parameters:{ type:'object', properties:{ username:{ type:'string' }, type:{ type:'string', enum:['motivation','warning','tip','achievement','plan_update','hermes_insight'] }, text:{ type:'string' }, ref:{ type:'string' } }, required:['username','type','text'] } } },
+  { type:'function', function:{ name:'batch_notify_users', description:'إرسال إشعار لمجموعة مستخدمين دفعة واحدة (filter مثل scan_users).', parameters:{ type:'object', properties:{ filter:{ type:'string', enum:['struggling','inactive','high_performers','all'] }, notification_type:{ type:'string' }, text:{ type:'string' } }, required:['filter','notification_type','text'] } } },
+  { type:'function', function:{ name:'generate_deep_coaching', description:'استدعاء GPT لتوليد تحليل عميق وخطة علاجية مخصصة لمستخدم محدد.', parameters:{ type:'object', properties:{ username:{ type:'string' }, focus:{ type:'string', enum:['motivation','plan_fix','recitation_improvement','streak_recovery','general'] } }, required:['username','focus'] } } },
+  { type:'function', function:{ name:'read_hermes_memory', description:'قراءة ذاكرة Hermes: المهارات المكتسبة، الرؤى السابقة، الإحصائيات.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'save_skill', description:'حفظ مهارة/نمط تعلّمه الوكيل لاستخدامه في الدورات القادمة.', parameters:{ type:'object', properties:{ title:{ type:'string' }, content:{ type:'string' }, tags:{ type:'array', items:{ type:'string' } }, applies_to:{ type:'string', enum:['users','algorithm','recitation','plan','general'] } }, required:['title','content'] } } },
+  { type:'function', function:{ name:'log_insight', description:'تسجيل رؤية/استنتاج مهم في الذاكرة.', parameters:{ type:'object', properties:{ insight:{ type:'string' }, category:{ type:'string', enum:['user_behavior','algorithm','plan','coaching','recitation','general'] }, impact:{ type:'string', enum:['high','medium','low'] } }, required:['insight','category'] } } },
+  { type:'function', function:{ name:'update_hermes_cfg', description:'تحديث إعدادات Hermes نفسه: تواتر الدورات، الحد الأقصى لاستدعاءات الأدوات، إلخ.', parameters:{ type:'object', properties:{ max_tool_calls:{ type:'number' }, focus_mode:{ type:'string', enum:['full_analysis','quick_scan','coaching_only','algorithm_only'] } }, required:[] } } },
+  { type:'function', function:{ name:'done', description:'إنهاء دورة التحليل مع ملخص شامل.', parameters:{ type:'object', properties:{ summary:{ type:'string' }, actions_taken:{ type:'array', items:{ type:'string' } }, next_run_focus:{ type:'string' } }, required:['summary'] } } }
 ];
 
-/* ─── Tool executor ─── */
+/* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
 async function executeHermesTool(toolName, args, mem){
+  if(!mem.stats) mem.stats={total_runs:0,total_tool_calls:0,users_helped:0,weights_updated:0,plans_adjusted:0};
   switch(toolName){
-    case 'scan_users': {
+
+    case 'get_global_stats': {
       const users = Object.values(DB.users);
-      let filtered;
-      if(args.filter==='struggling')      filtered = users.filter(u=>(u.progress?.consecutive_absences||0)>=2 || (u.energy?.score||75)<40);
-      else if(args.filter==='inactive')   filtered = users.filter(u=>{ const d=u.progress?.last_session_date; if(!d) return true; return (Date.now()-new Date(d).getTime())>3*86400000; });
-      else if(args.filter==='high_performers') filtered = users.filter(u=>(u.progress?.current_streak_days||0)>=7);
-      else if(args.filter==='new_users')  filtered = users.filter(u=>{ return (Date.now()-new Date(u.created_at||0).getTime())<7*86400000; });
-      else                                filtered = users;
-      return filtered.slice(0,30).map(u=>({
-        username:u.username,
-        display_name:u.display_name,
-        energy:u.energy?.score||75,
-        streak:u.progress?.current_streak_days||0,
-        absences:u.progress?.consecutive_absences||0,
-        total_pages:u.progress?.total_pages_memorized||0,
-        last_session:u.progress?.last_session_date||null,
-        daily_pages:u.plan?.current_daily_pages||0,
-      }));
-    }
-    case 'get_user_details': {
-      const u = DB.users[args.username]; if(!u) return {error:'not_found'};
+      const today = new Date().toISOString().slice(0,10);
       return {
-        username:u.username, energy:u.energy, progress:u.progress,
-        plan:u.plan, onboarding:u.onboarding,
-        sessions_last5:(u.sessions||[]).slice(-5),
-        sr_state:u.sr_state,
+        total_users: users.length,
+        active_today: users.filter(u=>u.progress?.last_session_date===today).length,
+        total_pages_alltime: DB.admin?.stats?.total_pages_memorized_alltime||0,
+        avg_energy: users.length ? +(users.reduce((s,u)=>s+(u.energy?.score||75),0)/users.length).toFixed(1) : 0,
+        avg_streak: users.length ? +(users.reduce((s,u)=>s+(u.progress?.current_streak_days||0),0)/users.length).toFixed(1) : 0,
+        struggling_count: users.filter(u=>(u.progress?.consecutive_absences||0)>=2).length,
+        high_performers: users.filter(u=>(u.progress?.current_streak_days||0)>=7).length,
+        algorithm_weights: DB.admin?.algorithm_weights||{},
+        hermes_runs: mem.stats.total_runs,
+        hermes_skills: (mem.skills||[]).length,
       };
     }
-    case 'push_smart_notification': {
-      const u = DB.users[args.username]; if(!u) return {error:'not_found'};
-      addNotif(u.username, args.type||'tip', String(args.text||'').slice(0,200), args.ref||'view-dashboard');
-      persist();
-      if(!mem.stats) mem.stats={};
-      mem.stats.users_helped = (mem.stats.users_helped||0)+1;
-      return {ok:true, sent_to:args.username};
+
+    case 'scan_users': {
+      const users = Object.values(DB.users);
+      const today = new Date().toISOString().slice(0,10);
+      let filtered;
+      switch(args.filter){
+        case 'struggling':      filtered=users.filter(u=>(u.progress?.consecutive_absences||0)>=2||(u.energy?.score||75)<40); break;
+        case 'inactive':        filtered=users.filter(u=>{ const d=u.progress?.last_session_date; return !d||(Date.now()-new Date(d).getTime())>3*864e5; }); break;
+        case 'high_performers': filtered=users.filter(u=>(u.progress?.current_streak_days||0)>=7); break;
+        case 'new_users':       filtered=users.filter(u=>(Date.now()-new Date(u.created_at||0).getTime())<7*864e5); break;
+        case 'low_energy':      filtered=users.filter(u=>(u.energy?.score||75)<40); break;
+        case 'high_absences':   filtered=users.filter(u=>(u.progress?.consecutive_absences||0)>=3); break;
+        default:                filtered=users;
+      }
+      return { count:filtered.length, users: filtered.slice(0,30).map(u=>({
+        username:u.username, energy:u.energy?.score||75,
+        streak:u.progress?.current_streak_days||0, absences:u.progress?.consecutive_absences||0,
+        total_pages:+(u.progress?.total_pages_memorized||0).toFixed(2),
+        last_session:u.progress?.last_session_date||null, daily_pages:u.plan?.current_daily_pages||0,
+        ml_trained: u.ml_state?.n||0, has_plan:!!u.plan,
+      }))};
     }
+
+    case 'get_user_details': {
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      return {
+        username:u.username, display_name:u.display_name,
+        energy:u.energy, progress:u.progress, plan:u.plan,
+        onboarding:u.onboarding, sessions_last10:(u.sessions||[]).slice(-10),
+        sr_state:u.sr_state, ml_state:u.ml_state,
+        tarteel_history_last5:(u.tarteel_history||[]).slice(-5),
+        hermes_adjustment:u.plan?.hermes_adjustment||null,
+        notifications_unread:(u.notifications||[]).filter(n=>!n.read).length,
+      };
+    }
+
+    case 'read_error_logs': {
+      const limit = Math.min(50, +args.limit||20);
+      const logType = ['errors','ai_errors','recitation_errors','ai_training_data'].includes(args.log_type) ? args.log_type : 'errors';
+      const records = readLogFile(`${logType}.jsonl`, limit);
+      return { log_type:logType, count:records.length, records };
+    }
+
+    case 'analyze_recitation_patterns': {
+      const records = readLogFile('recitation_errors.jsonl', 200);
+      if(!records.length) return { message:'لا توجد بيانات تلاوة بعد', count:0 };
+      const wordErrors = {};
+      let totalAcc = 0, sessionCount = 0;
+      records.forEach(r=>{
+        if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{ wordErrors[w]=(wordErrors[w]||0)+1; });
+        if(r.accuracy_pct) { totalAcc+=r.accuracy_pct; sessionCount++; }
+      });
+      const topErrors = Object.entries(wordErrors).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([w,c])=>({word:w,count:c}));
+      return {
+        total_sessions: records.length, avg_accuracy: sessionCount ? +(totalAcc/sessionCount).toFixed(1) : 0,
+        top_error_words: topErrors, unique_error_words: Object.keys(wordErrors).length,
+      };
+    }
+
+    case 'modify_algorithm_weights': {
+      if(!DB.admin) DB.admin={};
+      if(!DB.admin.algorithm_weights) DB.admin.algorithm_weights={};
+      const cur = DB.admin.algorithm_weights;
+      const changed = {};
+      for(const [k,v] of Object.entries(args.weights||{})){
+        if(typeof v==='number' && isFinite(v)){
+          const old = cur[k]!==undefined ? cur[k] : v;
+          const maxΔ = Math.abs(old)*0.30+0.01; // Hermes يُسمح له بـ 30%
+          const newV = Math.round((old+Math.max(-maxΔ,Math.min(maxΔ,v-old)))*1000)/1000;
+          changed[k] = {from:old, to:newV};
+          cur[k] = newV;
+        }
+      }
+      DB.admin.hermes_weights_updated_at = now();
+      mem.stats.weights_updated++;
+      persist();
+      return { ok:true, reason:String(args.reason||'').slice(0,200), changed };
+    }
+
+    case 'update_user_ml_weights': {
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      if(!Array.isArray(args.ml_weights)||args.ml_weights.length!==12) return {error:'ml_weights must be array of 12 numbers'};
+      if(!u.ml_state) u.ml_state={W:args.ml_weights,n:0};
+      else u.ml_state.W = args.ml_weights;
+      u.ml_state.hermes_updated = now();
+      u.ml_state.hermes_reason = String(args.reason||'').slice(0,150);
+      persist();
+      return {ok:true, username:args.username};
+    }
+
     case 'adjust_user_plan': {
-      const u = DB.users[args.username]; if(!u) return {error:'not_found'};
-      if(!u.plan) u.plan={};
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      if(!u.plan) u.plan={current_daily_pages:0.25};
       const oldPages = u.plan.current_daily_pages||0;
       u.plan.current_daily_pages = Math.max(0.1, Math.min(10, +args.daily_pages||oldPages));
-      u.plan.hermes_adjustment = { old:oldPages, new:u.plan.current_daily_pages, reason:String(args.reason||'').slice(0,150), at:now() };
+      if(args.phase) u.plan.phase = args.phase;
+      u.plan.hermes_adjustment = { old:oldPages, new:u.plan.current_daily_pages, reason:String(args.reason||'').slice(0,200), at:now() };
+      mem.stats.plans_adjusted++;
       persist();
       return {ok:true, username:args.username, old_pages:oldPages, new_pages:u.plan.current_daily_pages};
     }
-    case 'save_skill': {
-      if(!mem.skills) mem.skills=[];
-      mem.skills.push({ title:String(args.title||'').slice(0,100), content:String(args.content||'').slice(0,500), tags:args.tags||[], created_at:now() });
-      if(mem.skills.length>200) mem.skills=mem.skills.slice(-200);
-      return {ok:true, total_skills:mem.skills.length};
+
+    case 'push_smart_notification': {
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      addNotif(u.username, args.type||'hermes_insight', String(args.text||'').slice(0,200), args.ref||'view-dashboard');
+      mem.stats.users_helped++;
+      persist();
+      return {ok:true, sent_to:args.username};
     }
-    case 'get_global_stats': {
-      const users = Object.values(DB.users);
+
+    case 'batch_notify_users': {
+      const users=Object.values(DB.users);
+      const today=new Date().toISOString().slice(0,10);
+      let targets;
+      switch(args.filter){
+        case 'struggling': targets=users.filter(u=>(u.progress?.consecutive_absences||0)>=2); break;
+        case 'inactive':   targets=users.filter(u=>{ const d=u.progress?.last_session_date; return !d||(Date.now()-new Date(d).getTime())>3*864e5; }); break;
+        case 'high_performers': targets=users.filter(u=>(u.progress?.current_streak_days||0)>=7); break;
+        default: targets=users;
+      }
+      let sent=0;
+      targets.slice(0,50).forEach(u=>{
+        addNotif(u.username, args.notification_type||'hermes_insight', String(args.text||'').slice(0,200), 'view-dashboard');
+        mem.stats.users_helped++; sent++;
+      });
+      persist();
+      return {ok:true, sent_to:sent, filter:args.filter};
+    }
+
+    case 'generate_deep_coaching': {
+      const u=DB.users[args.username]; if(!u) return {error:'not_found'};
+      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
+      const sysP=`أنت مدرب قرآن خبير ومتخصص. بناءً على بيانات المستخدم المرسلة إليك، قدم تحليلاً عميقاً وخطة علاجية مخصصة. الإجابة بالعربية، منظمة ومباشرة، 5-8 أسطر.`;
+      const userP=`المستخدم: ${u.display_name||u.username}
+الطاقة: ${u.energy?.score||75}/100 | سلسلة: ${u.progress?.current_streak_days||0} يوم | غياب: ${u.progress?.consecutive_absences||0}
+صفحات محفوظة: ${u.progress?.total_pages_memorized||0} | جلسات: ${u.progress?.total_sessions_completed||0}
+الخطة: ${u.plan?.current_daily_pages||0} صفحة/يوم | الطور: ${u.plan?.phase||'غير محدد'}
+جلسات أخيرة: ${JSON.stringify((u.sessions||[]).slice(-5).map(s=>({d:s.difficulty,p:s.pages_done})))}
+التركيز: ${args.focus||'general'}
+قدّم: ١) تشخيص دقيق ٢) خطة عمل تفصيلية ٣) توصية واحدة فورية`;
+      const reply = await callAI(sysP, userP);
+      if(reply){
+        addNotif(u.username,'hermes_insight','💡 '+reply.slice(0,200),'view-dashboard');
+        persist();
+      }
+      return {ok:true, username:args.username, coaching:reply||'لم يتمكن الذكاء الاصطناعي من الإجابة'};
+    }
+
+    case 'read_hermes_memory': {
       return {
-        total_users: users.length,
-        total_sessions: DB.admin?.stats?.total_sessions_today||0,
-        total_pages_memorized: DB.admin?.stats?.total_pages_memorized_alltime||0,
-        active_today: users.filter(u=>u.progress?.last_session_date===new Date().toISOString().slice(0,10)).length,
-        avg_energy: users.length ? (users.reduce((s,u)=>s+(u.energy?.score||75),0)/users.length).toFixed(1) : 0,
+        skills_count:(mem.skills||[]).length,
+        recent_skills:(mem.skills||[]).slice(-5),
+        recent_insights:(mem.insights||[]).slice(-10),
+        cfg_patches:mem.cfg_patches||{},
+        stats:mem.stats,
+        last_run:mem.last_run,
       };
     }
+
+    case 'save_skill': {
+      if(!mem.skills) mem.skills=[];
+      const existing=mem.skills.findIndex(s=>s.title===args.title);
+      const skill={ title:String(args.title||'').slice(0,100), content:String(args.content||'').slice(0,800), tags:args.tags||[], applies_to:args.applies_to||'general', created_at:now(), updated_count:1 };
+      if(existing>=0){ mem.skills[existing]={...skill, updated_count:(mem.skills[existing].updated_count||0)+1}; }
+      else { mem.skills.push(skill); }
+      if(mem.skills.length>300) mem.skills=mem.skills.slice(-300);
+      return {ok:true, total_skills:mem.skills.length, action:existing>=0?'updated':'created'};
+    }
+
     case 'log_insight': {
       if(!mem.insights) mem.insights=[];
-      mem.insights.push({ text:String(args.insight||'').slice(0,500), category:args.category||'general', at:now() });
-      if(mem.insights.length>500) mem.insights=mem.insights.slice(-500);
-      return {ok:true};
+      mem.insights.push({ text:String(args.insight||'').slice(0,600), category:args.category||'general', impact:args.impact||'medium', at:now() });
+      if(mem.insights.length>1000) mem.insights=mem.insights.slice(-1000);
+      return {ok:true, total_insights:mem.insights.length};
     }
+
+    case 'update_hermes_cfg': {
+      if(!mem.cfg_patches) mem.cfg_patches={};
+      if(args.max_tool_calls) mem.cfg_patches.max_tool_calls=Math.max(5,Math.min(25,+args.max_tool_calls));
+      if(args.focus_mode) mem.cfg_patches.focus_mode=args.focus_mode;
+      return {ok:true, cfg:mem.cfg_patches};
+    }
+
     case 'done': {
-      return {finished:true, summary:String(args.summary||'').slice(0,500)};
+      return {finished:true, summary:String(args.summary||'').slice(0,600), actions_taken:args.actions_taken||[], next_run_focus:args.next_run_focus||''};
     }
+
     default: return {error:`unknown_tool: ${toolName}`};
   }
 }
 
-/* ─── Main Hermes agentic loop ─── */
+/* ─── Main Hermes agentic loop — حلقة tool-calling الحقيقية ─── */
 async function runHermesAgent(){
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if(!baseUrl || !apiKey){ console.log('[Hermes] AI not configured, skipping.'); return; }
+  const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if(!baseUrl||!apiKey){ console.log('[Hermes] AI not configured, skipping run.'); return; }
 
   const mem = readHermesMemory();
   const runId = uid();
   const runStart = Date.now();
-  console.log(`[Hermes] Starting agent run ${runId}...`);
+  const maxCalls = mem.cfg_patches?.max_tool_calls||20;
+  const focusMode = mem.cfg_patches?.focus_mode||'full_analysis';
+  console.log(`[Hermes] Starting run ${runId} | mode:${focusMode} | max_calls:${maxCalls}`);
 
-  const skillsSummary = (mem.skills||[]).slice(-10).map(s=>`• ${s.title}`).join('\n') || 'لا توجد مهارات بعد';
-  const recentInsights = (mem.insights||[]).slice(-5).map(i=>`• [${i.category}] ${i.text}`).join('\n') || 'لا توجد ملاحظات بعد';
-  const totalUsers = Object.keys(DB.users).length;
+  // Build context from memory
+  const skillsSummary = (mem.skills||[]).slice(-8).map(s=>`• [${s.applies_to||'general'}] ${s.title}: ${s.content.slice(0,120)}`).join('\n') || 'لا توجد مهارات بعد.';
+  const recentInsights = (mem.insights||[]).slice(-6).map(i=>`• [${i.impact||'med'}/${i.category}] ${i.text.slice(0,100)}`).join('\n') || 'لا توجد رؤى سابقة.';
+  const nextFocus = mem.runs?.slice(-1)?.[0]?.next_run_focus || '';
 
-  const systemPrompt = `أنت Hermes Agent، وكيل ذكاء اصطناعي متقدم مخصص لتطبيق "Quantum Quran Coach" لحفظ القرآن الكريم.
+  const systemPrompt = `أنت Hermes Agent v2 — وكيل ذكاء اصطناعي حقيقي يعمل في خلفية تطبيق "Quantum Quran Coach".
 
-وظيفتك: تحليل بيانات المستخدمين بشكل دوري واتخاذ إجراءات ذكية تلقائية لمساعدتهم على الحفظ.
+أنت تملك صلاحيات حقيقية وكاملة على النظام:
+✅ تقرأ ملفات الأخطاء الحقيقية (JSONL logs)
+✅ تعدّل أوزان الخوارزمية مباشرة في قاعدة البيانات
+✅ تحدّث نماذج ML للمستخدمين
+✅ تعدّل خطط الحفظ تلقائياً
+✅ تولّد نصائح عميقة بالذكاء الاصطناعي
+✅ تراسل المستخدمين بإشعارات مخصصة
+✅ تكتسب مهارات وتتذكرها بين الدورات
 
-المهارات المكتسبة سابقاً:
+الدورة رقم: ${(mem.stats?.total_runs||0)+1}
+مهاراتك المكتسبة:
 ${skillsSummary}
 
-الملاحظات السابقة:
+رؤاك السابقة:
 ${recentInsights}
 
-إحصائيات عامة: ${totalUsers} مستخدم في النظام.
+${nextFocus ? `تركيز هذه الدورة (قررته من الدورة السابقة): ${nextFocus}` : ''}
 
-تعليمات العمل:
-1. ابدأ بمسح المستخدمين (scan_users) لتحديد من يحتاج تدخل
-2. حلّل كل مستخدم مشكل بعمق (get_user_details)
-3. اتخذ إجراءات ملموسة: أرسل إشعارات تحفيزية، عدّل الخطط
-4. سجّل ما تعلّمته (save_skill, log_insight)
-5. أنهِ بملخص واضح (done)
+تعليمات الدورة:
+1. استخدم get_global_stats أولاً لفهم الوضع الحالي
+2. اقرأ السجلات (read_error_logs) لاكتشاف مشاكل حقيقية  
+3. حلّل أنماط التلاوة (analyze_recitation_patterns)
+4. امسح المستخدمين وحلّل الحالات الحرجة
+5. اتخذ إجراءات حقيقية: عدّل الأوزان، الخطط، أرسل إشعارات
+6. احفظ ما تعلّمته وسجّل رؤاك
+7. أنهِ بملخص شامل مع خطة الدورة القادمة
 
-الحد الأقصى: 15 استدعاء أدوات لكل دورة. الردود بالعربية.`;
+الحد الأقصى: ${maxCalls} استدعاء. لا تتوقف حتى تأخذ إجراءات ملموسة حقيقية. الردود بالعربية.`;
 
   const messages = [
     { role:'system', content:systemPrompt },
-    { role:'user',   content:`ابدأ دورة التحليل رقم ${(mem.stats?.total_runs||0)+1}. الوقت الحالي: ${new Date().toLocaleString('ar-SA')}.` }
+    { role:'user', content:`ابدأ الدورة الآن. الوقت: ${new Date().toLocaleString('ar-SA')}. انبش في البيانات، اكتشف المشاكل، وأصلحها.` }
   ];
 
-  let toolCallCount = 0;
-  const MAX_TOOL_CALLS = 15;
-  let finished = false;
-  let runSummary = '';
+  let toolCallCount=0, finished=false, runSummary='', nextRunFocus='', actionsTaken=[];
 
-  while(toolCallCount < MAX_TOOL_CALLS && !finished){
+  while(toolCallCount<maxCalls && !finished){
     let resp;
     try {
       resp = await fetch(`${baseUrl}/chat/completions`,{
         method:'POST',
         headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-        body: JSON.stringify({
-          model:'gpt-4o-mini',
-          messages,
-          tools: HERMES_TOOLS,
-          tool_choice:'auto',
-          max_completion_tokens:1000,
-        })
+        body:JSON.stringify({ model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:'auto', max_completion_tokens:1200 })
       });
-    } catch(e){ console.error('[Hermes] API error',e.message); break; }
-
-    if(!resp.ok){ console.error('[Hermes] API HTTP error',resp.status); break; }
+    } catch(e){ console.error('[Hermes] API fetch error',e.message); break; }
+    if(!resp.ok){ console.error('[Hermes] API HTTP',resp.status); break; }
     const data = await resp.json();
     const msg = data.choices?.[0]?.message;
     if(!msg) break;
-
     messages.push(msg);
+    if(!msg.tool_calls||!msg.tool_calls.length){ runSummary=msg.content||''; finished=true; break; }
 
-    if(!msg.tool_calls || msg.tool_calls.length===0){
-      console.log('[Hermes] Agent finished (no tool calls).');
-      runSummary = msg.content || 'تمت الدورة';
-      finished = true;
-      break;
-    }
-
-    /* Execute all tool calls */
     for(const tc of msg.tool_calls){
       toolCallCount++;
-      const toolName = tc.function?.name;
+      const toolName=tc.function?.name;
       let args={};
-      try { args = JSON.parse(tc.function?.arguments||'{}'); } catch{}
-      console.log(`[Hermes] Tool call #${toolCallCount}: ${toolName}(${JSON.stringify(args).slice(0,80)})`);
+      try{ args=JSON.parse(tc.function?.arguments||'{}'); }catch{}
+      console.log(`[Hermes][${toolCallCount}/${maxCalls}] ${toolName}(${JSON.stringify(args).slice(0,60)})`);
       let result;
-      try { result = await executeHermesTool(toolName, args, mem); } catch(e){ result={error:e.message}; }
-      if(toolName==='done'){ runSummary = result.summary||''; finished=true; }
-      messages.push({
-        role:'tool',
-        tool_call_id: tc.id,
-        content: JSON.stringify(result)
-      });
+      try{ result=await executeHermesTool(toolName,args,mem); }catch(e){ result={error:e.message}; }
+      if(toolName==='done'){
+        runSummary=result.summary||''; nextRunFocus=result.next_run_focus||'';
+        actionsTaken=result.actions_taken||[]; finished=true;
+      } else if(result?.ok) {
+        actionsTaken.push(`${toolName}: ${JSON.stringify(result).slice(0,80)}`);
+      }
+      messages.push({ role:'tool', tool_call_id:tc.id, content:JSON.stringify(result) });
     }
   }
 
-  /* Save run record */
+  // Persist run record + updated memory
   if(!mem.runs) mem.runs=[];
-  if(!mem.stats) mem.stats={total_runs:0,total_tool_calls:0,users_helped:0};
+  if(!mem.stats) mem.stats={total_runs:0,total_tool_calls:0,users_helped:0,weights_updated:0,plans_adjusted:0};
   mem.stats.total_runs++;
-  mem.stats.total_tool_calls += toolCallCount;
-  mem.last_run = now();
-  mem.runs.push({ id:runId, at:now(), tool_calls:toolCallCount, summary:runSummary, duration_ms:Date.now()-runStart });
-  if(mem.runs.length>100) mem.runs=mem.runs.slice(-100);
+  mem.stats.total_tool_calls+=toolCallCount;
+  mem.last_run=now();
+  mem.runs.push({ id:runId, at:now(), tool_calls:toolCallCount, summary:runSummary, actions:actionsTaken.slice(0,20), next_run_focus:nextRunFocus, duration_ms:Date.now()-runStart });
+  if(mem.runs.length>200) mem.runs=mem.runs.slice(-200);
   writeHermesMemory(mem);
-  console.log(`[Hermes] Run ${runId} complete. ${toolCallCount} tool calls. Duration: ${((Date.now()-runStart)/1000).toFixed(1)}s`);
+  console.log(`[Hermes] Run ${runId} done | ${toolCallCount} tools | ${((Date.now()-runStart)/1000).toFixed(1)}s | actions: ${actionsTaken.length}`);
 }
 
 /* ─── Hermes Admin Endpoints ─── */
 R('GET','/qqc/admin/hermes/status', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
-  const mem = readHermesMemory();
+  const mem=readHermesMemory();
   send(res,200,{
-    status:'active',
-    last_run:mem.last_run,
-    stats:mem.stats,
-    recent_runs:(mem.runs||[]).slice(-10).reverse(),
-    recent_insights:(mem.insights||[]).slice(-20).reverse(),
-    skills_count:(mem.skills||[]).length,
+    status:'active', last_run:mem.last_run, stats:mem.stats,
+    cfg:mem.cfg_patches||{},
+    recent_runs:(mem.runs||[]).slice(-15).reverse(),
+    recent_insights:(mem.insights||[]).slice(-30).reverse(),
+    skills:(mem.skills||[]).slice(-20).reverse(),
+    next_run_focus:mem.runs?.slice(-1)?.[0]?.next_run_focus||'',
   });
 });
 
 R('GET','/qqc/admin/hermes/skills', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
-  const mem = readHermesMemory();
-  send(res,200,{ skills:(mem.skills||[]).slice().reverse() });
+  const mem=readHermesMemory();
+  send(res,200,{ skills:(mem.skills||[]).slice().reverse(), total:(mem.skills||[]).length });
 });
 
 R('POST','/qqc/admin/hermes/run-now', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
-  send(res,200,{ok:true, message:'تشغيل Hermes Agent في الخلفية...'});
-  setImmediate(()=>runHermesAgent().catch(e=>console.error('[Hermes] Manual run error',e.message)));
+  const mem=readHermesMemory();
+  const isRunning = mem._running;
+  if(isRunning) return send(res,429,{error:'already_running'});
+  send(res,200,{ok:true, message:'Hermes Agent يعمل الآن في الخلفية...'});
+  setImmediate(async()=>{
+    const m=readHermesMemory(); m._running=true; writeHermesMemory(m);
+    try{ await runHermesAgent(); }catch(e){ console.error('[Hermes] Manual run error',e.message); }
+    finally{ const m2=readHermesMemory(); delete m2._running; writeHermesMemory(m2); }
+  });
+});
+
+R('DELETE','/qqc/admin/hermes/memory', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  writeHermesMemory({ skills:[], insights:[], runs:[], last_run:null, cfg_patches:{}, stats:{total_runs:0,total_tool_calls:0,users_helped:0,weights_updated:0,plans_adjusted:0} });
+  send(res,200,{ok:true});
 });
 
 server.listen(PORT, ()=>{

@@ -1,0 +1,14 @@
+{
+  "skills": [],
+  "insights": [],
+  "runs": [],
+  "last_run": null,
+  "cfg_patches": {},
+  "stats": {
+    "total_runs": 0,
+    "total_tool_calls": 0,
+    "users_helped": 0,
+    "weights_updated": 0,
+    "plans_adjusted": 0
+  }
+}
