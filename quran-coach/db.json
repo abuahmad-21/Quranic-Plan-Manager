@@ -5631,7 +5631,7 @@
       "password_hash": "cc6eb841cbc92bf31e9d265a274ceeb0fdee4be48338417856802972af83e93a",
       "display_name": "Ayman Abujaish",
       "created_at": "2026-05-15T17:23:04.809Z",
-      "last_active": "2026-05-16T12:15:16.393Z",
+      "last_active": "2026-05-16T12:25:59.306Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -5750,8 +5750,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 2,
-        "afi": 71,
+        "friction": 10,
+        "afi": 0,
         "history": [
           100,
           100,
