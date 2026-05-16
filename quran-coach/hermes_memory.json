@@ -171,13 +171,43 @@
       ],
       "next_run_focus": "",
       "duration_ms": 12952
+    },
+    {
+      "id": "6fc86c7f73f888d8",
+      "at": "2026-05-16T12:33:05.331Z",
+      "tool_calls": 32,
+      "summary": "",
+      "actions": [
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"455\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ali\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"sbod\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"dfhj\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ffgh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ffgg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"isisjj\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"newsheikhtest99\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"gfghgh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"yghygg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"yghuhh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"jdjd\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"fffff\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"djdjd\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"testmigration\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من ا",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"gffg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"isisj\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"usush\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"jdshh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"grfhtg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\""
+      ],
+      "next_run_focus": "",
+      "duration_ms": 119552
     }
   ],
-  "last_run": "2026-05-16T12:01:12.501Z",
+  "last_run": "2026-05-16T12:33:05.331Z",
   "cfg_patches": {},
   "stats": {
-    "total_runs": 7,
-    "total_tool_calls": 146,
+    "total_runs": 8,
+    "total_tool_calls": 178,
     "users_helped": 131,
     "weights_updated": 3,
     "plans_adjusted": 66

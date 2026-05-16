@@ -1655,7 +1655,8 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'read_project_file', description:'قراءة محتوى أي ملف من ملفات المشروع الحقيقية (server.js, app.js, ai_core.js, إلخ). استخدمها لفهم الخوارزمية قبل تعديلها.', parameters:{ type:'object', properties:{ file_path:{ type:'string', description:'مسار الملف نسبة لمجلد quran-coach (مثل: public/app.js, ai_core.js, server.js)' }, start_line:{ type:'number', description:'رقم السطر للبداية (اختياري)' }, lines:{ type:'number', description:'عدد الأسطر للقراءة (افتراضي 100)' } }, required:['file_path'] } } },
   { type:'function', function:{ name:'write_project_file', description:'تعديل ملف مسموح به في المشروع. Hermes يُحسّن الخوارزمية والكود مباشرةً. الملفات المسموحة: ai_core.js, public/app.js (دوال محددة). يُحفظ نسخة احتياطية تلقائياً.', parameters:{ type:'object', properties:{ file_path:{ type:'string', description:'مسار الملف (ai_core.js أو public/app.js)' }, old_text:{ type:'string', description:'النص القديم المراد استبداله (يجب أن يكون موجوداً بالضبط في الملف)' }, new_text:{ type:'string', description:'النص الجديد البديل' }, reason:{ type:'string', description:'سبب التعديل وما الذي يُحسّنه' } }, required:['file_path','old_text','new_text','reason'] } } },
   { type:'function', function:{ name:'analyze_and_improve_algorithm', description:'يحلل Hermes الخوارزمية الحالية مع بيانات الأخطاء الحقيقية ويقترح تحسينات كودية دقيقة بالذكاء الاصطناعي. يحفظ النتائج في الذاكرة.', parameters:{ type:'object', properties:{ focus:{ type:'string', enum:['recitation_matching','ml_weights','sr_restart','word_similarity','all'], description:'ما الذي تريد تحليله' } }, required:['focus'] } } },
-  { type:'function', function:{ name:'test_server_health', description:'يتحقق أن السيرفر لا يزال يعمل بشكل صحيح بعد أي تعديل. يُرجع حالة كل endpoint أساسي.', parameters:{ type:'object', properties:{} } } }
+  { type:'function', function:{ name:'test_server_health', description:'يتحقق أن السيرفر لا يزال يعمل بشكل صحيح بعد أي تعديل. يُرجع حالة كل endpoint أساسي.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'git_commit_changes', description:'يرفع التعديلات الأخيرة على الكود إلى GitHub تلقائياً. استخدمها بعد كل تعديل ناجح عبر write_project_file لحفظ التغييرات في ريبو GitHub.', parameters:{ type:'object', properties:{ message:{ type:'string', description:'رسالة الـ commit بالعربي أو الإنجليزي تصف التعديل' } }, required:['message'] } } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -2105,6 +2106,33 @@ Focus: ${focus}
       return { server_healthy:allOk, port:PORT, checks, note: allOk?'السيرفر يعمل بشكل صحيح':'تحقق من السجلات' };
     }
 
+    case 'git_commit_changes': {
+      const { message } = args;
+      if (!message) return { ok:false, error:'message مطلوب' };
+      const githubToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+      if (!githubToken) return { ok:false, error:'GITHUB_PERSONAL_ACCESS_TOKEN غير موجود في البيئة' };
+      const REPO_OWNER = 'abuahmad-21';
+      const REPO_NAME  = 'Quranic-Plan-Manager';
+      const BRANCH     = 'main';
+      const { execSync } = await import('child_process');
+      try {
+        const repoUrl = `https://${REPO_OWNER}:${githubToken}@github.com/${REPO_OWNER}/${REPO_NAME}.git`;
+        const gitDir  = path.join(__dirname, '..');
+        const status  = execSync('git status --porcelain', { cwd: gitDir, encoding:'utf8' }).trim();
+        if (!status) return { ok:true, committed:false, note:'لا توجد تغييرات للرفع — الكود متزامن بالفعل مع GitHub' };
+        execSync('git add -A', { cwd: gitDir });
+        const safeMsg = message.replace(/"/g, "'");
+        execSync(`git -c user.email="hermes@qqc.ai" -c user.name="Hermes Agent" commit -m "${safeMsg}"`, { cwd: gitDir });
+        execSync(`git push ${repoUrl} ${BRANCH}`, { cwd: gitDir, stdio:'pipe' });
+        const commitHash = execSync('git rev-parse --short HEAD', { cwd: gitDir, encoding:'utf8' }).trim();
+        if (!mem.code_edits) mem.code_edits = [];
+        mem.code_edits.push({ at: new Date().toISOString(), commit: commitHash, message });
+        return { ok:true, committed:true, commit_hash:commitHash, message, repo:`github.com/${REPO_OWNER}/${REPO_NAME}`, note:'تم الرفع إلى GitHub بنجاح ✅' };
+      } catch(e){
+        return { ok:false, error: e.message?.slice(0,300)||'خطأ في git', note:'تأكد من صحة الـ token وأذونات الريبو' };
+      }
+    }
+
     default: return {error:`unknown_tool: ${toolName}`};
   }
 }
@@ -2140,6 +2168,7 @@ async function runHermesAgent(){
 ✅ تعدّل الكود مباشرةً (write_project_file) — ai_core.js و public/app.js
 ✅ تحلّل الخوارزمية وتقترح تحسينات بالذكاء الاصطناعي (analyze_and_improve_algorithm)
 ✅ تتحقق من صحة السيرفر بعد التعديلات (test_server_health)
+✅ ترفع التعديلات تلقائياً إلى GitHub (git_commit_changes) — بعد كل تعديل ناجح على الكود
 
 الدورة رقم: ${(mem.stats?.total_runs||0)+1}
 تعديلات الكود السابقة: ${(mem.code_edits||[]).length} تعديل
@@ -2166,6 +2195,7 @@ ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة ال
 - نسّخ النص بدقة تامة في old_text (مطابقة حرفية)
 - تحقق من صحة السيرفر بعد كل تعديل (test_server_health)
 - الملفات المسموح بتعديلها فقط: ai_core.js, public/app.js
+- ارفع كل تعديل ناجح فوراً إلى GitHub (git_commit_changes) بعد التحقق من صحة السيرفر
 
 الحد الأقصى: ${maxCalls} استدعاء. لا تتوقف حتى تأخذ إجراءات ملموسة حقيقية. الردود بالعربية.`;
 
