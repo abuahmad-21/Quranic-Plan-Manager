@@ -141,14 +141,44 @@
       ],
       "next_run_focus": "",
       "duration_ms": 56157
+    },
+    {
+      "id": "916aeaadd430c262",
+      "at": "2026-05-16T12:01:12.501Z",
+      "tool_calls": 22,
+      "summary": "",
+      "actions": [
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"455\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"ali\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"sbod\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"dfhj\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"ffgh\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"ffgg\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"isisjj\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"newsheikhtest99\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"gfghgh\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"yghygg\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"yghuhh\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"jdjd\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"fffff\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"djdjd\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"testmigration\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"gffg\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"isisj\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"usush\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"jdshh\"}",
+        "push_smart_notification: {\"ok\":true,\"sent_to\":\"grfhtg\"}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 12952
     }
   ],
-  "last_run": "2026-05-16T11:59:28.817Z",
+  "last_run": "2026-05-16T12:01:12.501Z",
   "cfg_patches": {},
   "stats": {
-    "total_runs": 6,
-    "total_tool_calls": 124,
-    "users_helped": 111,
+    "total_runs": 7,
+    "total_tool_calls": 146,
+    "users_helped": 131,
     "weights_updated": 3,
     "plans_adjusted": 66
   },
