@@ -89,20 +89,6 @@ const SR = {
 /* ══ PLAN ADAPTATION ALGORITHMS (200+ rules collapsed into adaptive engine) ══ */
 const PlanAdapter = {
   /**
-   * تحسين خوارزمية التكيف لتشمل أدوات التحسين الجديدة
-   * التركيز على تكييف الخطط لتناسب مستوى طاقة المستخدم وأنماط التلاوة.
-   */
-  optimizePlans(user, recitationPatterns) {
-    // خوارزمية لتحليل أنماط التلاوة ومراعاة الطاقة خلال التخطيط
-    if (user.energy < CFG.ENERGY_MIN) {
-      user.daily_target_pages = Math.max(1, user.daily_target_pages - 1);
-    }
-    if (recitationPatterns.length > 0) {
-      // تنفيذ أي تحسينات ممكنة بناءً على التحليل
-      // مزيد من العمل هنا لتحسين انسجام المستخدم مع خططه
-    }
-  },
-  /**
    * Re-evaluates daily target pages using:
    *  - Recent session quality (last 7)
    *  - Procrastination index

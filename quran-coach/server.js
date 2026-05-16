@@ -2179,7 +2179,7 @@ ${skillsSummary}
 ${recentInsights}
 
 ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة السابقة): ${nextFocus}` : ''}
-
+${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه الدورة (أولوية قصوى):\n${mem.cfg_patches.special_instruction}\n` : ''}
 تعليمات الدورة:
 1. استخدم get_global_stats أولاً لفهم الوضع الحالي
 2. اقرأ السجلات (read_error_logs) لاكتشاف مشاكل حقيقية
@@ -2199,20 +2199,29 @@ ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة ال
 
 الحد الأقصى: ${maxCalls} استدعاء. لا تتوقف حتى تأخذ إجراءات ملموسة حقيقية. الردود بالعربية.`;
 
+  const forceCodeAnalysis = focusMode === 'code_analysis' || !!mem.cfg_patches?.special_instruction;
   const messages = [
     { role:'system', content:systemPrompt },
-    { role:'user', content:`ابدأ الدورة الآن. الوقت: ${new Date().toLocaleString('ar-SA')}. انبش في البيانات، اكتشف المشاكل، وأصلحها.` }
+    { role:'user', content: forceCodeAnalysis
+        ? `ابدأ فوراً بتحليل الخوارزمية. الوقت: ${new Date().toLocaleString('ar-SA')}. أول استدعاء يجب أن يكون analyze_and_improve_algorithm ثم اقرأ الكود وعدّله وارفعه لـ GitHub.`
+        : `ابدأ الدورة الآن. الوقت: ${new Date().toLocaleString('ar-SA')}. انبش في البيانات، اكتشف المشاكل، وأصلحها.`
+    }
   ];
 
   let toolCallCount=0, finished=false, runSummary='', nextRunFocus='', actionsTaken=[];
+  let isFirstCall = true;
 
   while(toolCallCount<maxCalls && !finished){
+    // أول استدعاء في وضع code_analysis: أجبر الـ AI على analyze_and_improve_algorithm
+    const forcedTool = (isFirstCall && forceCodeAnalysis)
+      ? { type:'function', function:{ name:'analyze_and_improve_algorithm' } }
+      : 'auto';
     let resp;
     try {
       resp = await fetch(`${baseUrl}/chat/completions`,{
         method:'POST',
         headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-        body:JSON.stringify({ model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:'auto', max_completion_tokens:1200 })
+        body:JSON.stringify({ model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:forcedTool, max_completion_tokens:1200 })
       });
     } catch(e){ console.error('[Hermes] API fetch error',e.message); break; }
     if(!resp.ok){ console.error('[Hermes] API HTTP',resp.status); break; }
@@ -2222,6 +2231,7 @@ ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة ال
     messages.push(msg);
     if(!msg.tool_calls||!msg.tool_calls.length){ runSummary=msg.content||''; finished=true; break; }
 
+    isFirstCall = false;
     for(const tc of msg.tool_calls){
       toolCallCount++;
       const toolName=tc.function?.name;
@@ -2248,6 +2258,8 @@ ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة ال
   mem.last_run=now();
   mem.runs.push({ id:runId, at:now(), tool_calls:toolCallCount, summary:runSummary, actions:actionsTaken.slice(0,20), next_run_focus:nextRunFocus, duration_ms:Date.now()-runStart });
   if(mem.runs.length>200) mem.runs=mem.runs.slice(-200);
+  // مسح special_instruction بعد تنفيذها (مهمة لمرة واحدة)
+  if(mem.cfg_patches?.special_instruction){ delete mem.cfg_patches.special_instruction; delete mem.cfg_patches.focus_mode; }
   writeHermesMemory(mem);
   console.log(`[Hermes] Run ${runId} done | ${toolCallCount} tools | ${((Date.now()-runStart)/1000).toFixed(1)}s | actions: ${actionsTaken.length}`);
 }
