@@ -34,12 +34,19 @@
         "sent_at": "2026-05-08T06:02:55.610Z",
         "sent_by": "admin",
         "active": true
+      },
+      {
+        "id": "501d92a114c0ce0f",
+        "message": "خاااااااااااااااااااا",
+        "sent_at": "2026-05-16T12:00:20.029Z",
+        "sent_by": "admin",
+        "active": true
       }
     ],
     "stats": {
       "total_users": 39,
-      "total_sessions_today": 44,
-      "total_pages_memorized_alltime": 8.2
+      "total_sessions_today": 52,
+      "total_pages_memorized_alltime": 10.2
     },
     "sheikh_requests": {
       "455": {
@@ -118,7 +125,8 @@
         "created_at": "2026-05-09T01:40:38.103Z"
       }
     ],
-    "training_samples": []
+    "training_samples": [],
+    "hermes_weights_updated_at": "2026-05-16T11:59:27.491Z"
   },
   "users": {
     "455": {
@@ -144,7 +152,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-09T02:46:56.281Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-09T02:46:56.281Z",
         "phase_days_elapsed": 0,
@@ -152,7 +160,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -217,6 +231,30 @@
           "ref": "view-channels",
           "read": false,
           "created_at": "2026-05-09T02:47:41.811Z"
+        },
+        {
+          "id": "a409b989f25b5f57",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "bbc75c1f2e1845c4",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "eae3053a74b98617",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -242,7 +280,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-04-21T16:08:27.600Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-04-21T16:08:27.600Z",
         "phase_days_elapsed": 0,
@@ -250,7 +288,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0.5,
@@ -315,7 +359,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "d095437a47bd0c60",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "5556ec436e90a78c",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "22430e764c98366f",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "sbod": {
@@ -339,7 +408,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-08T05:21:42.643Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-08T05:21:42.643Z",
         "phase_days_elapsed": 0,
@@ -347,7 +416,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -397,7 +472,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "73a1af5a8343f18d",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "24f1b5757707f5cb",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "e8a979bf090525f3",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "dfhj": {
@@ -421,7 +521,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-08T05:22:10.946Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-08T05:22:10.946Z",
         "phase_days_elapsed": 0,
@@ -429,7 +529,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -486,7 +592,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "6ce027148d60ab6d",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "4d415434d06aa735",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "8b5c6774a8a40d83",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "ffgh": {
@@ -510,7 +641,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-08T05:49:20.990Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-08T05:49:20.990Z",
         "phase_days_elapsed": 0,
@@ -518,7 +649,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -575,7 +712,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "230aba1ebf218b6a",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "b273ff054e0ed84d",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "90df87f9934abfd3",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "ffgg": {
@@ -599,7 +761,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-08T06:01:57.526Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-08T06:01:57.526Z",
         "phase_days_elapsed": 0,
@@ -607,7 +769,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -659,7 +827,40 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "94f8f6ba765312d4",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "17986a45308953e4",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "068f58c23f715b26",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        },
+        {
+          "id": "721a4f756a425733",
+          "type": "support_reply",
+          "text": "💬 رد من فريق الدعم: ممكن تتواصل معنا",
+          "ref": "view-support",
+          "read": false,
+          "created_at": "2026-05-16T12:00:13.011Z"
+        }
+      ],
       "posts": []
     },
     "isisjj": {
@@ -683,7 +884,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-09T01:19:19.552Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-09T01:19:19.552Z",
         "phase_days_elapsed": 0,
@@ -691,7 +892,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -748,7 +955,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "a2fc40a6bf067c9d",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "5d3aaedab66ae167",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "5d7d8525c1244a8a",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "newsheikhtest99": {
@@ -767,7 +999,7 @@
         "plan_mode": "both"
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "manual_override": true,
         "override_target": 0.5,
         "generated_plan": {
@@ -963,6 +1195,13 @@
           ],
           "ai_note": "خطة دقيقة ومتوازنة: 0.5 صفحة يومياً تُوصلك لهدفك في 60 يوماً بإذن الله.",
           "generated_at": "2026-05-09T01:40:38.769Z"
+        },
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
         }
       },
       "progress": {
@@ -1003,6 +1242,30 @@
           "ref": "view-channels",
           "read": false,
           "created_at": "2026-05-09T01:40:12.128Z"
+        },
+        {
+          "id": "28f8a96e8a04da5f",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "8a6b0dfbdfb12307",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "23a4332a376b5e52",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -1031,7 +1294,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-09T01:41:51.809Z",
-        "current_daily_pages": 0.75,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-09T01:41:51.809Z",
         "phase_days_elapsed": 0,
@@ -1233,6 +1496,12 @@
           ],
           "ai_note": "خطة دقيقة ومتوازنة: 0.75 صفحة يومياً تُوصلك لهدفك في 30 يوماً بإذن الله.",
           "generated_at": "2026-05-09T01:45:23.613Z"
+        },
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
         }
       },
       "progress": {
@@ -1306,6 +1575,30 @@
           "ref": "view-channels",
           "read": true,
           "created_at": "2026-05-09T01:47:31.769Z"
+        },
+        {
+          "id": "a4f7bc7773c0c8b4",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "1bc8f916d4ac0e1c",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "58d04281075025fc",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -1333,7 +1626,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-09T03:07:11.164Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-09T03:07:11.164Z",
         "phase_days_elapsed": 0,
@@ -1341,7 +1634,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0.25,
@@ -1414,7 +1713,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "b02185a043744d95",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "5676798dbb8a07b8",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "c5383c66a4e4258d",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "yghuhh": {
@@ -1440,15 +1764,21 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-09T03:09:23.635Z",
-        "current_daily_pages": 0.1,
-        "phase": "absence_soft_reset",
+        "current_daily_pages": 1,
+        "phase": "ramp_up",
         "phase_start_date": "2026-05-09T03:10:23.836Z",
         "phase_days_elapsed": 0,
         "manual_override": false,
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0.3,
@@ -1560,7 +1890,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "0526620709d314e2",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "88f7286708cbc683",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "25c9eb1ae9cc6919",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "jdjd": {
@@ -1586,15 +1941,21 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T03:00:32.957Z",
-        "current_daily_pages": 0.1,
-        "phase": "absence_soft_reset",
+        "current_daily_pages": 1,
+        "phase": "ramp_up",
         "phase_start_date": "2026-05-10T03:05:07.830Z",
         "phase_days_elapsed": 0,
         "manual_override": false,
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 1.5,
@@ -1715,6 +2076,30 @@
           "ref": "view-channels",
           "read": true,
           "created_at": "2026-05-10T03:03:50.724Z"
+        },
+        {
+          "id": "5ad18f786eb6596b",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "8cf083f1cde8c751",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "6d100f27da752658",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -1742,7 +2127,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T03:21:37.763Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-10T03:21:37.763Z",
         "phase_days_elapsed": 0,
@@ -1750,7 +2135,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -1804,7 +2195,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "83c8d98342a108a5",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "700dd9103ce1759a",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "6a994a145a434528",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "djdjd": {
@@ -1830,7 +2246,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T03:24:00.163Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-10T03:24:00.163Z",
         "phase_days_elapsed": 0,
@@ -1838,7 +2254,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -1895,7 +2317,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "7c03d0fe62c68d56",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "a2487c46b9d84876",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "acb7068beef4b853",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "studio_history": [
         {
@@ -1935,13 +2382,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.179Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
         }
       },
       "progress": {
@@ -1982,6 +2429,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "9023a95930265025",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "2278b836a09aa0dd",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "acca08c8c019ca5d",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -2009,7 +2480,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T04:27:44.851Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-10T04:27:44.851Z",
         "phase_days_elapsed": 0,
@@ -2017,7 +2488,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0.05,
@@ -2090,7 +2567,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "8229ebdfc7d7547e",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "cc0f4537e08b9e38",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "55a20970c0df42a9",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "studio_history": [
         {
@@ -2128,7 +2630,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T04:53:56.994Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-10T04:53:56.994Z",
         "phase_days_elapsed": 0,
@@ -2136,7 +2638,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2193,7 +2701,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "06387ceaf1e90cf3",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "bd0df90827526f57",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "5ab689a7c98d5cf9",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "usush": {
@@ -2219,7 +2752,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-10T04:57:28.291Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-10T04:57:28.291Z",
         "phase_days_elapsed": 0,
@@ -2227,7 +2760,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2284,7 +2823,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "eaaaa27852d4da87",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "fbc9d76852b47ce0",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "7f5ce94637eadbc1",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [
         {
           "id": "7ca71bcdf84311b2",
@@ -2330,7 +2894,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-12T00:20:32.611Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-12T00:20:32.611Z",
         "phase_days_elapsed": 0,
@@ -2338,7 +2902,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2395,7 +2965,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "e915efd95927eb30",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "d9528ab0506c4d95",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "19ed89a57d8f1a9a",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "grfhtg": {
@@ -2421,7 +3016,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-12T00:23:02.710Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-12T00:23:02.710Z",
         "phase_days_elapsed": 0,
@@ -2429,7 +3024,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2486,7 +3087,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "ebf63fb99f9c7ea7",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "c9fc328c9c6c28b9",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "3a1be9a9c196757b",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "jdjdhdh": {
@@ -2512,7 +3138,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-12T01:26:10.881Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-12T01:26:10.881Z",
         "phase_days_elapsed": 0,
@@ -2520,7 +3146,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2576,7 +3208,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "50ea2bb8705acd1e",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "d06b3cc58977dbb4",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "0863a16203d03063",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "studio_history": [
         {
@@ -2614,7 +3271,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-12T01:51:17.355Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-12T01:51:17.355Z",
         "phase_days_elapsed": 0,
@@ -2622,7 +3279,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2679,7 +3342,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "59cf401447129f8c",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "fed7ccf331d3fed3",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "2c3d2d5ff9dd8520",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "avatar_emoji": "💎"
     },
@@ -2698,13 +3386,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.180Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
         }
       },
       "progress": {
@@ -2745,6 +3433,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "98c56c46a6a5b570",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "387fb5a6c50397ed",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "abaf7079b8525059",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": []
@@ -2772,7 +3484,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-12T04:40:40.201Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-12T04:40:40.201Z",
         "phase_days_elapsed": 0,
@@ -2780,7 +3492,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.816Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2812,7 +3530,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "41ec576590829d12",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "e8721ba3c69c3351",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "2db38b345a0a4ba1",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": []
     },
     "testuser99": {
@@ -2830,13 +3573,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.180Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
         }
       },
       "progress": {
@@ -2877,6 +3620,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "17335bcaaed9b0a0",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "edcfd5030b10646d",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "8396afd28aa7b1df",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": [],
@@ -2910,7 +3677,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-13T03:57:49.242Z",
-        "current_daily_pages": 0.2,
+        "current_daily_pages": 1,
         "phase": "absence_soft_reset",
         "phase_start_date": "2026-05-13T03:58:09.221Z",
         "phase_days_elapsed": 0,
@@ -2918,7 +3685,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.2,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -2982,7 +3755,24 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "ad99140a2cffee98",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "00579feece338838",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -3001,13 +3791,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.180Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
         }
       },
       "progress": {
@@ -3048,6 +3838,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "ba1be88d0bb36889",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "c082255bc786a395",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "a0614fc8e9b124d4",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": [],
@@ -3089,13 +3903,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.180Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
         }
       },
       "progress": {
@@ -3136,6 +3950,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "8fe1bcaf79069e02",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "e862251880dd82a0",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "5da78c361020730a",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": [],
@@ -3161,13 +3999,13 @@
         "completed": false
       },
       "plan": {
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.25,
-          "new": 0.25,
-          "reason": "لم يبدأ المستخدم بالتدريب بعد، يتطلب زيادة تدريجية في الصفحات.",
-          "at": "2026-05-15T19:32:42.180Z"
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
         }
       },
       "progress": {
@@ -3208,6 +4046,30 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-15T19:32:42.180Z"
+        },
+        {
+          "id": "84e20a0d8c70f6d8",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "640c694d192e0628",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "534171954aa4c89d",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
         }
       ],
       "posts": [],
@@ -3227,7 +4089,16 @@
       "onboarding": {
         "completed": false
       },
-      "plan": null,
+      "plan": {
+        "current_daily_pages": 1,
+        "phase": "ramp_up",
+        "hermes_adjustment": {
+          "old": 0.5,
+          "new": 1,
+          "reason": "زيادة التحفيز والتحسين في الأداء.",
+          "at": "2026-05-16T11:43:11.817Z"
+        }
+      },
       "progress": {
         "total_pages_memorized": 0,
         "total_sessions_completed": 0,
@@ -3258,7 +4129,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "4aa3df846ce5ddd2",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "51624ace7a4dfb0f",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "825170f34d5a941c",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -3285,7 +4181,7 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-13T04:21:34.921Z",
-        "current_daily_pages": 0.25,
+        "current_daily_pages": 0.5,
         "phase": "ramp_up",
         "phase_start_date": "2026-05-13T04:21:34.921Z",
         "phase_days_elapsed": 0,
@@ -3293,7 +4189,13 @@
         "override_target": null,
         "weekly_off_days": [
           5
-        ]
+        ],
+        "hermes_adjustment": {
+          "old": 0.25,
+          "new": 0.5,
+          "reason": "Increase engagement for inactive user.",
+          "at": "2026-05-15T19:33:47.480Z"
+        }
       },
       "progress": {
         "total_pages_memorized": 0,
@@ -3348,7 +4250,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "3e7fab917e36e02b",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "5f619b49788be1bc",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "9e89683e2faa568b",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -3651,7 +4578,24 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "d1e16f7082046c8d",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "1c364533ddc05f9a",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": [],
       "tarteel_history": [
@@ -3715,7 +4659,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "6bcb22f8415c9b09",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "03de3f3dd2a1bd69",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "d082c21474dc3c69",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": [
         {
@@ -3844,7 +4813,24 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "dbb37d81e54fc5b9",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "7c1764e9a7bc28e0",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": [],
       "khatma": {
@@ -4156,7 +5142,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "22e4421c42991a49",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "ce0fe2f0fb82b287",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "79bf5be5d7796a85",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -4460,7 +5471,7 @@
       "password_hash": "cc6eb841cbc92bf31e9d265a274ceeb0fdee4be48338417856802972af83e93a",
       "display_name": "Ayman Abujaish",
       "created_at": "2026-05-15T17:23:04.809Z",
-      "last_active": "2026-05-15T19:33:06.187Z",
+      "last_active": "2026-05-16T12:00:06.409Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -4478,9 +5489,9 @@
       "plan": {
         "type": "quantum_auto",
         "start_date": "2026-05-15T17:23:06.466Z",
-        "current_daily_pages": 0.25,
-        "phase": "ramp_up",
-        "phase_start_date": "2026-05-15T17:23:06.466Z",
+        "current_daily_pages": 0.1,
+        "phase": "absence_soft_reset",
+        "phase_start_date": "2026-05-15T19:34:33.991Z",
         "phase_days_elapsed": 0,
         "manual_override": false,
         "override_target": null,
@@ -4489,8 +5500,8 @@
         ]
       },
       "progress": {
-        "total_pages_memorized": 0.25,
-        "total_sessions_completed": 1,
+        "total_pages_memorized": 2.25,
+        "total_sessions_completed": 9,
         "current_streak_days": 1,
         "longest_streak_days": 1,
         "last_session_date": "2026-05-15",
@@ -4508,6 +5519,70 @@
           "duration_minutes": 1,
           "technique_used": "tarteel_smart_classifier",
           "mood_score": 1
+        },
+        {
+          "date": "2026-05-15T19:34:21.288Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:23.190Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:25.755Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:27.516Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:29.096Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:30.749Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:32.246Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
+        },
+        {
+          "date": "2026-05-15T19:34:33.991Z",
+          "pages_done": 0.25,
+          "difficulty": "easy",
+          "duration_minutes": 20,
+          "technique_used": null,
+          "mood_score": 7
         }
       ],
       "review_system": {
@@ -4515,8 +5590,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 0,
-        "afi": 83,
+        "friction": 9.69,
+        "afi": 12,
         "history": [
           100,
           100,
@@ -4532,10 +5607,10 @@
       },
       "sr_state": {
         "1": {
-          "ef": 1.96,
-          "interval": 1,
-          "reps": 0,
-          "next_review": "2026-05-16T17:34:40.251Z"
+          "ef": 2.76,
+          "interval": 1138,
+          "reps": 8,
+          "next_review": "2029-06-26T19:34:33.991Z"
         }
       },
       "ml_state": {
@@ -4583,7 +5658,7 @@
       "password_hash": "88d3a9976302b7bd6de6368f3c592bb88b155655d4d36bbadf63d6c719cad97e",
       "display_name": "يسر",
       "created_at": "2026-05-15T19:27:15.537Z",
-      "last_active": "2026-05-15T19:32:17.627Z",
+      "last_active": "2026-05-15T19:35:11.444Z",
       "avatar_color": "#0d8890",
       "bio": "",
       "is_banned": false,
@@ -4629,8 +5704,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 0,
-        "afi": 100,
+        "friction": 0.98,
+        "afi": 43,
         "history": [
           100,
           100,
@@ -4666,7 +5741,32 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "5c6f9fa5fb71f5da",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-15T19:34:55.696Z"
+        },
+        {
+          "id": "2b52e06f32eb931d",
+          "type": "motivation",
+          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:45:33.975Z"
+        },
+        {
+          "id": "9304645babe17709",
+          "type": "motivation",
+          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-16T11:59:28.817Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     }
@@ -4701,6 +5801,11 @@
           "from": "ffgg",
           "text": "اريد اصبخ شيخ",
           "timestamp": "2026-05-08T06:02:24.254Z"
+        },
+        {
+          "from": "admin",
+          "text": "ممكن تتواصل معنا",
+          "timestamp": "2026-05-16T12:00:13.011Z"
         }
       ],
       "opened_at": "2026-05-08T06:02:24.254Z"

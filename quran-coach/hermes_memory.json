@@ -1,5 +1,17 @@
 {
-  "skills": [],
+  "skills": [
+    {
+      "title": "تحفيز المستخدمين غير النشطين",
+      "content": "تمت دراسة سلوك المستخدمين وقمت بإعداد إشعارات تحفيزية للمستخدمين غير النشطين مع تحسين الأوزان لتشجيع التفاعل والتلاوة.",
+      "tags": [
+        "motivation",
+        "user_engagement"
+      ],
+      "applies_to": "users",
+      "created_at": "2026-05-16T11:45:37.193Z",
+      "updated_count": 1
+    }
+  ],
   "insights": [
     {
       "text": "مستخدمون لا يمارسون التلاوة ويحتاجون لخطط تدريبية مرنة. يجب دعمهم بدفعات تحفيزية لبدء تدريبهم.",
@@ -21,15 +33,136 @@
       ],
       "next_run_focus": "تحليل مستخدمين أكثر وبدء الدورة مع أصحاب الطاقة المنخفضة.",
       "duration_ms": 14437
+    },
+    {
+      "id": "31db7e93f2d3492e",
+      "at": "2026-05-15T19:33:47.480Z",
+      "tool_calls": 33,
+      "summary": "",
+      "actions": [
+        "adjust_user_plan: {\"ok\":true,\"username\":\"455\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ali\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"sbod\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"dfhj\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgh\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgg\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisjj\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"newsheikhtest99\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gfghgh\",\"old_pages\":0.75,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghygg\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghuhh\",\"old_pages\":0.1,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"jdjd\",\"old_pages\":0.1,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"fffff\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"djdjd\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"testmigration\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gffg\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisj\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"usush\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"jdshh\",\"old_pages\":0.25,\"new_pages\":0.5}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"grfhtg\",\"old_pages\":0.25,\"new_pages\":0.5}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 14573
+    },
+    {
+      "id": "703d1ceee5dc9f13",
+      "at": "2026-05-15T19:34:59.621Z",
+      "tool_calls": 7,
+      "summary": "تمت مراجعة البيانات وحالة المستخدمين. تم إرسال إشعارات تحفيزية لـ 33 مستخدمًا غير نشطين لدعم تفاعلهم. لم يتم الكشف عن أي أخطاء في التلاوة أو نماذج مستخدمة. تم تعديل أوزان الخوارزمية لتعزيز المشاركة.",
+      "actions": [
+        "أرسل إشعارات تحفيزية لـ 33 مستخدم غير نشط",
+        "عدل أوزان الخوارزمية لتحفيز المستخدمين"
+      ],
+      "next_run_focus": "تحديد مستخدمين محددين وتحليل سلوكهم في الجلسات القادمة.",
+      "duration_ms": 10490
+    },
+    {
+      "id": "d98d1014a32f73a2",
+      "at": "2026-05-16T11:43:11.817Z",
+      "tool_calls": 36,
+      "summary": "",
+      "actions": [
+        "adjust_user_plan: {\"ok\":true,\"username\":\"455\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ali\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"sbod\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"dfhj\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgh\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgg\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisjj\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"newsheikhtest99\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gfghgh\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghygg\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghuhh\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"jdjd\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"fffff\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"djdjd\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"testmigration\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gffg\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisj\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"usush\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"jdshh\",\"old_pages\":0.5,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"grfhtg\",\"old_pages\":0.5,\"new_pages\":1}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 19474
+    },
+    {
+      "id": "fb401b332220067b",
+      "at": "2026-05-16T11:45:39.553Z",
+      "tool_calls": 10,
+      "summary": "تمت مراجعة البيانات العامة للمستخدمين. لم يتم العثور على أي سجلات لأخطاء التلاوة أو بيانات تلاوة جديدة. بادرت بإرسال إشعارات تحفيزية للمستخدمين غير النشطين وعدلت أوزان الخوارزمية لدعم رفع مستوى النشاط والتفاعل. تم حفظ مهارة تحفيز المستخدمين غير النشطين في الذاكرة.",
+      "actions": [
+        "إشعارات تحفيزية للمستخدمين غير النشطين",
+        "تعديل أوزان الخوارزمية"
+      ],
+      "next_run_focus": "تحليل البيانات القادمة وإعادة تقييم استراتيجيات التحفيز والتفاعل.",
+      "duration_ms": 13823
+    },
+    {
+      "id": "3a9f3d4ea71bf304",
+      "at": "2026-05-16T11:59:28.817Z",
+      "tool_calls": 20,
+      "summary": "",
+      "actions": [
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"455\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ali\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"sbod\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"dfhj\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ffgh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"ffgg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"isisjj\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"newsheikhtest99\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"gfghgh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"yghygg\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"yghuhh\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"",
+        "generate_deep_coaching: {\"ok\":true,\"username\":\"jdjd\",\"coaching\":\"لم يتمكن الذكاء الاصطناعي من الإجابة\"}",
+        "modify_algorithm_weights: {\"ok\":true,\"reason\":\"زيادة تحفيز المستخدمين غير النشطين نظراً لعدم وجود بيانات ا",
+        "batch_notify_users: {\"ok\":true,\"sent_to\":36,\"filter\":\"inactive\"}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 56157
     }
   ],
-  "last_run": "2026-05-15T19:32:45.408Z",
+  "last_run": "2026-05-16T11:59:28.817Z",
   "cfg_patches": {},
   "stats": {
-    "total_runs": 1,
-    "total_tool_calls": 18,
-    "users_helped": 6,
-    "weights_updated": 0,
-    "plans_adjusted": 6
+    "total_runs": 6,
+    "total_tool_calls": 124,
+    "users_helped": 111,
+    "weights_updated": 3,
+    "plans_adjusted": 66
+  },
+  "recitation_data": {
+    "top_error_words": [],
+    "global_avg_accuracy": 0,
+    "total_recitation_sessions": 0,
+    "reciter_folders": {
+      "ar.alafasy": "Alafasy_128kbps",
+      "ar.husary": "Husary_128kbps",
+      "ar.minshawi": "Minshawi_128kbps",
+      "ar.sudais": "Abdurrahmaan_As-Sudais_192kbps",
+      "ar.basfar": "Abdullah_Basfar_192kbps"
+    },
+    "last_analyzed": "2026-05-16T11:45:31.625Z"
   }
 }

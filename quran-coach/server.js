@@ -1648,7 +1648,14 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'update_hermes_cfg', description:'تحديث إعدادات Hermes نفسه: تواتر الدورات، الحد الأقصى لاستدعاءات الأدوات، إلخ.', parameters:{ type:'object', properties:{ max_tool_calls:{ type:'number' }, focus_mode:{ type:'string', enum:['full_analysis','quick_scan','coaching_only','algorithm_only'] } }, required:[] } } },
   { type:'function', function:{ name:'done', description:'إنهاء دورة التحليل مع ملخص شامل.', parameters:{ type:'object', properties:{ summary:{ type:'string' }, actions_taken:{ type:'array', items:{ type:'string' } }, next_run_focus:{ type:'string' } }, required:['summary'] } } },
   { type:'function', function:{ name:'get_recitation_skill_data', description:'تحليل بيانات التلاوة لكل المستخدمين: أكثر الكلمات خطأً، دقة كل مستخدم، السور الأصعب، ربط بروابط صوتيات الشيوخ للمراجعة.', parameters:{ type:'object', properties:{ top_n_words:{ type:'number', description:'عدد الكلمات الأكثر خطأ (افتراضي 20)' } } } } },
-  { type:'function', function:{ name:'generate_recitation_coaching', description:'توليد خطة تدريب تلاوة مخصصة لمستخدم بناءً على أخطائه + روابط صوتيات الشيوخ للكلمات الأصعب.', parameters:{ type:'object', properties:{ username:{ type:'string' }, reciter_id:{ type:'string', enum:['ar.alafasy','ar.husary','ar.minshawi','ar.sudais','ar.basfar'], description:'الشيخ المرجعي للتدريب (افتراضي ar.alafasy)' } }, required:['username'] } } }
+  { type:'function', function:{ name:'generate_recitation_coaching', description:'توليد خطة تدريب تلاوة مخصصة لمستخدم بناءً على أخطائه + روابط صوتيات الشيوخ للكلمات الأصعب.', parameters:{ type:'object', properties:{ username:{ type:'string' }, reciter_id:{ type:'string', enum:['ar.alafasy','ar.husary','ar.minshawi','ar.sudais','ar.basfar'], description:'الشيخ المرجعي للتدريب (افتراضي ar.alafasy)' } }, required:['username'] } } },
+
+  /* ═══ أدوات البرمجة الذاتية — Hermes يقرأ ويعدل الكود الحقيقي ═══ */
+  { type:'function', function:{ name:'list_project_files', description:'قراءة قائمة ملفات المشروع مع أحجامها وتواريخها. مفيد لفهم بنية المشروع قبل التعديل.', parameters:{ type:'object', properties:{ subdir:{ type:'string', description:'مجلد فرعي (مثل public أو فارغ للجذر)' } } } } },
+  { type:'function', function:{ name:'read_project_file', description:'قراءة محتوى أي ملف من ملفات المشروع الحقيقية (server.js, app.js, ai_core.js, إلخ). استخدمها لفهم الخوارزمية قبل تعديلها.', parameters:{ type:'object', properties:{ file_path:{ type:'string', description:'مسار الملف نسبة لمجلد quran-coach (مثل: public/app.js, ai_core.js, server.js)' }, start_line:{ type:'number', description:'رقم السطر للبداية (اختياري)' }, lines:{ type:'number', description:'عدد الأسطر للقراءة (افتراضي 100)' } }, required:['file_path'] } } },
+  { type:'function', function:{ name:'write_project_file', description:'تعديل ملف مسموح به في المشروع. Hermes يُحسّن الخوارزمية والكود مباشرةً. الملفات المسموحة: ai_core.js, public/app.js (دوال محددة). يُحفظ نسخة احتياطية تلقائياً.', parameters:{ type:'object', properties:{ file_path:{ type:'string', description:'مسار الملف (ai_core.js أو public/app.js)' }, old_text:{ type:'string', description:'النص القديم المراد استبداله (يجب أن يكون موجوداً بالضبط في الملف)' }, new_text:{ type:'string', description:'النص الجديد البديل' }, reason:{ type:'string', description:'سبب التعديل وما الذي يُحسّنه' } }, required:['file_path','old_text','new_text','reason'] } } },
+  { type:'function', function:{ name:'analyze_and_improve_algorithm', description:'يحلل Hermes الخوارزمية الحالية مع بيانات الأخطاء الحقيقية ويقترح تحسينات كودية دقيقة بالذكاء الاصطناعي. يحفظ النتائج في الذاكرة.', parameters:{ type:'object', properties:{ focus:{ type:'string', enum:['recitation_matching','ml_weights','sr_restart','word_similarity','all'], description:'ما الذي تريد تحليله' } }, required:['focus'] } } },
+  { type:'function', function:{ name:'test_server_health', description:'يتحقق أن السيرفر لا يزال يعمل بشكل صحيح بعد أي تعديل. يُرجع حالة كل endpoint أساسي.', parameters:{ type:'object', properties:{} } } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -1954,6 +1961,150 @@ async function executeHermesTool(toolName, args, mem){
       return {ok:true, username:args.username, avg_accuracy:avgAcc, top_errors:topErrWords, coaching_plan:reply||'تعذّر توليد الخطة', reciter_used:reciterId, base_audio_url:`https://everyayah.com/data/${reciterFolder}/`};
     }
 
+    /* ═══ أدوات البرمجة الذاتية ═══ */
+
+    case 'list_project_files': {
+      const base = ROOT; // quran-coach/
+      const sub  = String(args.subdir||'').replace(/\.\./g,'').replace(/^\/+/,'');
+      const dir  = sub ? path.join(base, sub) : base;
+      try {
+        const entries = fs.readdirSync(dir, {withFileTypes:true});
+        const files = entries.map(e=>{
+          try {
+            const fp = path.join(dir, e.name);
+            const st = fs.statSync(fp);
+            return { name:e.name, type:e.isDirectory()?'dir':'file', size_kb:e.isFile()?+(st.size/1024).toFixed(1):null, modified:st.mtime.toISOString().slice(0,16) };
+          } catch{ return {name:e.name,type:'?'}; }
+        }).filter(e=>!e.name.startsWith('.')); // skip hidden
+        return { dir: sub||'quran-coach/', count:files.length, files };
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'read_project_file': {
+      const safePath = String(args.file_path||'').replace(/\.\.\//g,'').replace(/^\/+/,'');
+      if (!safePath) return {error:'file_path required'};
+      const fp = path.join(ROOT, safePath);
+      // ضمان أن الملف داخل مجلد المشروع
+      if (!fp.startsWith(ROOT)) return {error:'access_denied: outside project'};
+      try {
+        const content = fs.readFileSync(fp,'utf8');
+        const lines   = content.split('\n');
+        const start   = Math.max(0, (+args.start_line||1)-1);
+        const count   = Math.min(200, +args.lines||100);
+        const slice   = lines.slice(start, start+count);
+        return {
+          file: safePath,
+          total_lines: lines.length,
+          shown_from: start+1,
+          shown_to:   start+slice.length,
+          content: slice.join('\n'),
+          size_kb: +(Buffer.byteLength(content)/1024).toFixed(1)
+        };
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'write_project_file': {
+      /* WHITELIST: فقط هذه الملفات يُسمح لـ Hermes بتعديلها */
+      const ALLOWED = ['ai_core.js', 'public/app.js'];
+      const safePath = String(args.file_path||'').replace(/\.\.\//g,'').replace(/^\/+/,'');
+      if (!ALLOWED.includes(safePath)) return {error:`access_denied: only ${ALLOWED.join(', ')} allowed`};
+      const fp = path.join(ROOT, safePath);
+      const oldText = String(args.old_text||'');
+      const newText = String(args.new_text||'');
+      const reason  = String(args.reason||'').slice(0,300);
+      if (!oldText) return {error:'old_text required'};
+      try {
+        const content = fs.readFileSync(fp,'utf8');
+        if (!content.includes(oldText)) return {error:'old_text not found in file — read the file first to get exact text'};
+        // نسخة احتياطية تلقائية قبل أي تعديل
+        const backupPath = fp + '.hermes_backup_' + Date.now();
+        fs.writeFileSync(backupPath, content, 'utf8');
+        const updated = content.replace(oldText, newText);
+        // فحص أساسي: السطور لا تقل كثيراً (guard against empty writes)
+        if (updated.length < content.length * 0.5) return {error:'safety_block: new content is less than 50% of original — aborting'};
+        fs.writeFileSync(fp, updated, 'utf8');
+        // حفظ سجل التعديلات في ذاكرة Hermes
+        if (!mem.code_edits) mem.code_edits=[];
+        mem.code_edits.push({ file:safePath, reason, at:now(), chars_changed: Math.abs(newText.length-oldText.length) });
+        mem.code_edits = mem.code_edits.slice(-20); // آخر 20 تعديل فقط
+        return { ok:true, file:safePath, reason, backup:backupPath, chars_before:oldText.length, chars_after:newText.length };
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'analyze_and_improve_algorithm': {
+      const focus = String(args.focus||'all');
+      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
+      // اقرأ الكود ذي الصلة حسب الفوكس
+      let codeContext = '';
+      try {
+        if (focus==='ml_weights'||focus==='all') {
+          const ac = fs.readFileSync(path.join(ROOT,'ai_core.js'),'utf8');
+          codeContext += '\n\n=== ai_core.js (ML weights section) ===\n' + ac.slice(0,3000);
+        }
+        if (focus==='recitation_matching'||focus==='word_similarity'||focus==='all') {
+          const appJs = fs.readFileSync(path.join(ROOT,'public','app.js'),'utf8');
+          // استخرج processChunk فقط
+          const m = appJs.match(/processChunk[\s\S]{0,4000}/);
+          if (m) codeContext += '\n\n=== app.js processChunk ===\n' + m[0].slice(0,3000);
+        }
+        if (focus==='sr_restart'||focus==='all') {
+          const appJs = fs.readFileSync(path.join(ROOT,'public','app.js'),'utf8');
+          const m = appJs.match(/makeSR[\s\S]{0,2000}/);
+          if (m) codeContext += '\n\n=== app.js makeSR ===\n' + m[0].slice(0,2000);
+        }
+      } catch(e){ codeContext += '\n[read error: '+e.message+']'; }
+      // اجمع بيانات الأخطاء الحقيقية
+      const recLogs  = readLogFile('recitation_errors.jsonl', 100);
+      const errLogs  = readLogFile('errors.jsonl', 50);
+      const wordErr  = {};
+      recLogs.forEach(r=>{ if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{wordErr[w]=(wordErr[w]||0)+1;}); });
+      const topWords = Object.entries(wordErr).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([w,c])=>`${w}(${c})`).join('، ');
+      const avgAcc   = recLogs.length ? +(recLogs.reduce((s,r)=>s+(r.accuracy_pct||0),0)/recLogs.length).toFixed(1) : 0;
+      const sysP = `أنت Hermes Agent — وكيل ذكاء اصطناعي متخصص في تحليل وتحسين كود JavaScript.
+مهمتك: تحليل الكود الحقيقي + بيانات الأخطاء الحقيقية وتوليد تحسينات دقيقة وقابلة للتنفيذ.
+قواعد:
+- كن دقيقاً: اذكر أسماء الدوال والمتغيرات الحقيقية
+- اقترح تعديلات صغيرة ومحددة (old_text → new_text)
+- لا تعيد كتابة كل شيء، فقط ما يحتاج تحسيناً
+- اكتب الرد بالعربية مع الكود بالإنجليزية`;
+      const userP = `بيانات التلاوة الحقيقية:
+- جلسات مُحللة: ${recLogs.length}
+- متوسط الدقة: ${avgAcc}%
+- الكلمات الأكثر خطأ: ${topWords||'لا بيانات بعد'}
+- عدد أخطاء السيرفر: ${errLogs.length}
+
+كود المشروع الحالي:
+${codeContext.slice(0,5000)}
+
+Focus: ${focus}
+
+اقترح 2-3 تحسينات محددة للكود بناءً على البيانات أعلاه. لكل تحسين: اشرح المشكلة، القيمة القديمة، القيمة الجديدة المقترحة، والسبب.`;
+      const reply = await callAI(sysP, userP);
+      // حفظ التحليل في ذاكرة Hermes
+      if(!mem.algorithm_analyses) mem.algorithm_analyses=[];
+      mem.algorithm_analyses.push({ focus, at:now(), avg_accuracy:avgAcc, top_words:topWords, analysis:reply||'', sessions_analyzed:recLogs.length });
+      mem.algorithm_analyses = mem.algorithm_analyses.slice(-10);
+      return { ok:true, focus, avg_accuracy:avgAcc, sessions_analyzed:recLogs.length, top_error_words:topWords, analysis:reply||'تعذّر التحليل', note:'استخدم write_project_file لتطبيق التحسينات المقترحة' };
+    }
+
+    case 'test_server_health': {
+      const checks = [];
+      const base = `http://localhost:${PORT}`;
+      const endpoints = [
+        {path:'/', method:'GET', label:'Static homepage'},
+        {path:'/qqc/auth/check-username?username=test', method:'GET', label:'Auth check'},
+      ];
+      for (const ep of endpoints) {
+        try {
+          const r = await fetch(`${base}${ep.path}`, {method:ep.method, signal:AbortSignal.timeout(3000)});
+          checks.push({endpoint:ep.path, status:r.status, ok:r.status<500, label:ep.label});
+        } catch(e){ checks.push({endpoint:ep.path, status:'error', ok:false, error:e.message, label:ep.label}); }
+      }
+      const allOk = checks.every(c=>c.ok);
+      return { server_healthy:allOk, port:PORT, checks, note: allOk?'السيرفر يعمل بشكل صحيح':'تحقق من السجلات' };
+    }
+
     default: return {error:`unknown_tool: ${toolName}`};
   }
 }
@@ -1985,8 +2136,13 @@ async function runHermesAgent(){
 ✅ تولّد نصائح عميقة بالذكاء الاصطناعي
 ✅ تراسل المستخدمين بإشعارات مخصصة
 ✅ تكتسب مهارات وتتذكرها بين الدورات
+✅ تقرأ ملفات الكود الحقيقية (read_project_file, list_project_files)
+✅ تعدّل الكود مباشرةً (write_project_file) — ai_core.js و public/app.js
+✅ تحلّل الخوارزمية وتقترح تحسينات بالذكاء الاصطناعي (analyze_and_improve_algorithm)
+✅ تتحقق من صحة السيرفر بعد التعديلات (test_server_health)
 
 الدورة رقم: ${(mem.stats?.total_runs||0)+1}
+تعديلات الكود السابقة: ${(mem.code_edits||[]).length} تعديل
 مهاراتك المكتسبة:
 ${skillsSummary}
 
@@ -1997,12 +2153,19 @@ ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة ال
 
 تعليمات الدورة:
 1. استخدم get_global_stats أولاً لفهم الوضع الحالي
-2. اقرأ السجلات (read_error_logs) لاكتشاف مشاكل حقيقية  
-3. حلّل أنماط التلاوة (analyze_recitation_patterns)
+2. اقرأ السجلات (read_error_logs) لاكتشاف مشاكل حقيقية
+3. حلّل أنماط التلاوة (analyze_recitation_patterns, get_recitation_skill_data)
 4. امسح المستخدمين وحلّل الحالات الحرجة
 5. اتخذ إجراءات حقيقية: عدّل الأوزان، الخطط، أرسل إشعارات
-6. احفظ ما تعلّمته وسجّل رؤاك
-7. أنهِ بملخص شامل مع خطة الدورة القادمة
+6. إن وجدت مشكلة في الخوارزمية: اقرأ الكود → حلّل → عدّل → تحقق من الصحة
+7. احفظ ما تعلّمته وسجّل رؤاك
+8. أنهِ بملخص شامل مع خطة الدورة القادمة
+
+قواعد تعديل الكود:
+- اقرأ الملف دائماً قبل التعديل (read_project_file)
+- نسّخ النص بدقة تامة في old_text (مطابقة حرفية)
+- تحقق من صحة السيرفر بعد كل تعديل (test_server_health)
+- الملفات المسموح بتعديلها فقط: ai_core.js, public/app.js
 
 الحد الأقصى: ${maxCalls} استدعاء. لا تتوقف حتى تأخذ إجراءات ملموسة حقيقية. الردود بالعربية.`;
 
