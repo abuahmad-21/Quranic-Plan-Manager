@@ -2263,6 +2263,7 @@ R('GET','/qqc/admin/hermes/status', async(req,res)=>{
     recent_insights:(mem.insights||[]).slice(-30).reverse(),
     skills:(mem.skills||[]).slice(-20).reverse(),
     next_run_focus:mem.runs?.slice(-1)?.[0]?.next_run_focus||'',
+    code_edits:(mem.code_edits||[]).slice().reverse(),
   });
 });
 

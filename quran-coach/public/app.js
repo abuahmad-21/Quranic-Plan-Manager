@@ -1624,6 +1624,7 @@ const Admin = {
       const runs = r.recent_runs||[];
       const insights = r.recent_insights||[];
       const skills = r.skills||[];
+      const codeEdits = r.code_edits||[];
       const colorBadge=(v,good,bad)=>v>=good?'var(--mint)':v<=bad?'var(--red)':'var(--gold)';
       el.innerHTML = `
       <!-- Header -->
@@ -1656,7 +1657,7 @@ const Admin = {
 
       <!-- Tabs inside Hermes -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
-        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡']].map(([t,l])=>
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗']].map(([t,l])=>
           `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
       </div>
 
@@ -1708,6 +1709,43 @@ const Admin = {
             </div>
           </div>`;
         }).join('')}
+      </div>
+
+      <!-- GitHub Commits -->
+      <div id="h-commits" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:.8rem;color:var(--text-3)">كل تعديل كود يُرفع Hermes تلقائياً إلى GitHub</div>
+          <a href="https://github.com/abuahmad-21/Quranic-Plan-Manager/commits/main" target="_blank"
+             style="font-size:.72rem;color:#6366f1;text-decoration:none;padding:4px 10px;border:1px solid rgba(99,102,241,.3);border-radius:6px">↗ فتح GitHub</a>
+        </div>
+        ${codeEdits.length===0
+          ? `<div style="text-align:center;padding:30px 20px;background:rgba(0,0,0,.15);border-radius:10px;border:1px dashed rgba(255,255,255,.08)">
+               <div style="font-size:2rem;margin-bottom:8px">🔗</div>
+               <div style="color:var(--text-2);font-size:.85rem">لم يُرفع أي commit بعد</div>
+               <div style="color:var(--text-3);font-size:.75rem;margin-top:4px">Hermes سيرفع تلقائياً بعد تعديل الكود</div>
+             </div>`
+          : codeEdits.map(ed=>{
+              const isGit = !!ed.commit;
+              const borderColor = isGit ? 'rgba(34,197,94,.5)' : 'rgba(99,102,241,.4)';
+              const icon = isGit ? '✅' : '📝';
+              const ghUrl = isGit ? `https://github.com/abuahmad-21/Quranic-Plan-Manager/commit/${ed.commit}` : null;
+              return `<div class="glass-card" style="margin-bottom:8px;padding:11px;border-right:3px solid ${borderColor}">
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <span style="font-size:1rem;flex-shrink:0;margin-top:1px">${icon}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8rem;font-weight:600;color:${isGit?'#4ade80':'#a78bfa'};margin-bottom:3px">
+                      ${isGit ? `<a href="${ghUrl}" target="_blank" style="color:inherit;text-decoration:none">${escapeHTML(ed.message||ed.commit)}</a>` : escapeHTML(ed.reason||ed.file||'—')}
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                      ${ed.commit ? `<code style="font-size:.68rem;background:rgba(34,197,94,.1);color:#4ade80;padding:1px 6px;border-radius:4px;border:1px solid rgba(34,197,94,.2)">${ed.commit}</code>` : ''}
+                      ${ed.file ? `<span style="font-size:.68rem;color:var(--text-3);background:rgba(255,255,255,.05);padding:1px 6px;border-radius:4px">${escapeHTML(ed.file)}</span>` : ''}
+                      ${ed.chars_changed ? `<span style="font-size:.68rem;color:var(--text-3)">±${ed.chars_changed} حرف</span>` : ''}
+                    </div>
+                  </div>
+                  <div style="font-size:.65rem;color:var(--text-3);flex-shrink:0;text-align:left">${fmtTime(ed.at)}</div>
+                </div>
+              </div>`;
+            }).join('')}
       </div>`;
 
       /* Tab switching inside Hermes */
@@ -1715,7 +1753,7 @@ const Admin = {
         btn.onclick=()=>{
           el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
           btn.className='btn btn-sm btn-primary';
-          ['runs','skills','insights'].forEach(t=>{ const d=document.getElementById('h-'+t); if(d) d.style.display='none'; });
+          ['runs','skills','insights','commits'].forEach(t=>{ const d=document.getElementById('h-'+t); if(d) d.style.display='none'; });
           const target=document.getElementById('h-'+btn.dataset.htab);
           if(target) target.style.display='block';
         };
