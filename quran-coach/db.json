@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 39,
+      "total_users": 40,
       "total_sessions_today": 52,
       "total_pages_memorized_alltime": 10.2
     },
@@ -126,7 +126,7 @@
       }
     ],
     "training_samples": [],
-    "hermes_weights_updated_at": "2026-05-16T12:55:55.557Z"
+    "hermes_weights_updated_at": "2026-05-17T16:18:50.932Z"
   },
   "users": {
     "455": {
@@ -303,6 +303,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "82c7110588e9b4c2",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "97c2f5de5f590ee4",
+          "type": "motivation",
+          "text": "مرحباً! نود تذكيرك بأنك تستطيع البدء في تلاوة القرآن الآن. نحن هنا لدعمك في رحلتك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:04.678Z"
         }
       ],
       "posts": []
@@ -479,6 +495,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "1776994becff434a",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "9130aa27a807b9c8",
+          "type": "motivation",
+          "text": "مرحباً علي! هل تعودت على العودة للتلاوة؟ اعلم أن كل خطوة صغيرة مهمّة. نحن في صفك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.207Z"
         }
       ],
       "posts": []
@@ -640,6 +672,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "3883bbbf64eee6da",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "f6991ac2f1337ccf",
+          "type": "motivation",
+          "text": "تصبح الأمور أفضل مع كل تتلاوة، لا تتردد في البدء مجدداً، نحن هنا لدعمك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -808,6 +856,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "0d82090f2f89b770",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "0dec630f78b3862f",
+          "type": "motivation",
+          "text": "مرحباً! ننتظرك لتبدأ في تلاوة القرآن، نحن هنا لمساعدتك في أي وقت!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -976,6 +1040,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "d451af9fe4dbad16",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "95e7756ef62dc2f1",
+          "type": "motivation",
+          "text": "مرحباً! لاحظنا أنك لم تتلو منذ فترة. نحن هنا لمساعدتك على العودة!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -1147,6 +1227,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "01db848d51090b94",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "3a59ee068c108ba5",
+          "type": "motivation",
+          "text": "مرحباً! تذكّر أنه يمكنك دائماً العودة للتلاوة في أي وقت!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -1315,6 +1411,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "50f210b7898e4f0c",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "291c099559c8a59c",
+          "type": "motivation",
+          "text": "كلي أمل أنك بخير! نحن هنا لدعمك إذا رغبت في البدء بالتلاوة مرة أخرى!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -1650,6 +1762,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "61786abf78b35056",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "d91cc0798499838d",
+          "type": "motivation",
+          "text": "مرحباً! تذكّر أن كل لحظة تقضيها مع القرآن لها قيمة، ونحن هنا لتشجيعك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -2031,6 +2159,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "c5585757938291a7",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "2e9dc702503ff1d3",
+          "type": "motivation",
+          "text": "مرحباً! نحن نرغب في رؤيتك تعود لتلاوة القرآن. هيا، لنبدأ!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -2217,6 +2361,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "bdf4265b59529a84",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "385dcfd08e30eeec",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك إذا كنت بحاجة للعودة إلى تلاوة القرآن. لم تفقد شيئاً!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -2442,6 +2602,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "b598c7594d61f755",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "5d1b0dbc6e41c24a",
+          "type": "motivation",
+          "text": "مرحباً! كيف حالك؟ نود أن نراك تعود لتلاوة القرآن!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -2676,6 +2852,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "0f480afeb6f599ed",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "d2286f6743c6c420",
+          "type": "motivation",
+          "text": "مرحباً! لنبدأ من جديد. تلاوتك مهمة، ونحن هنا لدعمك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -2843,6 +3035,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "5f9fe25a39e22e9f",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "cffebc7077250270",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لتشجيعك على بدء التلاوة مرة أخرى. لا تتردد!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -3013,6 +3221,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "90585fff3c2ff13c",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "50ffe807bec256c0",
+          "type": "motivation",
+          "text": "مرحباً! تذكر أن كل بداية جديدة تحتاج إلى شجاعة. نحن معك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": [],
@@ -3173,6 +3397,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "267c068d908a53e9",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "b4b4a8cc5c3e76e2",
+          "type": "motivation",
+          "text": "مرحباً! تلاوتك مهمة، أعدك بأنها ستكون تجربة رائعة!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -3359,6 +3599,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "57c0702d643f262e",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "03444475674bc138",
+          "type": "motivation",
+          "text": "مرحباً! عُد الآن للتلاوة، كل تتلاوة تقربك أكثر من الهدف!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": [],
@@ -3533,6 +3789,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "b531d15a4eb6a657",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "219e328c0d64aed5",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك في أي وقت، ابدأ بالتلاوة!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -3695,6 +3967,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "85228e013d9e2bbe",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "15b2964bfb31f348",
+          "type": "motivation",
+          "text": "مرحباً! نرحب بك للعودة إلى تلاوة القرآن. نحن هنا للمساعدة!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": [
@@ -3877,6 +4165,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "898971e79985bde6",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.931Z"
+        },
+        {
+          "id": "0581a01a2ad6897c",
+          "type": "motivation",
+          "text": "مرحباً! ابدأ في تلاوة القرآن مع بداية جديدة، نحن هنا لدعمك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -4039,6 +4343,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "a5b1a6fdb2a7431c",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "a4e010f7f6cc11b1",
+          "type": "motivation",
+          "text": "مرحباً! دعنا نعود معاً لتلاوة القرآن الكريم. نحن هنا!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -4192,6 +4512,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "1a36736b4416f5b1",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "90f204636f5e97bf",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك. الاشتراك في تلاوة القرآن ورقبة رائعة!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": [],
@@ -4358,6 +4694,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "862844a582975cac",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "09ca210a34fb9071",
+          "type": "motivation",
+          "text": "مرحباً! لا تتردد في العودة لتلاوة القرآن. نشجعك على ذلك!",
+          "ref": "motivation_reminder",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": [],
@@ -4481,6 +4833,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "170cceb9bd0e83f6",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "010cf3d16bf06df4",
+          "type": "motivation",
+          "text": "مر",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:22:13.208Z"
         }
       ],
       "posts": []
@@ -4610,6 +4978,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "e55e4c0d22b944b5",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": []
@@ -4732,6 +5108,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "9de7bf0883a7b60f",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -4891,6 +5275,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "684a6fa172611632",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5006,6 +5398,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "6aada283f5734240",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5142,6 +5542,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "355276cd9e203991",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5262,6 +5670,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "6bb448469e60a3a3",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5369,6 +5785,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "4cdb49cc948da6d2",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5514,6 +5938,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "e3f4e5e89ad8df6e",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5858,6 +6290,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "153602b8179df979",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -5971,6 +6411,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "88f4252642f2a272",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -6141,6 +6589,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "6a60bf63482dfe20",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -6322,6 +6778,14 @@
           "ref": "view-channels",
           "read": false,
           "created_at": "2026-05-13T12:08:14.641Z"
+        },
+        {
+          "id": "60f48d73155346f9",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -6502,6 +6966,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "0bc272785e3db79b",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -7125,6 +7597,115 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-16T12:55:54.160Z"
+        },
+        {
+          "id": "1cf516298740e8f6",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-17T16:18:50.932Z"
+        }
+      ],
+      "posts": [],
+      "login_history": []
+    },
+    "diidud": {
+      "username": "diidud",
+      "password_hash": "2676ba412d4611dfdeca1c1b39f9b2d99dddfea4f79ffa54e05b5d2e0af5ef63",
+      "display_name": "Hdhhdhdhd",
+      "created_at": "2026-05-17T16:18:12.234Z",
+      "last_active": "2026-05-17T16:22:32.721Z",
+      "avatar_color": "#0c155c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-17T16:18:14.111Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-17T16:18:14.111Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 8.11,
+        "afi": 59,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "faf3d56ce6e86391",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
+          "ref": "view-dashboard",
+          "read": true,
+          "created_at": "2026-05-17T16:18:50.932Z"
         }
       ],
       "posts": [],
@@ -7348,6 +7929,11 @@
       "username": "pldfopll",
       "expires": 1781465235537,
       "created_at": "2026-05-15T19:27:15.537Z"
+    },
+    "f744ce8e07ed7d9e08922a534627b1d8334c33c43bb2d29b": {
+      "username": "diidud",
+      "expires": 1781626692234,
+      "created_at": "2026-05-17T16:18:12.234Z"
     }
   }
 }
