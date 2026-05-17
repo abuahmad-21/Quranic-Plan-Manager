@@ -1405,6 +1405,10 @@ R('POST','/qqc/ai/tts', async (req,res)=>{
   } catch(e){ return send(res,500,{error:e.message}); }
 });
 
+/* ── HERMES LAB DIR ── */
+const HERMES_LAB_DIR = path.join(ROOT,'hermes_lab');
+if(!fs.existsSync(HERMES_LAB_DIR)) fs.mkdirSync(HERMES_LAB_DIR,{recursive:true});
+
 /* ── AI TRAINING DATA (collect audio + text pairs for fine-tuning) ── */
 const TRAINING_DIR = path.join(ROOT,'training_data');
 if(!fs.existsSync(TRAINING_DIR)) fs.mkdirSync(TRAINING_DIR,{recursive:true});
@@ -1656,7 +1660,15 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'write_project_file', description:'تعديل ملف مسموح به في المشروع. Hermes يُحسّن الخوارزمية والكود مباشرةً. الملفات المسموحة: ai_core.js, public/app.js (دوال محددة). يُحفظ نسخة احتياطية تلقائياً.', parameters:{ type:'object', properties:{ file_path:{ type:'string', description:'مسار الملف (ai_core.js أو public/app.js)' }, old_text:{ type:'string', description:'النص القديم المراد استبداله (يجب أن يكون موجوداً بالضبط في الملف)' }, new_text:{ type:'string', description:'النص الجديد البديل' }, reason:{ type:'string', description:'سبب التعديل وما الذي يُحسّنه' } }, required:['file_path','old_text','new_text','reason'] } } },
   { type:'function', function:{ name:'analyze_and_improve_algorithm', description:'يحلل Hermes الخوارزمية الحالية مع بيانات الأخطاء الحقيقية ويقترح تحسينات كودية دقيقة بالذكاء الاصطناعي. يحفظ النتائج في الذاكرة.', parameters:{ type:'object', properties:{ focus:{ type:'string', enum:['recitation_matching','ml_weights','sr_restart','word_similarity','all'], description:'ما الذي تريد تحليله' } }, required:['focus'] } } },
   { type:'function', function:{ name:'test_server_health', description:'يتحقق أن السيرفر لا يزال يعمل بشكل صحيح بعد أي تعديل. يُرجع حالة كل endpoint أساسي.', parameters:{ type:'object', properties:{} } } },
-  { type:'function', function:{ name:'git_commit_changes', description:'يرفع التعديلات الأخيرة على الكود إلى GitHub تلقائياً. استخدمها بعد كل تعديل ناجح عبر write_project_file لحفظ التغييرات في ريبو GitHub.', parameters:{ type:'object', properties:{ message:{ type:'string', description:'رسالة الـ commit بالعربي أو الإنجليزي تصف التعديل' } }, required:['message'] } } }
+  { type:'function', function:{ name:'git_commit_changes', description:'يرفع التعديلات الأخيرة على الكود إلى GitHub تلقائياً. استخدمها بعد كل تعديل ناجح عبر write_project_file لحفظ التغييرات في ريبو GitHub.', parameters:{ type:'object', properties:{ message:{ type:'string', description:'رسالة الـ commit بالعربي أو الإنجليزي تصف التعديل' } }, required:['message'] } } },
+
+  /* ═══ أدوات المختبر والإنترنت — Hermes يتدرب ويبحث ═══ */
+  { type:'function', function:{ name:'web_search', description:'البحث في الإنترنت عن أي موضوع (مكتبات، أدوات، معلومات تقنية، بحوث). يُرجع ملخصاً من DuckDuckGo.', parameters:{ type:'object', properties:{ query:{ type:'string', description:'نص البحث' } }, required:['query'] } } },
+  { type:'function', function:{ name:'fetch_url', description:'جلب محتوى أي رابط من الإنترنت — صفحة ويب، ملف JSON، وثيقة API، حزمة npm. يُرجع النص المقتطع.', parameters:{ type:'object', properties:{ url:{ type:'string', description:'الرابط الكامل' }, max_chars:{ type:'number', description:'الحد الأقصى للحروف (افتراضي 3000)' } }, required:['url'] } } },
+  { type:'function', function:{ name:'generate_tts_file', description:'توليد ملف صوتي (TTS) من نص وحفظه في مختبر Hermes. يُستخدم لصنع نماذج تلاوة وملفات تدريبية وتجارب صوتية.', parameters:{ type:'object', properties:{ text:{ type:'string', description:'النص المراد تحويله لصوت (عربي أو إنجليزي، 10-600 حرف)' }, filename:{ type:'string', description:'اسم الملف بدون امتداد' }, voice:{ type:'string', enum:['alloy','echo','fable','onyx','nova','shimmer'], description:'الصوت: nova أو shimmer للعربية، alloy للإنجليزية' }, speed:{ type:'number', description:'سرعة الصوت 0.5-1.5 (افتراضي 0.82 للترتيل)' } }, required:['text','filename'] } } },
+  { type:'function', function:{ name:'list_lab_files', description:'قائمة كل ملفات مختبر Hermes (صوتية ونصية وبيانات).', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'delete_lab_file', description:'حذف ملف من مختبر Hermes.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده' } }, required:['filename'] } } },
+  { type:'function', function:{ name:'create_text_file', description:'إنشاء ملف نصي أو JSON أو Markdown في مختبر Hermes. يُستخدم لحفظ تقارير التحليل، خطط التدريب، ملاحظات المقارنة.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده (.txt .json .md)' }, content:{ type:'string', description:'محتوى الملف' } }, required:['filename','content'] } } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -2133,6 +2145,118 @@ Focus: ${focus}
       }
     }
 
+    /* ═══ أدوات المختبر والإنترنت ═══ */
+
+    case 'web_search': {
+      const query = String(args.query||'').slice(0,200);
+      if(!query) return {error:'query مطلوب'};
+      try {
+        // DuckDuckGo Instant Answer API — no key required
+        const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+        const resp = await fetch(ddgUrl, {headers:{'User-Agent':'HermesAgent/2.0'}, signal:AbortSignal.timeout(8000)});
+        const data = await resp.json();
+        const results = [];
+        if(data.AbstractText) results.push({title:data.Heading||query, snippet:data.AbstractText.slice(0,400), url:data.AbstractURL});
+        if(Array.isArray(data.RelatedTopics)) {
+          data.RelatedTopics.slice(0,8).forEach(t=>{
+            if(t.Text) results.push({title:t.Text.slice(0,80), snippet:t.Text.slice(0,300), url:t.FirstURL||''});
+          });
+        }
+        if(!results.length) return {query, message:'لم يُوجد نتائج مباشرة. حاول fetch_url مع رابط محدد.', tip:'جرّب: fetch_url بـ https://www.npmjs.com/search?q=...'};
+        return {query, count:results.length, results};
+      } catch(e){ return {error:'فشل البحث: '+e.message, tip:'تحقق من الاتصال بالإنترنت أو جرّب fetch_url مباشرة'}; }
+    }
+
+    case 'fetch_url': {
+      const url = String(args.url||'');
+      if(!url.startsWith('http')) return {error:'رابط غير صالح'};
+      const maxChars = Math.min(8000, +args.max_chars||3000);
+      try {
+        const resp = await fetch(url, {headers:{'User-Agent':'HermesAgent/2.0','Accept':'text/html,application/json,*/*'}, signal:AbortSignal.timeout(10000)});
+        const ct = resp.headers.get('content-type')||'';
+        let text = await resp.text();
+        // إزالة HTML tags للتبسيط
+        if(ct.includes('html')) text = text.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s{2,}/g,' ').trim();
+        const truncated = text.length > maxChars;
+        return {url, status:resp.status, content_type:ct.slice(0,50), chars:text.length, truncated, content:text.slice(0,maxChars)+(truncated?'\n...[مقتطع]':'')};
+      } catch(e){ return {error:'فشل جلب الرابط: '+e.message, url}; }
+    }
+
+    case 'generate_tts_file': {
+      const text = String(args.text||'').slice(0,600);
+      if(!text || text.length<3) return {error:'النص مطلوب (3-600 حرف)'};
+      const rawName = String(args.filename||'hermes_tts_'+uid()).replace(/[^a-zA-Z0-9_\-\u0621-\u064A]/g,'_').slice(0,60);
+      const filename = rawName + '.mp3';
+      const safePath = path.join(HERMES_LAB_DIR, filename);
+      if(!safePath.startsWith(HERMES_LAB_DIR)) return {error:'اسم ملف غير صالح'};
+      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
+      const voice = ['alloy','echo','fable','onyx','nova','shimmer'].includes(args.voice) ? args.voice : 'nova';
+      const speed = Math.max(0.5, Math.min(1.5, +args.speed||0.82));
+      try {
+        const resp = await fetch(`${baseUrl}/audio/speech`,{
+          method:'POST', signal:AbortSignal.timeout(30000),
+          headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:'tts-1', input:text, voice, speed})
+        });
+        if(!resp.ok){ const t=await resp.text(); return {error:'TTS فشل: '+t.slice(0,200)}; }
+        const buf = Buffer.from(await resp.arrayBuffer());
+        fs.writeFileSync(safePath, buf);
+        if(!mem.lab_files) mem.lab_files=[];
+        mem.lab_files.push({filename, type:'audio', created_at:now(), text_preview:text.slice(0,80), size_kb:+(buf.length/1024).toFixed(1), voice, speed});
+        mem.lab_files = mem.lab_files.slice(-100);
+        return {ok:true, filename, size_kb:+(buf.length/1024).toFixed(1), voice, speed, text_preview:text.slice(0,80), lab_url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(filename)}`};
+      } catch(e){ return {error:'خطأ في توليد الصوت: '+e.message}; }
+    }
+
+    case 'list_lab_files': {
+      try {
+        const entries = fs.readdirSync(HERMES_LAB_DIR);
+        const files = entries.map(name=>{
+          try {
+            const fp=path.join(HERMES_LAB_DIR,name);
+            const st=fs.statSync(fp);
+            const ext=path.extname(name).toLowerCase();
+            const type=ext==='.mp3'||ext==='.wav'||ext==='.ogg'?'audio':ext==='.json'?'json':'text';
+            return {filename:name, type, size_kb:+(st.size/1024).toFixed(1), modified:st.mtime.toISOString().slice(0,16), url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(name)}`};
+          } catch{ return null; }
+        }).filter(Boolean);
+        return {count:files.length, files: files.sort((a,b)=>b.modified.localeCompare(a.modified))};
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'delete_lab_file': {
+      const filename = String(args.filename||'').replace(/[/\\]/g,'');
+      if(!filename) return {error:'filename مطلوب'};
+      const fp = path.join(HERMES_LAB_DIR, filename);
+      if(!fp.startsWith(HERMES_LAB_DIR)) return {error:'مسار غير صالح'};
+      try {
+        if(!fs.existsSync(fp)) return {error:'الملف غير موجود'};
+        fs.unlinkSync(fp);
+        if(mem.lab_files) mem.lab_files = mem.lab_files.filter(f=>f.filename!==filename);
+        return {ok:true, deleted:filename};
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'create_text_file': {
+      const content = String(args.content||'');
+      const rawName = String(args.filename||'hermes_note_'+uid());
+      // السماح بامتدادات آمنة فقط
+      const allowedExts = ['.txt','.json','.md','.csv','.log'];
+      const ext = path.extname(rawName).toLowerCase();
+      if(!allowedExts.includes(ext)) return {error:`امتداد غير مسموح — استخدم: ${allowedExts.join(', ')}`};
+      const safeName = path.basename(rawName).replace(/[^a-zA-Z0-9_\-\.\u0621-\u064A]/g,'_').slice(0,80);
+      const fp = path.join(HERMES_LAB_DIR, safeName);
+      if(!fp.startsWith(HERMES_LAB_DIR)) return {error:'مسار غير صالح'};
+      try {
+        fs.writeFileSync(fp, content, 'utf8');
+        if(!mem.lab_files) mem.lab_files=[];
+        mem.lab_files.push({filename:safeName, type:ext==='.json'?'json':'text', created_at:now(), size_kb:+(Buffer.byteLength(content)/1024).toFixed(1)});
+        mem.lab_files = mem.lab_files.slice(-100);
+        return {ok:true, filename:safeName, size_kb:+(Buffer.byteLength(content)/1024).toFixed(1), url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(safeName)}`};
+      } catch(e){ return {error:e.message}; }
+    }
+
     default: return {error:`unknown_tool: ${toolName}`};
   }
 }
@@ -2302,6 +2426,149 @@ R('DELETE','/qqc/admin/hermes/memory', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   writeHermesMemory({ skills:[], insights:[], runs:[], last_run:null, cfg_patches:{}, stats:{total_runs:0,total_tool_calls:0,users_helped:0,weights_updated:0,plans_adjusted:0} });
   send(res,200,{ok:true});
+});
+
+/* ── Hermes Lab File API ── */
+R('GET','/qqc/admin/hermes/lab/files', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  try {
+    const entries = fs.readdirSync(HERMES_LAB_DIR);
+    const files = entries.map(name=>{
+      try {
+        const fp=path.join(HERMES_LAB_DIR,name);
+        const st=fs.statSync(fp);
+        const ext=path.extname(name).toLowerCase();
+        const type=ext==='.mp3'||ext==='.wav'||ext==='.ogg'?'audio':ext==='.json'?'json':'text';
+        return {filename:name, type, size_kb:+(st.size/1024).toFixed(1), modified:st.mtime.toISOString()};
+      } catch{ return null; }
+    }).filter(Boolean).sort((a,b)=>b.modified.localeCompare(a.modified));
+    send(res,200,{count:files.length, files});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+R('GET','/qqc/admin/hermes/lab/file/:filename', async(req,res,p,query)=>{
+  // يقبل الـ password من header أو query param (مطلوب للـ audio elements)
+  const pw = req.headers['x-admin-password'] || String(query?.pw||'');
+  const pwHash = pw ? require('crypto').createHash('sha256').update(pw).digest('hex') : '';
+  if(pwHash !== DB.admin.password_hash) return send(res,401,{error:'admin_auth'});
+  const filename = decodeURIComponent(p.filename).replace(/[/\\]/g,'');
+  const fp = path.join(HERMES_LAB_DIR, filename);
+  if(!fp.startsWith(HERMES_LAB_DIR)||!fs.existsSync(fp)) return send(res,404,{error:'not_found'});
+  const ext=path.extname(filename).toLowerCase();
+  const ct=ext==='.mp3'?'audio/mpeg':ext==='.wav'?'audio/wav':ext==='.ogg'?'audio/ogg':ext==='.json'?'application/json':'text/plain; charset=utf-8';
+  const buf=fs.readFileSync(fp);
+  res.writeHead(200,{'Content-Type':ct,'Access-Control-Allow-Origin':'*','Content-Length':buf.length,'Content-Disposition':`inline; filename="${filename}"`});
+  res.end(buf);
+});
+
+R('DELETE','/qqc/admin/hermes/lab/file/:filename', async(req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const filename = decodeURIComponent(p.filename).replace(/[/\\]/g,'');
+  const fp = path.join(HERMES_LAB_DIR, filename);
+  if(!fp.startsWith(HERMES_LAB_DIR)) return send(res,400,{error:'invalid_path'});
+  if(!fs.existsSync(fp)) return send(res,404,{error:'not_found'});
+  fs.unlinkSync(fp);
+  send(res,200,{ok:true, deleted:filename});
+});
+
+/* ── Hermes Interactive Chat (Streaming SSE) — Admin only ── */
+R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const userMessage = String(b.message||'').slice(0,2000);
+  if(!userMessage) return send(res,400,{error:'message مطلوب'});
+  const history = Array.isArray(b.history) ? b.history.slice(-12) : [];
+
+  const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if(!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured'});
+
+  // SSE headers
+  res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','Access-Control-Allow-Origin':'*'});
+  const sse=(type,data)=>{ try{ res.write(`data: ${JSON.stringify({type,...data})}\n\n`); }catch{} };
+
+  const mem = readHermesMemory();
+  const skillsSummary = (mem.skills||[]).slice(-5).map(s=>`• ${s.title}: ${s.content.slice(0,80)}`).join('\n')||'لا مهارات بعد';
+  const labFiles = fs.readdirSync(HERMES_LAB_DIR).slice(0,15).join(', ')||'لا ملفات';
+
+  const systemPrompt = `أنت Hermes Agent — وكيل ذكاء اصطناعي لتطبيق Quantum Quran Coach.
+أنت تتحدث مع مدير النظام (الأدمن) مباشرة.
+لديك أدوات حقيقية لتنفيذ المطلوب: بحث الإنترنت، توليد صوت، تحليل بيانات، تعديل كود، إدارة مختبر الملفات.
+
+ذاكرتك الحالية:
+• مهارات مكتسبة: ${skillsSummary}
+• ملفات المختبر: ${labFiles}
+• دورات منفّذة: ${mem.stats?.total_runs||0}
+
+قواعد المحادثة:
+- نفّذ طلبات الأدمن فعلياً باستخدام الأدوات — لا تكتفِ بالوصف
+- استخدم أدوات متعددة إن لزم (بحث → تنفيذ → حفظ)
+- أجب بالعربية دائماً
+- كن مختصراً ومباشراً في الرسائل النصية
+- عند توليد صوت: استخدم generate_tts_file واذكر اسم الملف الناتج`;
+
+  const messages = [
+    {role:'system', content:systemPrompt},
+    ...history.map(h=>({role:h.role, content:h.content})),
+    {role:'user', content:userMessage}
+  ];
+
+  let toolCallCount = 0;
+  const maxCalls = 10;
+
+  try {
+    while(toolCallCount < maxCalls){
+      let resp;
+      try {
+        resp = await fetch(`${baseUrl}/chat/completions`,{
+          method:'POST', signal:AbortSignal.timeout(60000),
+          headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:'auto', max_completion_tokens:1500})
+        });
+      } catch(e){ sse('error',{message:'خطأ في الاتصال بالذكاء الاصطناعي: '+e.message}); break; }
+
+      if(!resp.ok){ sse('error',{message:`API error: ${resp.status}`}); break; }
+      const data = await resp.json();
+      const msg = data.choices?.[0]?.message;
+      if(!msg) break;
+      messages.push(msg);
+
+      // رسالة نصية من هرمس
+      if(msg.content) sse('message',{content:msg.content});
+
+      // لا يوجد tool calls — انتهى
+      if(!msg.tool_calls||!msg.tool_calls.length) break;
+
+      // تنفيذ الأدوات وبث النتائج
+      for(const tc of msg.tool_calls){
+        toolCallCount++;
+        const toolName=tc.function?.name;
+        let args={};
+        try{ args=JSON.parse(tc.function?.arguments||'{}'); }catch{}
+
+        sse('tool_call',{name:toolName, args});
+
+        let result;
+        try{ result=await executeHermesTool(toolName,args,mem); }catch(e){ result={error:e.message}; }
+
+        // إن كان الملف صوت — أضف رابطه للحدث
+        if(result?.ok && result?.filename && result?.lab_url){
+          sse('lab_file',{filename:result.filename, url:result.lab_url, size_kb:result.size_kb, type:'audio'});
+        }
+        // إن كان ملف نصي
+        if(result?.ok && result?.filename && !result?.lab_url?.includes('.mp3')){
+          const ext=path.extname(result.filename).toLowerCase();
+          if(['.txt','.json','.md'].includes(ext)) sse('lab_file',{filename:result.filename, url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(result.filename)}`, size_kb:result.size_kb, type:'text'});
+        }
+
+        sse('tool_result',{name:toolName, result:JSON.stringify(result).slice(0,600)});
+        messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(result)});
+      }
+    }
+  } catch(e){ sse('error',{message:e.message}); }
+
+  writeHermesMemory(mem);
+  sse('done',{tool_calls:toolCallCount});
+  res.end();
 });
 
 server.listen(PORT, ()=>{

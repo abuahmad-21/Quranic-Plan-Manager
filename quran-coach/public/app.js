@@ -1657,7 +1657,7 @@ const Admin = {
 
       <!-- Tabs inside Hermes -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
-        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗']].map(([t,l])=>
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['chat','💬 محادثة'],['lab','🧪 المختبر']].map(([t,l])=>
           `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
       </div>
 
@@ -1711,6 +1711,34 @@ const Admin = {
         }).join('')}
       </div>
 
+      <!-- Chat with Hermes -->
+      <div id="h-chat" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div id="h-chat-messages" style="min-height:180px;max-height:420px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:20px 0">
+              ابدأ محادثة مع Hermes — يمكنه البحث بالإنترنت، توليد أصوات، تحليل البيانات، وتعديل الكود
+            </div>
+          </div>
+          <div id="h-chat-status" style="font-size:.72rem;color:#a78bfa;min-height:16px;padding:0 4px"></div>
+          <div style="display:flex;gap:6px">
+            <input id="h-chat-input" type="text" placeholder="اكتب رسالتك لهرمس… (مثال: ابحث عن مكتبات تحليل الصوت، أو: ولّد صوت تلاوة للفاتحة)" style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;font-family:inherit" dir="auto" />
+            <button id="h-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;padding:8px 16px;white-space:nowrap">إرسال ↵</button>
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            ${['ابحث عن أفضل مكتبات تحليل الصوت العربي','ولّد ملف صوتي لـ بسم الله الرحمن الرحيم','حلّل بيانات التلاوة وأنشئ تقريراً','ما هي أخطاء المستخدمين الأكثر تكراراً؟'].map(q=>`<button class="btn btn-sm btn-ghost h-chat-quick" style="font-size:.68rem" data-q="${q}">${q}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab Files -->
+      <div id="h-lab" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:.8rem;color:var(--text-3)">ملفات صنعها هرمس (صوت، نص، JSON)</div>
+          <button id="h-lab-refresh" class="btn btn-sm btn-ghost" style="font-size:.72rem">↻ تحديث</button>
+        </div>
+        <div id="h-lab-list"><div style="text-align:center;color:var(--text-3);padding:30px;font-size:.8rem">جارٍ التحميل…</div></div>
+      </div>
+
       <!-- GitHub Commits -->
       <div id="h-commits" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -1749,13 +1777,15 @@ const Admin = {
       </div>`;
 
       /* Tab switching inside Hermes */
+      const hTabs=['runs','skills','insights','commits','chat','lab'];
       el.querySelectorAll('[data-htab]').forEach(btn=>{
         btn.onclick=()=>{
           el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
           btn.className='btn btn-sm btn-primary';
-          ['runs','skills','insights','commits'].forEach(t=>{ const d=document.getElementById('h-'+t); if(d) d.style.display='none'; });
+          hTabs.forEach(t=>{ const d=document.getElementById('h-'+t); if(d) d.style.display='none'; });
           const target=document.getElementById('h-'+btn.dataset.htab);
           if(target) target.style.display='block';
+          if(btn.dataset.htab==='lab') HermesLab.loadFiles();
         };
       });
 
@@ -1778,7 +1808,163 @@ const Admin = {
         const r3=await fetch(API+'/admin/hermes/memory',{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(r=>r.json());
         if(r3.ok){ toast('تم مسح ذاكرة Hermes','success'); Admin.loadTab('hermes'); }
       });
+
+      /* ── Hermes Chat handlers ── */
+      const chatHistory=[];
+      const chatMsgs=document.getElementById('h-chat-messages');
+      const chatInput=document.getElementById('h-chat-input');
+      const chatStatus=document.getElementById('h-chat-status');
+
+      function hChatAppend(role,content,extra){
+        if(!chatMsgs) return;
+        const isUser=role==='user';
+        const isTool=role==='tool';
+        const div=document.createElement('div');
+        div.style.cssText=`display:flex;flex-direction:column;gap:3px;align-items:${isUser?'flex-end':'flex-start'}`;
+        const bubble=document.createElement('div');
+        bubble.style.cssText=`max-width:85%;padding:8px 12px;border-radius:${isUser?'12px 12px 4px 12px':'12px 12px 12px 4px'};font-size:.82rem;line-height:1.55;word-break:break-word;background:${isUser?'linear-gradient(135deg,#6366f1,#a78bfa)':isTool?'rgba(250,204,21,.08)':'rgba(255,255,255,.07)'};border:1px solid ${isTool?'rgba(250,204,21,.15)':isUser?'transparent':'rgba(255,255,255,.08)'};color:${isTool?'var(--gold)':'#fff'}`;
+        bubble.textContent=content;
+        div.appendChild(bubble);
+        if(extra?.type==='audio'){
+          const audioWrap=document.createElement('div');
+          audioWrap.style.cssText='display:flex;align-items:center;gap:6px;margin-top:4px;padding:6px 10px;background:rgba(52,211,153,.08);border-radius:8px;border:1px solid rgba(52,211,153,.2)';
+          audioWrap.innerHTML=`<span style="font-size:.75rem;color:var(--mint)">🔊 ${escapeHTML(extra.filename)}</span>
+            <audio controls style="height:28px;flex:1;min-width:0" src="${API}${extra.url}?pw=${encodeURIComponent(S.adminPw||'')}"></audio>
+            <a href="${API}${extra.url}?pw=${encodeURIComponent(S.adminPw||'')}" download="${escapeHTML(extra.filename)}" style="font-size:.7rem;color:var(--text-3);text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,.1);border-radius:4px">↓</a>`;
+          div.appendChild(audioWrap);
+        }
+        if(extra?.type==='text'){
+          const txtWrap=document.createElement('div');
+          txtWrap.style.cssText='margin-top:4px;padding:5px 8px;background:rgba(99,102,241,.08);border-radius:6px;border:1px solid rgba(99,102,241,.2);font-size:.72rem;color:#a78bfa';
+          txtWrap.innerHTML=`📄 <a href="${API}${extra.url}" target="_blank" style="color:inherit">${escapeHTML(extra.filename)}</a> (${extra.size_kb||0} KB)`;
+          div.appendChild(txtWrap);
+        }
+        chatMsgs.appendChild(div);
+        chatMsgs.scrollTop=chatMsgs.scrollHeight;
+        return bubble;
+      }
+
+      async function hChatSend(){
+        const msg=(chatInput?.value||'').trim();
+        if(!msg||!S.adminPw) return;
+        chatInput.value='';
+        // إزالة الرسالة الترحيبية
+        if(chatMsgs?.children.length===1&&chatMsgs.children[0].style.textAlign==='center') chatMsgs.innerHTML='';
+        hChatAppend('user',msg);
+        chatHistory.push({role:'user',content:msg});
+        const sendBtn=document.getElementById('h-chat-send');
+        if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='⏳'; }
+        if(chatStatus) chatStatus.textContent='هرمس يفكر…';
+        let hermesDiv=null;
+        let hermesText='';
+        try {
+          const resp=await fetch(API+'/admin/hermes/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},
+            body:JSON.stringify({message:msg,history:chatHistory.slice(-10)})
+          });
+          if(!resp.ok){ hChatAppend('hermes','❌ خطأ في الاتصال'); return; }
+          const reader=resp.body.getReader();
+          const decoder=new TextDecoder();
+          let buf='';
+          while(true){
+            const {done,value}=await reader.read();
+            if(done) break;
+            buf+=decoder.decode(value,{stream:true});
+            const lines=buf.split('\n');
+            buf=lines.pop()||'';
+            for(const line of lines){
+              if(!line.startsWith('data: ')) continue;
+              let ev;
+              try{ ev=JSON.parse(line.slice(6)); }catch{ continue; }
+              if(ev.type==='message'&&ev.content){
+                hermesText+=ev.content;
+                if(!hermesDiv){ hermesDiv=hChatAppend('hermes',hermesText); }
+                else hermesDiv.textContent=hermesText;
+                chatMsgs.scrollTop=chatMsgs.scrollHeight;
+              } else if(ev.type==='tool_call'){
+                const toolNames={'web_search':'🔍 يبحث في الإنترنت','fetch_url':'🌐 يجلب رابط','generate_tts_file':'🔊 يولّد صوت','list_lab_files':'📁 يراجع المختبر','create_text_file':'📄 يكتب ملف','delete_lab_file':'🗑️ يحذف ملف','get_global_stats':'📊 يقرأ إحصائيات','scan_users':'👥 يمسح المستخدمين','analyze_recitation_patterns':'🎙️ يحلل التلاوة','modify_algorithm_weights':'⚖️ يعدل الخوارزمية','read_project_file':'📖 يقرأ كود','write_project_file':'✏️ يعدل كود','analyze_and_improve_algorithm':'🧠 يحلل ويُحسّن'};
+                if(chatStatus) chatStatus.textContent=(toolNames[ev.name]||('🔧 '+ev.name))+'…';
+              } else if(ev.type==='lab_file'){
+                hChatAppend('hermes',ev.type==='audio'?`✅ تم إنشاء ملف الصوت: ${ev.filename}`:`✅ تم إنشاء ملف: ${ev.filename}`,{type:ev.type||'audio',...ev});
+              } else if(ev.type==='tool_result'&&ev.name==='generate_tts_file'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok&&r2.filename) hChatAppend('hermes',`✅ صوت جاهز: ${r2.filename}`,{type:'audio',filename:r2.filename,url:r2.lab_url,size_kb:r2.size_kb});
+                }catch{}
+              } else if(ev.type==='tool_result'&&ev.name==='create_text_file'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok&&r2.filename) hChatAppend('hermes',`📄 ملف: ${r2.filename}`,{type:'text',filename:r2.filename,url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(r2.filename)}`,size_kb:r2.size_kb});
+                }catch{}
+              } else if(ev.type==='error'){
+                hChatAppend('tool','⚠️ '+(ev.message||'خطأ غير محدد'));
+              } else if(ev.type==='done'){
+                if(chatStatus) chatStatus.textContent='';
+              }
+            }
+          }
+          if(hermesText) chatHistory.push({role:'assistant',content:hermesText});
+        } catch(e){
+          hChatAppend('hermes','❌ خطأ: '+e.message);
+        } finally {
+          if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='إرسال ↵'; }
+          if(chatStatus) chatStatus.textContent='';
+        }
+      }
+
+      document.getElementById('h-chat-send')?.addEventListener('click', hChatSend);
+      document.getElementById('h-chat-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); hChatSend(); } });
+      el.querySelectorAll('.h-chat-quick').forEach(btn=>{ btn.onclick=()=>{ if(chatInput) chatInput.value=btn.dataset.q; hChatSend(); }; });
+
     }
+  }
+};
+
+/* ══ HERMES LAB ══ */
+const HermesLab = {
+  async loadFiles(){
+    const listEl=document.getElementById('h-lab-list');
+    if(!listEl||!S.adminPw) return;
+    listEl.innerHTML='<div style="text-align:center;color:var(--text-3);padding:20px;font-size:.8rem">جارٍ التحميل…</div>';
+    try{
+      const r=await fetch(API+'/admin/hermes/lab/files',{headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+      const files=r.files||[];
+      if(!files.length){ listEl.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-3);font-size:.85rem">🧪 المختبر فارغ<br><span style="font-size:.75rem">تحدث مع هرمس واطلب منه توليد ملفات صوتية أو تقارير</span></div>'; return; }
+      listEl.innerHTML=files.map(f=>{
+        const isAudio=f.type==='audio';
+        const fileUrl=`${API}/admin/hermes/lab/file/${encodeURIComponent(f.filename)}`;
+        const authUrl=`${fileUrl}`;
+        return `<div class="glass-card" style="margin-bottom:8px;padding:10px 12px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:1.1rem">${isAudio?'🔊':f.type==='json'?'📊':'📄'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.8rem;font-weight:600;color:${isAudio?'var(--mint)':'#a78bfa'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(f.filename)}</div>
+              <div style="font-size:.68rem;color:var(--text-3)">${f.size_kb} KB · ${fmtTime(f.modified)}</div>
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0">
+              ${isAudio?`<button class="btn btn-sm btn-ghost" style="font-size:.7rem" onclick="HermesLab.playAudio('${fileUrl}','${encodeURIComponent(f.filename)}')">▶ تشغيل</button>`:''}
+              <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-ghost" style="font-size:.7rem;text-decoration:none">${isAudio?'↓ تنزيل':'👁 عرض'}</a>
+              <button class="btn btn-sm btn-danger" style="font-size:.7rem" onclick="HermesLab.deleteFile('${escapeHTML(f.filename)}')">🗑️</button>
+            </div>
+          </div>
+          ${isAudio?`<audio id="lab-audio-${encodeURIComponent(f.filename)}" src="${authUrl}" style="display:none;width:100%;height:28px;margin-top:6px" controls></audio>`:''}
+        </div>`;
+      }).join('');
+    }catch(e){ listEl.innerHTML=`<p style="color:var(--red);text-align:center">${escapeHTML(e.message)}</p>`; }
+  },
+  playAudio(url,encoded){
+    const id='lab-audio-'+encoded;
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(el.style.display==='none'){ el.style.display='block'; el.play(); }
+    else{ el.style.display='none'; el.pause(); }
+  },
+  async deleteFile(filename){
+    if(!confirm(`حذف "${filename}"؟`)) return;
+    const r=await fetch(`${API}/admin/hermes/lab/file/${encodeURIComponent(filename)}`,{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+    if(r.ok){ toast('تم الحذف','success'); HermesLab.loadFiles(); }
+    else toast(r.error||'فشل الحذف','error');
   }
 };
 
