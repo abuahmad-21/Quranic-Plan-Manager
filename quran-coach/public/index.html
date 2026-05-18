@@ -135,6 +135,7 @@
       <button class="icon-btn" data-go="view-quran" title="القرآن الكريم">📖</button>
       <button class="icon-btn" data-go="view-tarteel" title="مركز التلاوة">🎙️</button>
       <button class="icon-btn" data-go="view-khatma" title="ختمتي">📿</button>
+      <button class="icon-btn" data-go="view-hermes" title="هرمس — مساعدك الذكي" style="background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(167,139,250,.15));border-color:rgba(167,139,250,.4)">🤖</button>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
     </div>
@@ -541,6 +542,56 @@
       <div id="atab-sheikh-reqs" class="atab hidden"></div>
       <div id="atab-plans"       class="atab hidden"></div>
       <div id="atab-hermes"      class="atab hidden"></div>
+    </div>
+  </section>
+
+  <!-- HERMES USER CHAT -->
+  <section id="view-hermes" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:10px 0 14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🤖</div>
+        <div>
+          <div style="font-size:1.05rem;font-weight:700;color:#a78bfa">هرمس</div>
+          <div style="font-size:.75rem;color:var(--text-3)">مساعدك الذكي — يتعلم من تلاواتك ويحسّن تجربتك</div>
+        </div>
+        <div id="hermes-status-dot" style="margin-right:auto;width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 6px var(--mint)"></div>
+      </div>
+
+      <!-- Hermes capabilities -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-size:.7rem;padding:3px 8px;background:rgba(99,102,241,.12);border-radius:12px;border:1px solid rgba(99,102,241,.25);color:#a78bfa">🔍 بحث الإنترنت</span>
+        <span style="font-size:.7rem;padding:3px 8px;background:rgba(52,211,153,.08);border-radius:12px;border:1px solid rgba(52,211,153,.2);color:var(--mint)">📊 تحليل بياناتك</span>
+        <span style="font-size:.7rem;padding:3px 8px;background:rgba(250,204,21,.08);border-radius:12px;border:1px solid rgba(250,204,21,.2);color:var(--gold)">🎙️ تحسين التلاوة</span>
+        <span style="font-size:.7rem;padding:3px 8px;background:rgba(167,139,250,.1);border-radius:12px;border:1px solid rgba(167,139,250,.25);color:#c4b5fd">🕌 صوتيات الشيوخ</span>
+      </div>
+
+      <!-- Chat messages -->
+      <div id="hermes-user-msgs" style="min-height:300px;max-height:55vh;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+        <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:30px 10px">
+          <div style="font-size:1.8rem;margin-bottom:8px">🤖</div>
+          <div style="font-weight:600;color:#a78bfa;margin-bottom:6px">أهلاً! أنا هرمس</div>
+          <div>اسألني عن تلاوتك، طلب روابط صوتيات الشيوخ، تحليل تقدمك، أو أي شيء عن القرآن الكريم</div>
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div id="hermes-user-status" style="font-size:.72rem;color:#a78bfa;min-height:18px;padding:0 4px;margin-bottom:6px"></div>
+
+      <!-- Input -->
+      <div style="display:flex;gap:6px">
+        <textarea id="hermes-user-input" rows="2" placeholder="اكتب رسالتك لهرمس… مثال: حلّل أخطائي في التلاوة، أو: أعطني رابط سورة البقرة بصوت الحصري" style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-size:.85rem;font-family:inherit;resize:none;line-height:1.5" dir="auto"></textarea>
+        <button id="hermes-user-send" class="btn" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;padding:10px 16px;border-radius:10px;white-space:nowrap;align-self:flex-end">إرسال ↵</button>
+      </div>
+
+      <!-- Quick prompts -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-sm btn-ghost hermes-quick" style="font-size:.7rem" data-q="حلّل أخطائي في التلاوة وأعطني توصيات">تحليل أخطاء التلاوة</button>
+        <button class="btn btn-sm btn-ghost hermes-quick" style="font-size:.7rem" data-q="أعطني روابط صوتيات سورة الفاتحة بصوت مشاري العفاسي">صوت الفاتحة - العفاسي</button>
+        <button class="btn btn-sm btn-ghost hermes-quick" style="font-size:.7rem" data-q="ابحث في الإنترنت عن أفضل طرق تثبيت حفظ القرآن">ابحث: تثبيت الحفظ</button>
+        <button class="btn btn-sm btn-ghost hermes-quick" style="font-size:.7rem" data-q="حلّل تقدمي وخطتي الحالية وأعطني توصية">تحليل تقدمي</button>
+        <button class="btn btn-sm btn-ghost hermes-quick" style="font-size:.7rem" data-q="ما هي أكثر الكلمات خطأً بين المستخدمين في التلاوة؟">إحصائيات الأخطاء</button>
+      </div>
     </div>
   </section>
 

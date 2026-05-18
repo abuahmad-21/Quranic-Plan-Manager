@@ -213,6 +213,7 @@ const App = {
     if (id==='view-studio') { App.showView('view-tarteel'); return; }
     if (id==='view-tarteel') TarteelMode.load();
     if (id==='view-khatma') KhatmaMode.load();
+    if (id==='view-hermes') HermesChat.load();
     // Stop chat polling when leaving chat room
     if (id!=='view-chatroom' && S.chatPoll){ clearInterval(S.chatPoll); S.chatPoll=null; }
     window.scrollTo({top:0,behavior:'smooth'});
@@ -1967,6 +1968,133 @@ const HermesLab = {
     else toast(r.error||'فشل الحذف','error');
   }
 };
+
+/* ══ HERMES USER CHAT ══ */
+const HermesChat = {
+  _history: [],
+  _initialized: false,
+
+  load(){
+    if(this._initialized) return;
+    this._initialized = true;
+    this._bindEvents();
+  },
+
+  _bindEvents(){
+    const sendBtn = document.getElementById('hermes-user-send');
+    const input   = document.getElementById('hermes-user-input');
+    if(sendBtn) sendBtn.addEventListener('click', ()=>HermesChat.send());
+    if(input)   input.addEventListener('keydown', e=>{
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); HermesChat.send(); }
+    });
+    document.querySelectorAll('.hermes-quick').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const inp = document.getElementById('hermes-user-input');
+        if(inp){ inp.value=btn.dataset.q; HermesChat.send(); }
+      });
+    });
+  },
+
+  _appendMsg(role, content, extra){
+    const msgsEl = document.getElementById('hermes-user-msgs');
+    if(!msgsEl) return null;
+    // Remove welcome screen on first message
+    if(msgsEl.children.length===1 && msgsEl.children[0].style.textAlign==='center') msgsEl.innerHTML='';
+    const isUser = role==='user';
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText=`display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};gap:4px`;
+    const bubble = document.createElement('div');
+    bubble.style.cssText=`max-width:88%;padding:9px 13px;border-radius:${isUser?'14px 14px 4px 14px':'14px 14px 14px 4px'};font-size:.83rem;line-height:1.6;word-break:break-word;background:${isUser?'linear-gradient(135deg,#6366f1,#a78bfa)':'rgba(255,255,255,.07)'};border:1px solid ${isUser?'transparent':'rgba(255,255,255,.08)'};color:#fff`;
+    bubble.textContent = content;
+    wrapper.appendChild(bubble);
+
+    // Sheikh audio cards
+    if(extra?.type==='sheikh_audio' && Array.isArray(extra.refs)){
+      const audioCard = document.createElement('div');
+      audioCard.style.cssText='width:100%;max-width:88%;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;padding:10px;margin-top:4px';
+      audioCard.innerHTML=`<div style="font-size:.75rem;color:#a78bfa;font-weight:600;margin-bottom:8px">🕌 صوتيات الشيخ ${escapeHTML(extra.sheikh||'')}</div>`+
+        extra.refs.map(r=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+            <span style="font-size:.72rem;color:var(--text-3);flex-shrink:0">آية ${r.ayah}</span>
+            <audio controls style="flex:1;height:26px;min-width:0" src="${escapeHTML(r.everyayah_url)}" preload="none"></audio>
+          </div>`).join('');
+      wrapper.appendChild(audioCard);
+    }
+
+    msgsEl.appendChild(wrapper);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+    return bubble;
+  },
+
+  async send(){
+    const input = document.getElementById('hermes-user-input');
+    const statusEl = document.getElementById('hermes-user-status');
+    const sendBtn = document.getElementById('hermes-user-send');
+    const msg = (input?.value||'').trim();
+    if(!msg || !S.token) return;
+    input.value='';
+
+    this._appendMsg('user', msg);
+    this._history.push({role:'user', content:msg});
+
+    if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='⏳'; }
+    if(statusEl) statusEl.textContent='هرمس يفكر…';
+
+    let hermesDiv=null, hermesText='';
+
+    try {
+      const resp = await fetch(API+'/hermes/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-token':S.token,'x-username':S.username||''},
+        body:JSON.stringify({message:msg, history:this._history.slice(-10)})
+      });
+      if(!resp.ok){ this._appendMsg('hermes','❌ خطأ في الاتصال بهرمس'); return; }
+
+      const reader=resp.body.getReader();
+      const decoder=new TextDecoder();
+      let buf='';
+
+      while(true){
+        const {done,value}=await reader.read();
+        if(done) break;
+        buf+=decoder.decode(value,{stream:true});
+        const lines=buf.split('\n');
+        buf=lines.pop()||'';
+        for(const line of lines){
+          if(!line.startsWith('data: ')) continue;
+          let ev;
+          try{ ev=JSON.parse(line.slice(6)); }catch{ continue; }
+
+          if(ev.type==='message' && ev.content){
+            hermesText+=ev.content;
+            if(!hermesDiv){ hermesDiv=this._appendMsg('hermes', hermesText); }
+            else if(hermesDiv) hermesDiv.textContent=hermesText;
+            document.getElementById('hermes-user-msgs')?.scrollTo({top:9999,behavior:'smooth'});
+
+          } else if(ev.type==='tool_call'){
+            if(statusEl) statusEl.textContent=(ev.label||('🔧 '+ev.name))+'…';
+
+          } else if(ev.type==='sheikh_audio'){
+            this._appendMsg('hermes', `تفضّل — صوتيات الشيخ ${ev.sheikh||''}:`, {type:'sheikh_audio', sheikh:ev.sheikh, refs:ev.refs});
+
+          } else if(ev.type==='error'){
+            this._appendMsg('hermes', '⚠️ '+(ev.message||'خطأ'));
+
+          } else if(ev.type==='done'){
+            if(statusEl) statusEl.textContent='';
+          }
+        }
+      }
+      if(hermesText) this._history.push({role:'assistant', content:hermesText});
+    } catch(e){
+      this._appendMsg('hermes','❌ '+e.message);
+    } finally {
+      if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='إرسال ↵'; }
+      if(statusEl) statusEl.textContent='';
+    }
+  }
+};
+window.HermesChat = HermesChat;
 
 /* ══ NOTIFICATIONS ══ */
 const Notifications = {

@@ -1665,7 +1665,11 @@ const HERMES_TOOLS = [
   /* ═══ أدوات المختبر والإنترنت — Hermes يتدرب ويبحث ═══ */
   { type:'function', function:{ name:'web_search', description:'البحث في الإنترنت عن أي موضوع (مكتبات، أدوات، معلومات تقنية، بحوث). يُرجع ملخصاً من DuckDuckGo.', parameters:{ type:'object', properties:{ query:{ type:'string', description:'نص البحث' } }, required:['query'] } } },
   { type:'function', function:{ name:'fetch_url', description:'جلب محتوى أي رابط من الإنترنت — صفحة ويب، ملف JSON، وثيقة API، حزمة npm. يُرجع النص المقتطع.', parameters:{ type:'object', properties:{ url:{ type:'string', description:'الرابط الكامل' }, max_chars:{ type:'number', description:'الحد الأقصى للحروف (افتراضي 3000)' } }, required:['url'] } } },
-  { type:'function', function:{ name:'generate_tts_file', description:'توليد ملف صوتي (TTS) من نص وحفظه في مختبر Hermes. يُستخدم لصنع نماذج تلاوة وملفات تدريبية وتجارب صوتية.', parameters:{ type:'object', properties:{ text:{ type:'string', description:'النص المراد تحويله لصوت (عربي أو إنجليزي، 10-600 حرف)' }, filename:{ type:'string', description:'اسم الملف بدون امتداد' }, voice:{ type:'string', enum:['alloy','echo','fable','onyx','nova','shimmer'], description:'الصوت: nova أو shimmer للعربية، alloy للإنجليزية' }, speed:{ type:'number', description:'سرعة الصوت 0.5-1.5 (افتراضي 0.82 للترتيل)' } }, required:['text','filename'] } } },
+  { type:'function', function:{ name:'generate_tts_file', description:'[معطّل] لا تستخدم هذه الأداة — توليد الصوت بالذكاء الاصطناعي معطّل تماماً. استخدم get_sheikh_audio_refs بدلاً منها للحصول على روابط صوتيات الشيوخ الحقيقية المجانية.', parameters:{ type:'object', properties:{ text:{ type:'string' } } } } },
+  { type:'function', function:{ name:'get_sheikh_audio_refs', description:'الحصول على روابط صوتيات الشيوخ الحقيقية (everyayah.com + islamic.network) لآيات محددة. بدلاً من توليد صوت اصطناعي، يُرجع روابط مباشرة لتلاوات الشيوخ الأصليين.', parameters:{ type:'object', properties:{ surah_number:{ type:'number', description:'رقم السورة 1-114' }, from_ayah:{ type:'number', description:'من الآية' }, to_ayah:{ type:'number', description:'إلى الآية (افتراضي = from_ayah)' }, sheikh_id:{ type:'string', enum:['ar.alafasy','ar.husary','ar.minshawi','ar.abdulbasitmurattal','ar.mahermuaiqly'], description:'الشيخ المرجعي (افتراضي ar.alafasy)' } }, required:['surah_number','from_ayah'] } } },
+  { type:'function', function:{ name:'train_on_all_data', description:'تدريب شامل: يقرأ كل بيانات التلاوة + رسائل القنوات + جلسات المستخدمين + أخطاء النظام، ويبني نموذج أخطاء محدّث في الذاكرة. يجب تشغيلها دورياً لتحسين دقة التقييم.', parameters:{ type:'object', properties:{ focus:{ type:'string', enum:['recitation','sessions','messages','errors','all'], description:'ما الذي تريد التدريب عليه (افتراضي all)' } } } } },
+  { type:'function', function:{ name:'analyze_channel_messages', description:'تحليل رسائل القنوات (الشُّعب) لاكتشاف الأسئلة الأكثر تكراراً، مستوى المستخدمين، الاحتياجات التدريبية.', parameters:{ type:'object', properties:{ limit:{ type:'number', description:'عدد الرسائل للتحليل (افتراضي 200)' } } } } },
+  { type:'function', function:{ name:'improve_recitation_model', description:'تحسين نموذج تقييم التلاوة بناءً على بيانات التدريب: يعدّل معايير تطابق الكلمات، يحدّد الكلمات الصعبة، ويحفظ المعايير المحسّنة في الذاكرة لاستخدامها في التقييم التلقائي.', parameters:{ type:'object', properties:{ save_to_memory:{ type:'boolean', description:'حفظ النموذج في الذاكرة (افتراضي true)' } } } } },
   { type:'function', function:{ name:'list_lab_files', description:'قائمة كل ملفات مختبر Hermes (صوتية ونصية وبيانات).', parameters:{ type:'object', properties:{} } } },
   { type:'function', function:{ name:'delete_lab_file', description:'حذف ملف من مختبر Hermes.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده' } }, required:['filename'] } } },
   { type:'function', function:{ name:'create_text_file', description:'إنشاء ملف نصي أو JSON أو Markdown في مختبر Hermes. يُستخدم لحفظ تقارير التحليل، خطط التدريب، ملاحظات المقارنة.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده (.txt .json .md)' }, content:{ type:'string', description:'محتوى الملف' } }, required:['filename','content'] } } }
@@ -2018,7 +2022,7 @@ async function executeHermesTool(toolName, args, mem){
 
     case 'write_project_file': {
       /* WHITELIST: فقط هذه الملفات يُسمح لـ Hermes بتعديلها */
-      const ALLOWED = ['ai_core.js', 'public/app.js'];
+      const ALLOWED = ['ai_core.js', 'public/app.js', 'server.js', 'public/index.html', 'public/style.css'];
       const safePath = String(args.file_path||'').replace(/\.\.\//g,'').replace(/^\/+/,'');
       if (!ALLOWED.includes(safePath)) return {error:`access_denied: only ${ALLOWED.join(', ')} allowed`};
       const fp = path.join(ROOT, safePath);
@@ -2183,30 +2187,155 @@ Focus: ${focus}
     }
 
     case 'generate_tts_file': {
-      const text = String(args.text||'').slice(0,600);
-      if(!text || text.length<3) return {error:'النص مطلوب (3-600 حرف)'};
-      const rawName = String(args.filename||'hermes_tts_'+uid()).replace(/[^a-zA-Z0-9_\-\u0621-\u064A]/g,'_').slice(0,60);
-      const filename = rawName + '.mp3';
-      const safePath = path.join(HERMES_LAB_DIR, filename);
-      if(!safePath.startsWith(HERMES_LAB_DIR)) return {error:'اسم ملف غير صالح'};
-      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
-      const voice = ['alloy','echo','fable','onyx','nova','shimmer'].includes(args.voice) ? args.voice : 'nova';
-      const speed = Math.max(0.5, Math.min(1.5, +args.speed||0.82));
-      try {
-        const resp = await fetch(`${baseUrl}/audio/speech`,{
-          method:'POST', signal:AbortSignal.timeout(30000),
-          headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-          body:JSON.stringify({model:'tts-1', input:text, voice, speed})
+      return { disabled:true, error:'توليد الصوت بالذكاء الاصطناعي معطّل. استخدم get_sheikh_audio_refs للحصول على روابط صوتيات الشيوخ الحقيقية المجانية بدلاً من التوليد الاصطناعي.', suggestion:'استدعِ get_sheikh_audio_refs مع رقم السورة والآية والشيخ المطلوب' };
+    }
+
+    case 'get_sheikh_audio_refs': {
+      const surah = Math.max(1, Math.min(114, +args.surah_number||1));
+      const fromAyah = Math.max(1, +args.from_ayah||1);
+      const toAyah = Math.max(fromAyah, Math.min(fromAyah+20, +args.to_ayah||fromAyah));
+      const sheikhId = args.sheikh_id||'ar.alafasy';
+      const AUDIO_SOURCES = JSON.parse(fs.readFileSync(path.join(ROOT,'config','audio_sources.json'),'utf8'));
+      const sheikhInfo = AUDIO_SOURCES.sheikhs[sheikhId] || AUDIO_SOURCES.sheikhs['ar.alafasy'];
+      const surahPad = String(surah).padStart(3,'0');
+      const refs = [];
+      for(let ayah=fromAyah; ayah<=toAyah; ayah++){
+        const ayahPad = String(ayah).padStart(3,'0');
+        refs.push({
+          ayah,
+          everyayah_url: `https://everyayah.com/data/${sheikhInfo.everyayah_folder}/${surahPad}${ayahPad}.mp3`,
+          islamic_network_url: `https://cdn.islamic.network/quran/audio/128/${sheikhInfo.islamic_network_id}/${surah}:${ayah}.mp3`,
+          sheikh_name: sheikhInfo.name_ar,
         });
-        if(!resp.ok){ const t=await resp.text(); return {error:'TTS فشل: '+t.slice(0,200)}; }
-        const buf = Buffer.from(await resp.arrayBuffer());
-        fs.writeFileSync(safePath, buf);
-        if(!mem.lab_files) mem.lab_files=[];
-        mem.lab_files.push({filename, type:'audio', created_at:now(), text_preview:text.slice(0,80), size_kb:+(buf.length/1024).toFixed(1), voice, speed});
-        mem.lab_files = mem.lab_files.slice(-100);
-        return {ok:true, filename, size_kb:+(buf.length/1024).toFixed(1), voice, speed, text_preview:text.slice(0,80), lab_url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(filename)}`};
-      } catch(e){ return {error:'خطأ في توليد الصوت: '+e.message}; }
+      }
+      // Save to memory as training reference
+      if(!mem.sheikh_audio_refs) mem.sheikh_audio_refs=[];
+      mem.sheikh_audio_refs.push({ surah, fromAyah, toAyah, sheikh:sheikhId, at:now(), count:refs.length });
+      mem.sheikh_audio_refs = mem.sheikh_audio_refs.slice(-50);
+      return { ok:true, surah_number:surah, sheikh:sheikhInfo.name_ar, sheikh_id:sheikhId, ayah_count:refs.length, refs, note:'هذه روابط مباشرة لصوتيات الشيوخ الأصليين — مجانية بدون ذكاء اصطناعي' };
+    }
+
+    case 'train_on_all_data': {
+      const focus = args.focus||'all';
+      const result = { focus, trained_on:{}, insights:[] };
+      // 1. Recitation errors
+      if(focus==='all'||focus==='recitation'){
+        const recLogs = readLogFile('recitation_errors.jsonl', 500);
+        const wordErr = {};
+        let totalAcc=0, count=0;
+        recLogs.forEach(r=>{
+          if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{wordErr[w]=(wordErr[w]||0)+1;});
+          if(r.accuracy_pct){ totalAcc+=r.accuracy_pct; count++; }
+        });
+        const topErrors = Object.entries(wordErr).sort((a,b)=>b[1]-a[1]).slice(0,30);
+        if(!mem.recitation_training) mem.recitation_training={};
+        mem.recitation_training.top_error_words = topErrors;
+        mem.recitation_training.avg_accuracy = count ? +(totalAcc/count).toFixed(1) : 0;
+        mem.recitation_training.total_sessions = recLogs.length;
+        mem.recitation_training.updated_at = now();
+        result.trained_on.recitation = { sessions:recLogs.length, unique_errors:Object.keys(wordErr).length, avg_accuracy:mem.recitation_training.avg_accuracy, top_3_errors:topErrors.slice(0,3).map(([w,c])=>({word:w,count:c})) };
+        if(topErrors.length) result.insights.push(`أكثر الكلمات خطأً: ${topErrors.slice(0,5).map(([w,c])=>`${w}(${c})`).join('، ')}`);
+      }
+      // 2. User sessions
+      if(focus==='all'||focus==='sessions'){
+        const users = Object.values(DB.users);
+        const totalSessions = users.reduce((s,u)=>s+(u.sessions||[]).length,0);
+        const avgDifficulty = { easy:0, medium:0, hard:0 };
+        users.forEach(u=>(u.sessions||[]).forEach(s=>{ if(avgDifficulty[s.difficulty]!==undefined) avgDifficulty[s.difficulty]++; }));
+        if(!mem.session_training) mem.session_training={};
+        mem.session_training.total_sessions = totalSessions;
+        mem.session_training.difficulty_distribution = avgDifficulty;
+        mem.session_training.avg_pages = users.length ? +(users.reduce((s,u)=>s+(u.progress?.total_pages_memorized||0),0)/users.length).toFixed(2) : 0;
+        mem.session_training.updated_at = now();
+        result.trained_on.sessions = mem.session_training;
+      }
+      // 3. Channel messages
+      if(focus==='all'||focus==='messages'){
+        const allMsgs = [];
+        Object.values(DB.channels).forEach(ch=>(ch.messages||[]).forEach(m=>allMsgs.push(m.text)));
+        const msgCount = allMsgs.length;
+        const keywords = {};
+        allMsgs.forEach(t=>{ t.split(/\s+/).forEach(w=>{ if(w.length>3){ keywords[w]=(keywords[w]||0)+1; } }); });
+        const topKw = Object.entries(keywords).sort((a,b)=>b[1]-a[1]).slice(0,20);
+        if(!mem.message_training) mem.message_training={};
+        mem.message_training.total_messages = msgCount;
+        mem.message_training.top_keywords = topKw;
+        mem.message_training.updated_at = now();
+        result.trained_on.messages = { count:msgCount, top_keywords:topKw.slice(0,5) };
+      }
+      // 4. Error logs
+      if(focus==='all'||focus==='errors'){
+        const errLogs = readLogFile('errors.jsonl', 100);
+        const aiErr   = readLogFile('ai_errors.jsonl', 50);
+        if(!mem.error_training) mem.error_training={};
+        mem.error_training.total_errors = errLogs.length;
+        mem.error_training.ai_errors = aiErr.length;
+        mem.error_training.updated_at = now();
+        result.trained_on.errors = { system_errors:errLogs.length, ai_errors:aiErr.length };
+      }
+      mem.last_training = now();
+      return { ok:true, ...result, note:'تم حفظ بيانات التدريب في الذاكرة — سيُستخدم في تحسين التقييم' };
+    }
+
+    case 'analyze_channel_messages': {
+      const limit = Math.min(500, +args.limit||200);
+      const channels = Object.values(DB.channels);
+      const allMessages = [];
+      channels.forEach(ch=>{
+        (ch.messages||[]).slice(-limit).forEach(m=>{
+          allMessages.push({ channel:ch.name, from:m.from, text:m.text, timestamp:m.timestamp });
+        });
+      });
+      if(!allMessages.length) return { message:'لا رسائل في القنوات بعد', count:0 };
+      // Basic analysis
+      const senders = {};
+      const questionCount = allMessages.filter(m=>m.text.includes('؟')||m.text.includes('?')).length;
+      allMessages.forEach(m=>{ senders[m.from]=(senders[m.from]||0)+1; });
+      const topSenders = Object.entries(senders).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      const channelStats = channels.map(ch=>({
+        name:ch.name, member_count:ch.members.length, message_count:(ch.messages||[]).length,
+        sheikh:ch.sheikh_username, last_message:ch.last_message_at
+      }));
+      return {
+        ok:true, total_messages:allMessages.length, total_channels:channels.length,
+        questions_asked:questionCount, top_senders:topSenders,
+        channel_stats:channelStats, sample_messages:allMessages.slice(-5).map(m=>({from:m.from,text:m.text.slice(0,100)}))
+      };
+    }
+
+    case 'improve_recitation_model': {
+      const saveToMemory = args.save_to_memory !== false;
+      const recLogs = readLogFile('recitation_errors.jsonl', 300);
+      const trainingData = readLogFile('ai_training_data.jsonl', 200);
+      if(!recLogs.length && !trainingData.length) return { message:'لا بيانات تدريب بعد. سيتحسن النموذج تلقائياً مع جلسات التلاوة.', ok:true };
+      // Build error pattern model
+      const wordErrorFreq = {};
+      const surahDifficulty = {};
+      let totalSessions=0, totalCorrect=0, totalWrong=0;
+      recLogs.forEach(r=>{
+        totalSessions++;
+        if(Array.isArray(r.wrong_words)) r.wrong_words.forEach(w=>{ wordErrorFreq[w]=(wordErrorFreq[w]||0)+1; totalWrong++; });
+        if(r.surah_name){ surahDifficulty[r.surah_name]=(surahDifficulty[r.surah_name]||{count:0,errors:0}); surahDifficulty[r.surah_name].count++; surahDifficulty[r.surah_name].errors+=(r.wrong_words||[]).length; }
+        if(r.accuracy_pct) totalCorrect+=r.accuracy_pct;
+      });
+      const avgAccuracy = totalSessions ? +(totalCorrect/totalSessions).toFixed(1) : 0;
+      const topErrorWords = Object.entries(wordErrorFreq).sort((a,b)=>b[1]-a[1]).slice(0,50);
+      const hardestSurahs = Object.entries(surahDifficulty).sort((a,b)=>(b[1].errors/b[1].count)-(a[1].errors/a[1].count)).slice(0,10);
+      const model = {
+        version: (((mem.recitation_model||{}).version||0)+1),
+        trained_at: now(),
+        sessions_analyzed: totalSessions,
+        avg_accuracy: avgAccuracy,
+        top_error_words: topErrorWords,
+        hardest_surahs: hardestSurahs.map(([s,d])=>({surah:s, avg_errors:+(d.errors/d.count).toFixed(1), sessions:d.count})),
+        model_params: {
+          error_weight: Math.min(2.0, 1.0 + (topErrorWords.length/100)),
+          difficulty_threshold: Math.max(40, 100 - avgAccuracy),
+          correction_sensitivity: avgAccuracy < 70 ? 'high' : avgAccuracy < 85 ? 'medium' : 'low',
+        }
+      };
+      if(saveToMemory) mem.recitation_model = model;
+      return { ok:true, model_version:model.version, sessions_analyzed:totalSessions, avg_accuracy:avgAccuracy, top_error_words:topErrorWords.slice(0,10), hardest_surahs:model.hardest_surahs.slice(0,5), model_params:model.model_params, note:saveToMemory?'تم حفظ النموذج المحسّن في الذاكرة ✅':'النموذج مؤقت - لم يُحفظ' };
     }
 
     case 'list_lab_files': {
@@ -2504,7 +2633,8 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
 - استخدم أدوات متعددة إن لزم (بحث → تنفيذ → حفظ)
 - أجب بالعربية دائماً
 - كن مختصراً ومباشراً في الرسائل النصية
-- عند توليد صوت: استخدم generate_tts_file واذكر اسم الملف الناتج`;
+- عند طلب صوت لأي آية: استخدم get_sheikh_audio_refs — توليد الصوت بالذكاء الاصطناعي معطّل تماماً
+- للتدريب الشامل استخدم train_on_all_data، ولتحسين نموذج التلاوة استخدم improve_recitation_model`;
 
   const messages = [
     {role:'system', content:systemPrompt},
@@ -2567,6 +2697,135 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   } catch(e){ sse('error',{message:e.message}); }
 
   writeHermesMemory(mem);
+  sse('done',{tool_calls:toolCallCount});
+  res.end();
+});
+
+/* ── Hermes User Chat (Streaming SSE) — for regular logged-in users ── */
+const HERMES_USER_TOOLS = HERMES_TOOLS.filter(t=>[
+  'get_global_stats','get_user_details','analyze_recitation_patterns','get_recitation_skill_data',
+  'generate_recitation_coaching','read_hermes_memory','web_search','fetch_url',
+  'get_sheikh_audio_refs','train_on_all_data','analyze_channel_messages','improve_recitation_model',
+  'save_skill','log_insight','done'
+].includes(t.function.name));
+
+R('POST','/qqc/hermes/chat', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const userMessage = String(b.message||'').slice(0,1000);
+  if(!userMessage) return send(res,400,{error:'message مطلوب'});
+  const history = Array.isArray(b.history) ? b.history.slice(-10) : [];
+
+  const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  if(!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured'});
+
+  res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','Access-Control-Allow-Origin':'*'});
+  const sse=(type,data)=>{ try{ res.write(`data: ${JSON.stringify({type,...data})}\n\n`); }catch{} };
+
+  const mem = readHermesMemory();
+  const model = mem.recitation_model||null;
+  const userRecData = (u.tarteel_history||[]).slice(-10);
+  const userSessions = (u.sessions||[]).slice(-5);
+  const topUserErrors = model ? (model.top_error_words||[]).slice(0,10).map(([w,c])=>`${w}(${c}x)`).join('، ') : 'لا بيانات بعد';
+
+  const systemPrompt = `أنت هرمس — مساعد قرآني ذكي ومتخصص في تطبيق Quantum Quran Coach.
+أنت تتحدث مع المستخدم: ${u.display_name||u.username}
+
+بيانات المستخدم الحالية:
+• الصفحات المحفوظة: ${u.progress?.total_pages_memorized||0}
+• سلسلة الأيام: ${u.progress?.current_streak_days||0} يوم
+• الهدف اليومي: ${u.plan?.current_daily_pages||0.25} صفحة/يوم
+• طاقة: ${u.energy?.score||75}/100
+• الطور: ${u.plan?.phase||'غير محدد'}
+• آخر 5 جلسات: ${JSON.stringify(userSessions.map(s=>({صعوبة:s.difficulty,صفحات:s.pages_done})))}
+• جلسات التلاوة الأخيرة: ${userRecData.length} جلسة
+
+نموذج الأخطاء الأكثر شيوعاً بين المستخدمين:
+${topUserErrors}
+
+مهاراتي المكتسبة: ${(mem.skills||[]).length} مهارة
+آخر تدريب: ${mem.last_training||'لم أتدرب بعد'}
+
+قدراتي في هذه المحادثة:
+✅ تحليل أنماط أخطاء التلاوة
+✅ إحضار روابط صوتيات الشيوخ الأصليين (everyayah.com)
+✅ البحث في الإنترنت عن معلومات القرآن والتجويد
+✅ تحليل بيانات المستخدمين وتقديم توصيات
+✅ تحسين نموذج تقييم التلاوة
+✅ جلب أي رابط من الإنترنت
+
+قواعد:
+- نفّذ الطلبات فعلياً باستخدام الأدوات
+- عند طلب صوت أي آية: استخدم get_sheikh_audio_refs (مجاني ومباشر)
+- لا تولّد صوتاً بالذكاء الاصطناعي — استخدم صوتيات الشيوخ الأصليين دائماً
+- أجب بالعربية دائماً، كن مختصراً ومفيداً`;
+
+  const messages = [
+    {role:'system', content:systemPrompt},
+    ...history.map(h=>({role:h.role, content:h.content})),
+    {role:'user', content:userMessage}
+  ];
+
+  let toolCallCount = 0;
+  const maxCalls = 8;
+
+  const toolLabels = {
+    'web_search':'🔍 يبحث في الإنترنت','fetch_url':'🌐 يجلب رابط',
+    'get_sheikh_audio_refs':'🕌 يجلب صوتيات الشيوخ','get_global_stats':'📊 يقرأ إحصائيات',
+    'analyze_recitation_patterns':'🎙️ يحلل التلاوة','get_recitation_skill_data':'📖 يحلل بيانات التلاوة',
+    'generate_recitation_coaching':'🧠 يولّد خطة تدريب','train_on_all_data':'🏋️ يتدرب على البيانات',
+    'analyze_channel_messages':'💬 يحلل رسائل القنوات','improve_recitation_model':'⚡ يحسّن نموذج التلاوة',
+    'read_hermes_memory':'🧠 يراجع ذاكرتي','save_skill':'💾 يحفظ مهارة','done':'✅ ينهي',
+  };
+
+  try {
+    while(toolCallCount < maxCalls){
+      let resp;
+      try {
+        resp = await fetch(`${baseUrl}/chat/completions`,{
+          method:'POST', signal:AbortSignal.timeout(60000),
+          headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:'gpt-4o-mini', messages, tools:HERMES_USER_TOOLS, tool_choice:'auto', max_completion_tokens:1200})
+        });
+      } catch(e){ sse('error',{message:'خطأ في الاتصال: '+e.message}); break; }
+
+      if(!resp.ok){ sse('error',{message:`خطأ ${resp.status}`}); break; }
+      const data = await resp.json();
+      const msg = data.choices?.[0]?.message;
+      if(!msg) break;
+      messages.push(msg);
+
+      if(msg.content) sse('message',{content:msg.content});
+      if(!msg.tool_calls||!msg.tool_calls.length) break;
+
+      for(const tc of msg.tool_calls){
+        toolCallCount++;
+        const toolName=tc.function?.name;
+        let args={};
+        try{ args=JSON.parse(tc.function?.arguments||'{}'); }catch{}
+
+        sse('tool_call',{name:toolName, label:toolLabels[toolName]||('🔧 '+toolName)});
+
+        let result;
+        try{ result=await executeHermesTool(toolName,args,mem); }catch(e){ result={error:e.message}; }
+
+        // If sheikh audio refs — stream them nicely
+        if(result?.ok && result?.refs && toolName==='get_sheikh_audio_refs'){
+          sse('sheikh_audio',{ sheikh:result.sheikh, refs:result.refs.slice(0,5) });
+        }
+
+        sse('tool_result',{name:toolName, result:JSON.stringify(result).slice(0,500)});
+        messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(result)});
+      }
+    }
+  } catch(e){ sse('error',{message:e.message}); }
+
+  writeHermesMemory(mem);
+  // Log interaction in user's AI history
+  if(!u.ai_history) u.ai_history=[];
+  u.ai_history.push({ at:now(), message:userMessage.slice(0,100), tool_calls:toolCallCount });
+  if(u.ai_history.length>100) u.ai_history=u.ai_history.slice(-100);
+  persist();
   sse('done',{tool_calls:toolCallCount});
   res.end();
 });
