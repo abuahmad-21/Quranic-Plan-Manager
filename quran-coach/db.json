@@ -7765,7 +7765,7 @@
       "password_hash": "c5bdaaac1b447919f114794a7f44612fe9f098694108c5130311ad2d03320c86",
       "display_name": "Djdjdjjf",
       "created_at": "2026-05-18T00:06:02.001Z",
-      "last_active": "2026-05-18T00:22:12.799Z",
+      "last_active": "2026-05-18T00:35:39.775Z",
       "avatar_color": "#0cb007",
       "bio": "",
       "is_banned": false,
@@ -7811,17 +7811,17 @@
       },
       "energy": {
         "score": 100,
-        "friction": 1.57,
-        "afi": 92,
+        "friction": 2.89,
+        "afi": 68,
         "history": [
-          98,
-          100,
-          100,
-          92,
           100,
           100,
           100,
-          92,
+          100,
+          100,
+          100,
+          100,
+          100,
           100,
           100
         ]
