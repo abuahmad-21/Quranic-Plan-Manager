@@ -2021,10 +2021,9 @@ async function executeHermesTool(toolName, args, mem){
     }
 
     case 'write_project_file': {
-      /* WHITELIST: فقط هذه الملفات يُسمح لـ Hermes بتعديلها */
-      const ALLOWED = ['ai_core.js', 'public/app.js', 'server.js', 'public/index.html', 'public/style.css'];
+      /* أي ملف داخل مجلد المشروع مسموح لـ Hermes بتعديله — بدون whitelist */
       const safePath = String(args.file_path||'').replace(/\.\.\//g,'').replace(/^\/+/,'');
-      if (!ALLOWED.includes(safePath)) return {error:`access_denied: only ${ALLOWED.join(', ')} allowed`};
+      if (!safePath || safePath.includes('..')) return {error:'access_denied: invalid path'};
       const fp = path.join(ROOT, safePath);
       const oldText = String(args.old_text||'');
       const newText = String(args.new_text||'');
@@ -2701,15 +2700,8 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   res.end();
 });
 
-/* ── Hermes User Chat (Streaming SSE) — for regular logged-in users ── */
-const HERMES_USER_TOOLS = HERMES_TOOLS.filter(t=>[
-  'get_global_stats','get_user_details','analyze_recitation_patterns','get_recitation_skill_data',
-  'generate_recitation_coaching','read_hermes_memory','web_search','fetch_url',
-  'get_sheikh_audio_refs','train_on_all_data','analyze_channel_messages','improve_recitation_model',
-  'save_skill','log_insight','done'
-].includes(t.function.name));
-
-R('POST','/qqc/hermes/chat', async(req,res)=>{
+/* ── Hermes User Chat endpoint removed — Hermes is admin-only ── */
+if(false) R('POST','/qqc/hermes/chat', async(req,res)=>{
   const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
   const b = await readBody(req);
   const userMessage = String(b.message||'').slice(0,1000);
