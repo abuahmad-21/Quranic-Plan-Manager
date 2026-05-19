@@ -1918,6 +1918,157 @@ const Admin = {
       el.querySelectorAll('.h-chat-quick').forEach(btn=>{ btn.onclick=()=>{ if(chatInput) chatInput.value=btn.dataset.q; hChatSend(); }; });
 
     }
+    if (name==='ai-settings'){
+      const el = document.getElementById('atab-ai-settings');
+      el.innerHTML = `<div style="text-align:center;color:var(--text-3);padding:20px 0;font-size:.85rem">جارٍ تحميل إعدادات الذكاء الاصطناعي…</div>`;
+      let r;
+      try { r = await Api.get('/admin/ai-settings', true); } catch(e){ el.innerHTML='<p style="color:red">خطأ في الاتصال</p>'; return; }
+      const s = r.settings || {};
+      const replitOk = r.replit_available;
+
+      const providerLabel = p => p==='replit'?'⚡ Replit AI (OpenAI)':p==='pollinations'?'🆓 Pollinations AI (مجاني)':p==='custom'?'🔑 مفتاح مخصص':'بلا';
+      const providerDesc  = p => p==='replit'?'يستخدم مفاتيح Replit المُدمجة تلقائياً — موثوق وسريع':p==='pollinations'?'مجاني تماماً بدون مفتاح — يعمل مباشرة في الكود':p==='custom'?'أدخل رابط API ومفتاحك الخاص':'—';
+
+      el.innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(52,211,153,.06));border:1px solid rgba(52,211,153,.25);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <div style="font-size:1.5rem">⚡</div>
+          <div>
+            <div style="font-size:1rem;font-weight:700;color:var(--mint)">إعدادات الذكاء الاصطناعي</div>
+            <div style="font-size:.75rem;color:var(--text-3)">اختر المزوّد الرئيسي والاحتياطي — الاحتياطي يُفعَّل تلقائياً عند فشل الرئيسي</div>
+          </div>
+        </div>
+        ${!replitOk?`<div style="margin-top:8px;padding:7px 10px;background:rgba(239,68,68,.08);border-radius:7px;border:1px solid rgba(239,68,68,.2);font-size:.78rem;color:var(--red)">⚠️ Replit AI غير مُفعَّل في هذا المشروع</div>`:`<div style="margin-top:8px;padding:7px 10px;background:rgba(52,211,153,.08);border-radius:7px;border:1px solid rgba(52,211,153,.2);font-size:.78rem;color:var(--mint)">✅ Replit AI مُفعَّل ومتاح</div>`}
+      </div>
+
+      <!-- Primary Provider -->
+      <div class="glass-card pad" style="margin-bottom:10px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--mint);margin-bottom:10px">🥇 المزوّد الرئيسي</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="ai-primary-list">
+          ${['replit','pollinations','custom'].map(p=>`
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px;border-radius:8px;border:1px solid ${s.primary_provider===p?'rgba(52,211,153,.4)':'rgba(255,255,255,.08)'};background:${s.primary_provider===p?'rgba(52,211,153,.08)':'rgba(0,0,0,.15)'};transition:.2s">
+            <input type="radio" name="ai-primary" value="${p}" ${s.primary_provider===p?'checked':''} style="margin-top:2px;flex-shrink:0">
+            <div style="flex:1">
+              <div style="font-size:.85rem;font-weight:600">${providerLabel(p)}</div>
+              <div style="font-size:.73rem;color:var(--text-3);margin-top:2px">${providerDesc(p)}</div>
+              ${p==='replit'&&!replitOk?`<div style="font-size:.7rem;color:var(--red);margin-top:3px">⚠️ غير متاح حالياً</div>`:''}
+            </div>
+            <button class="btn btn-sm btn-ghost ai-test-btn" data-provider="${p}" style="font-size:.68rem;flex-shrink:0;margin-top:1px">اختبار</button>
+          </label>`).join('')}
+        </div>
+      </div>
+
+      <!-- Fallback Provider -->
+      <div class="glass-card pad" style="margin-bottom:10px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:10px">🔄 المزوّد الاحتياطي</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${['none','replit','pollinations','custom'].map(p=>`
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px;border-radius:8px;border:1px solid ${s.fallback_provider===p?'rgba(250,204,21,.4)':'rgba(255,255,255,.08)'};background:${s.fallback_provider===p?'rgba(250,204,21,.06)':'rgba(0,0,0,.15)'};transition:.2s">
+            <input type="radio" name="ai-fallback" value="${p}" ${s.fallback_provider===p?'checked':''} style="margin-top:2px;flex-shrink:0">
+            <div style="flex:1">
+              <div style="font-size:.85rem;font-weight:600">${p==='none'?'❌ بلا احتياطي':providerLabel(p)}</div>
+              <div style="font-size:.73rem;color:var(--text-3);margin-top:2px">${p==='none'?'لا تحويل تلقائي عند الفشل':providerDesc(p)}</div>
+            </div>
+          </label>`).join('')}
+        </div>
+      </div>
+
+      <!-- Model for Replit -->
+      <div class="glass-card pad" style="margin-bottom:10px">
+        <div style="font-size:.85rem;font-weight:700;margin-bottom:8px">🧠 إعدادات النماذج</div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:.78rem;color:var(--text-2);display:block;margin-bottom:4px">نموذج Replit AI</label>
+          <select id="ai-replit-model" class="field-input" style="width:100%">
+            ${['gpt-5-nano','gpt-5-mini','gpt-5','gpt-5.1','gpt-5.2','gpt-5.4'].map(m=>`<option value="${m}" ${s.replit_model===m?'selected':''}>${m}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Provider -->
+      <div class="glass-card pad" style="margin-bottom:10px" id="ai-custom-block">
+        <div style="font-size:.85rem;font-weight:700;margin-bottom:8px">🔑 المزوّد المخصص</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <label style="font-size:.78rem;color:var(--text-2);display:block;margin-bottom:4px">رابط API (Base URL)</label>
+            <input id="ai-custom-url" class="field-input" type="text" placeholder="https://api.openai.com/v1" value="${escapeHTML(s.custom_base_url||'')}" style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:.78rem;color:var(--text-2);display:block;margin-bottom:4px">مفتاح API</label>
+            <input id="ai-custom-key" class="field-input" type="password" placeholder="sk-..." value="${s.custom_api_key?'••••••••':''}" data-has-key="${!!s.custom_api_key}" style="width:100%">
+          </div>
+          <div>
+            <label style="font-size:.78rem;color:var(--text-2);display:block;margin-bottom:4px">اسم النموذج</label>
+            <input id="ai-custom-model" class="field-input" type="text" placeholder="gpt-4o-mini" value="${escapeHTML(s.custom_model||'gpt-4o-mini')}" style="width:100%">
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div id="ai-save-status" style="min-height:20px;font-size:.78rem;text-align:center;margin-bottom:6px"></div>
+      <button class="btn btn-primary btn-full" id="btn-ai-save" style="background:linear-gradient(135deg,rgba(16,185,129,.8),rgba(52,211,153,.7));border:none">حفظ الإعدادات</button>
+
+      <!-- Status cards -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">
+        ${['replit','pollinations','custom'].map(p=>`
+        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.06)" id="ai-status-${p}">
+          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'Pollinations':'مخصص'}</div>
+          <div style="font-size:.85rem">—</div>
+        </div>`).join('')}
+      </div>`;
+
+      /* Test buttons */
+      el.querySelectorAll('.ai-test-btn').forEach(btn=>{
+        btn.onclick = async()=>{
+          const p = btn.dataset.provider;
+          const statusEl = document.getElementById('ai-status-'+p);
+          btn.textContent='⏳'; btn.disabled=true;
+          const r2 = await Api.post('/admin/ai-test',{provider:p},true);
+          btn.textContent='اختبار'; btn.disabled=false;
+          if(statusEl){
+            if(r2.ok){ statusEl.innerHTML=`<div style="font-size:.75rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'Pollinations':'مخصص'}</div><div style="font-size:.8rem;color:var(--mint)">✅ يعمل</div><div style="font-size:.68rem;color:var(--text-3);margin-top:2px">${escapeHTML(r2.reply||'')}</div>`; }
+            else { statusEl.innerHTML=`<div style="font-size:.75rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'Pollinations':'مخصص'}</div><div style="font-size:.8rem;color:var(--red)">❌ فشل</div><div style="font-size:.68rem;color:var(--text-3);margin-top:2px">${escapeHTML(r2.error||'')}</div>`; }
+          }
+          toast(r2.ok?'✅ الذكاء الاصطناعي يعمل!':'❌ '+(r2.error||'فشل الاتصال'), r2.ok?'success':'error');
+        };
+      });
+
+      /* Save */
+      document.getElementById('btn-ai-save').onclick = async()=>{
+        const primary   = document.querySelector('input[name="ai-primary"]:checked')?.value || 'replit';
+        const fallback  = document.querySelector('input[name="ai-fallback"]:checked')?.value || 'pollinations';
+        const replitMdl = document.getElementById('ai-replit-model')?.value || 'gpt-5-mini';
+        const customUrl = document.getElementById('ai-custom-url')?.value?.trim() || '';
+        const customKey = document.getElementById('ai-custom-key')?.value?.trim();
+        const customMdl = document.getElementById('ai-custom-model')?.value?.trim() || 'gpt-4o-mini';
+        const statusEl  = document.getElementById('ai-save-status');
+        if(statusEl) statusEl.textContent = '⏳ جارٍ الحفظ…';
+
+        const payload = { primary_provider:primary, fallback_provider:fallback, replit_model:replitMdl, custom_base_url:customUrl, custom_model:customMdl };
+        // Only send key if user typed a new one (not placeholder dots)
+        const keyField = document.getElementById('ai-custom-key');
+        if(keyField && keyField.value && !keyField.value.includes('••')) payload.custom_api_key = keyField.value.trim();
+
+        const r3 = await Api.post('/admin/ai-settings', payload, true);
+        if(statusEl) statusEl.textContent = r3.ok ? '✅ تم الحفظ بنجاح' : '❌ '+(r3.error||'فشل الحفظ');
+        if(r3.ok){ toast('✅ تم حفظ إعدادات الذكاء الاصطناعي','success'); setTimeout(()=>Admin.loadTab('ai-settings'),500); }
+        else toast('❌ '+(r3.error||'خطأ'),'error');
+      };
+
+      /* Radio visual feedback */
+      el.querySelectorAll('input[type="radio"]').forEach(radio=>{
+        radio.onchange = ()=>{
+          const group = radio.name;
+          el.querySelectorAll(`input[name="${group}"]`).forEach(r=>{
+            const lbl = r.closest('label');
+            if(!lbl) return;
+            const isSelected = r === radio && r.checked;
+            const isPrimary = group==='ai-primary';
+            lbl.style.borderColor = isSelected?(isPrimary?'rgba(52,211,153,.4)':'rgba(250,204,21,.4)'):'rgba(255,255,255,.08)';
+            lbl.style.background  = isSelected?(isPrimary?'rgba(52,211,153,.08)':'rgba(250,204,21,.06)'):'rgba(0,0,0,.15)';
+          });
+        };
+      });
+    }
   }
 };
 

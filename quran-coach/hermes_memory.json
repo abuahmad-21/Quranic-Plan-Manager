@@ -367,18 +367,48 @@
       ],
       "next_run_focus": "تحسين التفاعل وزيادة النشاط للمستخدمين",
       "duration_ms": 13103
+    },
+    {
+      "id": "2208473b0d1e588d",
+      "at": "2026-05-19T17:44:42.827Z",
+      "tool_calls": 38,
+      "summary": "",
+      "actions": [
+        "batch_notify_users: {\"ok\":true,\"sent_to\":42,\"filter\":\"inactive\"}",
+        "modify_algorithm_weights: {\"ok\":true,\"reason\":\"تحفيز النشاط للمستخدمين غير النشطين\",\"changed\":{}}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"455\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ali\",\"old_pages\":2,\"new_pages\":2}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"sbod\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"dfhj\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgh\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"ffgg\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisjj\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"newsheikhtest99\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gfghgh\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghygg\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"yghuhh\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"jdjd\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"fffff\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"djdjd\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"testmigration\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"gffg\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"isisj\",\"old_pages\":1,\"new_pages\":1}",
+        "adjust_user_plan: {\"ok\":true,\"username\":\"usush\",\"old_pages\":1,\"new_pages\":1}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 23621
     }
   ],
-  "last_run": "2026-05-17T16:18:57.373Z",
+  "last_run": "2026-05-19T17:44:42.827Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 15,
-    "total_tool_calls": 288,
-    "users_helped": 319,
-    "weights_updated": 7,
-    "plans_adjusted": 92
+    "total_runs": 16,
+    "total_tool_calls": 326,
+    "users_helped": 361,
+    "weights_updated": 8,
+    "plans_adjusted": 122
   },
   "recitation_data": {
     "top_error_words": [],

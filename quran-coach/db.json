@@ -126,7 +126,7 @@
       }
     ],
     "training_samples": [],
-    "hermes_weights_updated_at": "2026-05-17T16:18:50.932Z"
+    "hermes_weights_updated_at": "2026-05-19T17:44:29.849Z"
   },
   "users": {
     "455": {
@@ -164,8 +164,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -319,6 +319,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:04.678Z"
+        },
+        {
+          "id": "576fad83d0d69d17",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -354,10 +362,10 @@
           5
         ],
         "hermes_adjustment": {
-          "old": 1,
+          "old": 2,
           "new": 2,
-          "reason": "مستخدم شبه نشط. تم تعديل خطته للتحفيز.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -511,6 +519,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.207Z"
+        },
+        {
+          "id": "3e341500db62971c",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -548,8 +564,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -688,6 +704,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "aca40a8df3d85771",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -725,8 +749,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -872,6 +896,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "625daf22e3fb004d",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -909,8 +941,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -1056,6 +1088,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "4a9ce09f704cac87",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -1093,8 +1133,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -1243,6 +1283,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "c9ace3917d5e5ddc",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -1280,8 +1328,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -1427,6 +1475,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "56b23999f012a942",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -1648,8 +1704,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -1778,6 +1834,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "b1ef084e44b1e744",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -2012,8 +2076,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -2175,6 +2239,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "50fe7a1ef19d6115",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -2214,8 +2286,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم شبه نشط. تم تعديل خطته للتحفيز.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -2377,6 +2449,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "99cdfc6e8b2567c1",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -2416,8 +2496,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم شبه نشط. تم تعديل خطته للتحفيز.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -2618,6 +2698,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "36c0870fc93143d6",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -2657,8 +2745,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم شبه نشط. تم تعديل خطته للتحفيز.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -2868,6 +2956,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "8e8637b563cd4b8a",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -2907,8 +3003,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3051,6 +3147,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "200ff28d9a790c74",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -3090,8 +3194,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3237,6 +3341,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "d3ccedfb052cd79b",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": [],
@@ -3283,8 +3395,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3413,6 +3525,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "73a623145090ddb6",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -3452,8 +3572,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم شبه نشط. تم تعديل خطته للتحفيز.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3615,6 +3735,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "5c56b922e1235a08",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": [],
@@ -3666,8 +3794,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3805,6 +3933,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "e7bf762926ad4601",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -3844,8 +3980,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -3983,6 +4119,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "a2b73ee8e32fa983",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": [
@@ -4042,8 +4186,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4181,6 +4325,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "563487394d9d1479",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -4220,8 +4372,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.610Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4359,6 +4511,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "42b8310d53bdc2c4",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -4398,8 +4558,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4528,6 +4688,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "fb4031b33008c8fa",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": [],
@@ -4579,8 +4747,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4710,6 +4878,14 @@
           "ref": "motivation_reminder",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "4a93cca45fd153cd",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": [],
@@ -4735,8 +4911,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4849,6 +5025,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:22:13.208Z"
+        },
+        {
+          "id": "cd3bec31f601f4e7",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -4888,8 +5072,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -4986,6 +5170,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "a0b2335396fb72e3",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.848Z"
         }
       ],
       "posts": []
@@ -5010,8 +5202,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "مستخدم غير نشط. تم تعديل خطته لزيادة فرص التفاعل.",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5116,6 +5308,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "5f6c87e0cf7a3bcc",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5161,8 +5361,8 @@
         "hermes_adjustment": {
           "old": 1,
           "new": 1,
-          "reason": "",
-          "at": "2026-05-16T12:49:41.611Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5283,6 +5483,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "819c09b806b45db3",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5306,10 +5514,10 @@
         "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.5,
+          "old": 1,
           "new": 1,
-          "reason": "زيادة التحفيز والتحسين في الأداء.",
-          "at": "2026-05-16T11:43:11.817Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5406,6 +5614,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "d4fbe80b3ab3a89e",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5450,10 +5666,10 @@
         "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.5,
+          "old": 1,
           "new": 1,
-          "reason": "زيادة التحفيز والتحسين في الأداء.",
-          "at": "2026-05-16T11:43:11.817Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5550,6 +5766,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "d9d9f0e376295801",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5578,10 +5802,10 @@
         "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.5,
+          "old": 1,
           "new": 1,
-          "reason": "زيادة التحفيز والتحسين في الأداء.",
-          "at": "2026-05-16T11:43:11.817Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5678,6 +5902,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "8ba27d31bcaee0d1",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5701,10 +5933,10 @@
         "current_daily_pages": 1,
         "phase": "ramp_up",
         "hermes_adjustment": {
-          "old": 0.5,
+          "old": 1,
           "new": 1,
-          "reason": "زيادة التحفيز والتحسين في الأداء.",
-          "at": "2026-05-16T11:43:11.817Z"
+          "reason": "زيادة التفاعل",
+          "at": "2026-05-19T17:44:42.827Z"
         }
       },
       "progress": {
@@ -5793,6 +6025,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "d2b15ef40bfc4003",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -5946,6 +6186,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "3e7d898916da2aa7",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -6298,6 +6546,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "c4965245c2ea398b",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -6419,6 +6675,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "160505847de3cb64",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -6597,6 +6861,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "9f4e4800eda8ee39",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -6786,6 +7058,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "f3b80de16824c619",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -6974,6 +7254,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "ef399f302055362f",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -7227,7 +7515,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "2aed6248b5c9144b",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
+        }
+      ],
       "posts": [],
       "login_history": [],
       "tarteel_history": [
@@ -7442,7 +7739,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "5a89b2580dd5531c",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
+        }
+      ],
       "posts": [],
       "login_history": [],
       "tarteel_history": [
@@ -7605,6 +7911,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "5a9c7e49f1743a2f",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -7706,6 +8020,14 @@
           "ref": "view-dashboard",
           "read": true,
           "created_at": "2026-05-17T16:18:50.932Z"
+        },
+        {
+          "id": "c1ebb8a9346d3f33",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
         }
       ],
       "posts": [],
@@ -7756,7 +8078,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "4f1ffc360f222609",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -7848,7 +8179,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "7e9df0e2e571d387",
+          "type": "motivation",
+          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:44:29.849Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     }

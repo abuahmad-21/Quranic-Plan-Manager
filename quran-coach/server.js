@@ -28,6 +28,14 @@ if(!DB.posts)     DB.posts     = [];
 if(!DB.chats)     DB.chats     = {};
 if(!DB.admin.sheikh_requests)    DB.admin.sheikh_requests    = {};
 if(!DB.admin.memorization_plans) DB.admin.memorization_plans = [];
+if(!DB.admin.ai_settings) DB.admin.ai_settings = {
+  primary_provider: 'replit',
+  fallback_provider: 'pollinations',
+  replit_model: 'gpt-5-mini',
+  custom_base_url: '',
+  custom_api_key: '',
+  custom_model: 'gpt-4o-mini'
+};
 let writePending = false;
 function persist(){
   if (writePending) return;
@@ -822,6 +830,42 @@ R('PATCH','/qqc/admin/weights', async (req,res)=>{
   persist(); send(res,200,{ok:true, weights: DB.admin.algorithm_weights});
 });
 
+/* ── AI Settings ── */
+R('GET','/qqc/admin/ai-settings', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const s = DB.admin.ai_settings || {};
+  // Check Replit provider availability
+  const replitAvailable = !!(process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && process.env.AI_INTEGRATIONS_OPENAI_API_KEY);
+  send(res,200,{ settings: s, replit_available: replitAvailable });
+});
+
+R('POST','/qqc/admin/ai-settings', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model'];
+  allowed.forEach(k=>{ if(b[k] !== undefined) DB.admin.ai_settings[k] = String(b[k]).slice(0,500); });
+  persist(); send(res,200,{ok:true, settings: DB.admin.ai_settings});
+});
+
+R('POST','/qqc/admin/ai-test', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const providerName = String(b.provider || 'replit');
+  const cfg = getAIProviderConfig(providerName);
+  if(!cfg) return send(res,200,{ok:false, error:'المزوّد غير مُعدّ أو مفاتيحه مفقودة'});
+  try {
+    const resp = await fetch(`${cfg.baseUrl}/chat/completions`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({ model:cfg.model, messages:[{role:'user',content:'قل: جاهز — كلمة واحدة فقط'}], max_completion_tokens:20 })
+    });
+    const data = await resp.json();
+    const reply = data.choices?.[0]?.message?.content || null;
+    if(reply) send(res,200,{ok:true, reply});
+    else send(res,200,{ok:false, error:'لم يرد الذكاء الاصطناعي'});
+  } catch(e){ send(res,200,{ok:false, error:e.message}); }
+});
+
 R('POST','/qqc/admin/quote', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
@@ -848,19 +892,45 @@ function addNotif(username, type, text, ref=''){
   u.notifications.push({id:uid(), type, text, ref, read:false, created_at:now()});
   if(u.notifications.length>100) u.notifications=u.notifications.slice(-100);
 }
-async function callAI(systemPrompt, userMsg){
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if(!baseUrl || !apiKey) return null;
-  try {
-    const resp = await fetch(`${baseUrl}/chat/completions`,{
-      method:'POST',
-      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify({model:'gpt-5-mini', messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_completion_tokens:300})
-    });
-    const data = await resp.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch(e){ console.error('AI error',e.message); return null; }
+/* ══ AI Provider System ══ */
+function getAIProviderConfig(providerName){
+  const s = DB.admin.ai_settings || {};
+  if(providerName === 'replit'){
+    const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+    const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+    if(!baseUrl || !apiKey) return null;
+    return { baseUrl, apiKey, model: s.replit_model || 'gpt-5-mini' };
+  }
+  if(providerName === 'pollinations'){
+    return { baseUrl: 'https://text.pollinations.ai/openai', apiKey: 'dummy', model: 'openai' };
+  }
+  if(providerName === 'custom'){
+    if(!s.custom_base_url || !s.custom_api_key) return null;
+    return { baseUrl: s.custom_base_url, apiKey: s.custom_api_key, model: s.custom_model || 'gpt-4o-mini' };
+  }
+  return null;
+}
+async function callAI(systemPrompt, userMsg, maxTokens=300){
+  const s = DB.admin.ai_settings || {};
+  const primary  = s.primary_provider  || 'replit';
+  const fallback = s.fallback_provider || 'pollinations';
+  const providers = [primary];
+  if(fallback && fallback !== 'none' && fallback !== primary) providers.push(fallback);
+  for(const providerName of providers){
+    const cfg = getAIProviderConfig(providerName);
+    if(!cfg) continue;
+    try {
+      const resp = await fetch(`${cfg.baseUrl}/chat/completions`,{
+        method:'POST',
+        headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
+        body:JSON.stringify({ model:cfg.model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_completion_tokens:maxTokens })
+      });
+      const data = await resp.json();
+      const result = data.choices?.[0]?.message?.content || null;
+      if(result) return result;
+    } catch(e){ console.error(`AI error (${providerName})`,e.message); }
+  }
+  return null;
 }
 
 /* ── SHEIKH REQUESTS ── */
