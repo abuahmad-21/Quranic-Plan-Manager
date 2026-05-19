@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 42,
+      "total_users": 43,
       "total_sessions_today": 52,
       "total_pages_memorized_alltime": 10.2
     },
@@ -126,7 +126,15 @@
       }
     ],
     "training_samples": [],
-    "hermes_weights_updated_at": "2026-05-19T17:44:29.849Z"
+    "hermes_weights_updated_at": "2026-05-19T17:44:29.849Z",
+    "ai_settings": {
+      "primary_provider": "pollinations",
+      "fallback_provider": "pollinations",
+      "replit_model": "gpt-5-mini",
+      "custom_base_url": "",
+      "custom_api_key": "",
+      "custom_model": "gpt-4o-mini"
+    }
   },
   "users": {
     "455": {
@@ -327,6 +335,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "fddcc8f6d3069751",
+          "type": "motivation",
+          "text": "مرحباً! لقد لاحظنا أنك لم تتفاعل مؤخراً. نحن هنا لدعمك! ابدأ من جديد في تلاوتك اليوم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "31e41c1232a18270",
+          "type": "motivation",
+          "text": "مرحباً! نود أن نذكرك بأهمية التلاوة. بدأ يوم جديد، فلنبدأ معاً!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -527,6 +551,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "4bcdc675a6d24956",
+          "type": "motivation",
+          "text": "مرحباً علي! نتمنى أن تكون بخير. لديك خطة مخصصة، لنبدأ معاً من جديد ونعزز تلاوتك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "bade81fa5aeb7cbb",
+          "type": "motivation",
+          "text": "مرحباً! تذكّر أن كل لحظة من التلاوة تساهم في تحسين مهاراتك. حان وقت العودة!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -712,6 +752,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "f966a2b75bfd3394",
+          "type": "motivation",
+          "text": "مرحباً! نحن ننتظرك لبدء التلاوة مرة أخرى. لديك القدرة على التقدم، هيا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "f96a93b3d3f6fda7",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك. لنبدأ التلاوة معاً اليوم!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -904,6 +960,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "8cdb7b908ba96090",
+          "type": "motivation",
+          "text": "مرحباً! لقد مر بعض الوقت منذ آخر تفاعل لك. نحثك على استئناف تلاوتك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "aeb55cf95c35ce91",
+          "type": "motivation",
+          "text": "مرحباً! لا تنسَ أن التلاوة هي عمود ديننا. لنعد معاً!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -1096,6 +1168,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "96a1b3dbdfee7fb6",
+          "type": "motivation",
+          "text": "مرحباً! نريد رؤيتك متفاعلاً مرة أخرى. لديك خطة مريحة، هيا لنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "302dde3554ba5e00",
+          "type": "motivation",
+          "text": "مرحباً! أينما كنت، يمكنك دائماً العودة للتلاوة. نحن هنا لدعمك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -1291,6 +1379,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "628daa0f1601941b",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك في استئناف التلاوة. تذكر أن كل صفحة تقربك من هدفك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "2592a31290e5495b",
+          "type": "motivation",
+          "text": "مرحباً! تذكّر أن كل فائدة تنتظرك في التلاوة. لنتحدى أنفسنا اليوم!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -1483,6 +1587,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "3fe40c3b0c93cc90",
+          "type": "motivation",
+          "text": "مرحباً! نحن نؤمن بك وبقدرتك على التقدم. هيا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "b4af81ded11648b1",
+          "type": "motivation",
+          "text": "مرحباً! الفرصة أمامك لتعزيز تلاوتك. دعنا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -1842,6 +1962,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "eec1abd793a217b4",
+          "type": "motivation",
+          "text": "مرحباً! نريد مساعدتك في الارتقاء بتلاوتك. لديك خطة مخصصة، فلنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "8b1a02c4cfc991fd",
+          "type": "motivation",
+          "text": "مرحباً! نود أن نرىك تتفاعل معنا في التلاوة. نحن معك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -2247,6 +2383,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "832f44bd4e43f8d2",
+          "type": "motivation",
+          "text": "مرحباً! لاحظنا أنك لم تتفاعل مؤخرًا. لنستأنف تلاوتك معًا.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "09d40572a4be0924",
+          "type": "motivation",
+          "text": "مرحباً! التلاوة تمنحك الروح. لنعد معاً!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -2457,6 +2609,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "e4494b359a1a714a",
+          "type": "motivation",
+          "text": "مرحباً! لديك إمكانيات كبيرة. هيا لنبدأ تلاوتك اليوم!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "432ebb9c74097703",
+          "type": "motivation",
+          "text": "مرحباً! نعلم أنك تستطيع العودة. لنستمتع بالتلاوة!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -2706,6 +2874,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "78a8955705e8c534",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك. لنستأنف تلاوتك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "0c01e167b3c96a64",
+          "type": "motivation",
+          "text": "مرحباً! الطريق إلى التميز يبدأ بالتلاوة. دعنا نبدأ الآن!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -2964,6 +3148,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "fc591aec46ff85ee",
+          "type": "motivation",
+          "text": "مرحباً! لاحظنا أنك لم تتفاعل مؤخرًا. نحن هنا لدعمك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "a5401e2ba7002d01",
+          "type": "motivation",
+          "text": "مرحباً! ركز على أهدافك في التلاوة. لدينا طريق جديدة نحو التحسين!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -3155,6 +3355,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "8528ef7850fa7598",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك في استئناف تلاوتك. هيا لنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "44fca494731cba19",
+          "type": "motivation",
+          "text": "مرحباً! التلاوة هي رحلة. دعنا نحتفل بالعودة!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -3349,6 +3565,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "3a65e0950eee3d3d",
+          "type": "motivation",
+          "text": "مرحباً! لم يكن لديك نشاط منذ فترة. لا تتردد في الاتصال بنا إذا كنت بحاجة إلى دعم.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "add743af78c1bfb5",
+          "type": "motivation",
+          "text": "مرحباً! لا تتردد في العودة. نحن هنا لدعمك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -3533,6 +3765,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "097ddc8dcbe072b6",
+          "type": "motivation",
+          "text": "مرحباً! نرغب في رؤيتك نشطًا مرة أخرى. لنبدأ من جديد!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "50aa563357abec15",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لنشجعك على التلاوة. دعنا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -3743,6 +3991,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "f7b8078120cc9ccb",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لمساعدتك في استئناف تلاوتك. لقد مرت فترة منذ آخر نشاط لك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "dcfc66af5913bacc",
+          "type": "motivation",
+          "text": "مرحباً! التلاوة في انتظارك. لنبدأ التحسن معاً!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -3941,6 +4205,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "ef66fcfd8205eb7a",
+          "type": "motivation",
+          "text": "مرحباً! نحن ننتظرك للعودة إلى التلاوة. لديك خطة مفيدة، فلنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "d3d57618aa4e59b6",
+          "type": "motivation",
+          "text": "مرحباً! نحن نؤمن بك. لنلتزم بالتلاوة!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -4127,6 +4407,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "518fcac6411964d9",
+          "type": "motivation",
+          "text": "مرحباً! نريد تشجيعك للعودة إلى التلاوة. هيا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "d92a356cee970307",
+          "type": "motivation",
+          "text": "مرحباً! التلاوة هي طريقك للتطوير. دعنا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [
@@ -4333,6 +4629,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "f92b54d883f526c0",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك في استئناف تلاوتك.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "fd3917c128d33965",
+          "type": "motivation",
+          "text": "مرحباً! عدنا لنشجعك. استعد للتلاوة!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -4519,6 +4831,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "407177ca4921a3d6",
+          "type": "motivation",
+          "text": "مرحباً! لم تتفاعل مؤخرًا. هيا نرجع إلى التلاوة معًا.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "6cbfe480486c1c45",
+          "type": "motivation",
+          "text": "مرحباً! استعد للعودة إلى التلاوة. نحن هنا لدعمك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -4696,6 +5024,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "536181e158d0298c",
+          "type": "motivation",
+          "text": "مرحباً! لدينا خطة لتساعدك على العودة إلى التلاوة. دعنا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "a428af1331311c78",
+          "type": "motivation",
+          "text": "مرحباً! تذكّر أن كل تلاوة تقربك من هدفك. لنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -4886,6 +5230,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "90d26cf8fd48dfab",
+          "type": "motivation",
+          "text": "مرحباً! نحن نؤمن بك. دعنا نبدأ بتلاوتك من جديد.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "1ae174130cdae92f",
+          "type": "motivation",
+          "text": "مرحباً! الفرصة أمامك للتقدم في التلاوة. دعنا نبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -5033,6 +5393,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "18143308f0cc981d",
+          "type": "motivation",
+          "text": "مرحباً! نحن نتطلع لرؤيتك نشطًا مرة أخرى. لنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "91fefdd1d3a57b9a",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك في التلاوة. لنبدأ!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -5178,6 +5554,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.848Z"
+        },
+        {
+          "id": "2c94e36f1013a120",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لدعمك. هيا لنبدأ تلاوتك!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:22.821Z"
+        },
+        {
+          "id": "2f171042fb93be9a",
+          "type": "motivation",
+          "text": "مرحباً! دعنا نبدأ رحلة جديدة نحو التلاوة.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": []
@@ -5316,6 +5708,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "ad876debcf1d1785",
+          "type": "motivation",
+          "text": "مرحباً! لديك القدرة على العودة. دعنا نبدأ الآن!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -5491,6 +5891,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "0a3ee85683b18394",
+          "type": "motivation",
+          "text": "مرحباً! نحن هنا لنشجعك. لنبدأ التلاوة معاً!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-19T17:53:34.039Z"
         }
       ],
       "posts": [],
@@ -8191,6 +8599,98 @@
       ],
       "posts": [],
       "login_history": []
+    },
+    "jdjdjdjd": {
+      "username": "jdjdjdjd",
+      "password_hash": "79fb29995b1c4c49e2597c8d89861e61347af4efbf491cf670d470120f0f1263",
+      "display_name": "تبتبتب",
+      "created_at": "2026-05-19T17:51:36.480Z",
+      "last_active": "2026-05-19T17:58:09.217Z",
+      "avatar_color": "#0ccef6",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-19T17:51:38.577Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-19T17:51:38.577Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 6.51,
+        "afi": 67,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -8420,6 +8920,11 @@
       "username": "idjdjfjf",
       "expires": 1781654762002,
       "created_at": "2026-05-18T00:06:02.002Z"
+    },
+    "57eef3ae4efb70787c39af5f06f18cb0e707238a9b0c4afe": {
+      "username": "jdjdjdjd",
+      "expires": 1781805096481,
+      "created_at": "2026-05-19T17:51:36.481Z"
     }
   }
 }
