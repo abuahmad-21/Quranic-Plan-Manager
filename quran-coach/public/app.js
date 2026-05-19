@@ -1653,6 +1653,33 @@ const Admin = {
         </div>
         ${r.next_run_focus?`<div style="margin-top:10px;padding:7px 10px;background:rgba(250,204,21,.06);border-radius:7px;border:1px solid rgba(250,204,21,.15);font-size:.78rem;color:var(--gold)">🎯 تركيز الدورة القادمة: ${escapeHTML(r.next_run_focus)}</div>`:''}
         ${cfg.focus_mode?`<div style="margin-top:6px;font-size:.72rem;color:var(--text-3)">وضع: ${cfg.focus_mode} · الحد الأقصى: ${cfg.max_tool_calls||20} استدعاء</div>`:''}
+
+        <!-- Auto-Pilot Panel -->
+        <div id="hermes-autopilot-panel" style="margin-top:12px;padding:10px 12px;background:rgba(0,0,0,.25);border-radius:9px;border:1px solid rgba(167,139,250,.2)">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:.85rem">⏰</span>
+            <span style="font-size:.82rem;font-weight:600;color:#a78bfa">Auto-Pilot</span>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.78rem">
+              <input type="checkbox" id="ap-enabled" style="accent-color:#a78bfa">
+              <span>تشغيل تلقائي</span>
+            </label>
+            <select id="ap-interval" class="field-input" style="font-size:.75rem;padding:3px 7px;width:auto;border-radius:6px">
+              <option value="0.5">كل 30 دقيقة</option>
+              <option value="1">كل ساعة</option>
+              <option value="2">كل ساعتين</option>
+              <option value="4">كل 4 ساعات</option>
+              <option value="6">كل 6 ساعات</option>
+              <option value="12">كل 12 ساعة</option>
+              <option value="24">يومياً</option>
+            </select>
+            <button class="btn btn-sm" id="btn-ap-save" style="font-size:.75rem;padding:3px 10px;background:rgba(99,102,241,.4);border:none;color:#fff;border-radius:6px">حفظ</button>
+            <span id="ap-next-run" style="font-size:.7rem;color:var(--text-3)"></span>
+          </div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font-size:.72rem;color:var(--text-3)">🤖 الذكاء الفعّال:</span>
+            <span id="ap-active-ai" style="font-size:.72rem;padding:2px 8px;border-radius:10px;background:rgba(52,211,153,.12);color:var(--mint);border:1px solid rgba(52,211,153,.2)">جارٍ الفحص…</span>
+          </div>
+        </div>
       </div>
 
       <!-- Tabs inside Hermes -->
@@ -1973,6 +2000,41 @@ const Admin = {
         } catch(e){ btn.textContent='🔍 اختبار'; btn.disabled=false; if(result){ result.style.color='#f87171'; result.textContent='❌ البروكسي لا يعمل أو غير مشغّل'; } }
       });
 
+      /* ── Auto-Pilot: load settings + save ── */
+      (async()=>{
+        try {
+          const ap = await Api.get('/admin/hermes/autopilot', true);
+          const cbx = document.getElementById('ap-enabled');
+          const sel = document.getElementById('ap-interval');
+          const nxt = document.getElementById('ap-next-run');
+          const aiLbl = document.getElementById('ap-active-ai');
+          if(cbx) cbx.checked = !!ap.enabled;
+          if(sel && ap.interval_hours) sel.value = String(ap.interval_hours);
+          if(nxt) nxt.textContent = ap.next_run ? `⏭ التالية: ${new Date(ap.next_run).toLocaleTimeString('ar-SA')}` : (ap.enabled?'⏳ مجدولة':'⏸ معطّل');
+          if(aiLbl){
+            const names={'replit':'⚡ Replit AI','pollinations':'🆓 Pollinations','nvidia_nim':'🟢 NVIDIA NIM','custom':'🔑 مخصص','claude_free':'🤖 Claude (مجاني)'};
+            aiLbl.textContent = names[ap.active_provider]||ap.active_provider||'غير محدد';
+            if(ap.active_provider==='pollinations'||ap.active_provider==='claude_free') aiLbl.style.background='rgba(250,204,21,.1)';
+            else if(ap.active_provider==='nvidia_nim') aiLbl.style.background='rgba(118,185,0,.12)'; // NVIDIA green
+            else if(ap.active_provider==='replit') aiLbl.style.background='rgba(52,211,153,.12)';
+          }
+        } catch(e){}
+      })();
+
+      document.getElementById('btn-ap-save')?.addEventListener('click', async()=>{
+        const btn = document.getElementById('btn-ap-save');
+        const cbx = document.getElementById('ap-enabled');
+        const sel = document.getElementById('ap-interval');
+        const nxt = document.getElementById('ap-next-run');
+        btn.disabled=true; btn.textContent='⏳';
+        const r = await Api.post('/admin/hermes/autopilot', { enabled: cbx?.checked||false, interval_hours: parseFloat(sel?.value||6) }, true);
+        btn.disabled=false; btn.textContent='حفظ';
+        if(r.ok){
+          toast(r.enabled?`✅ Auto-Pilot مُفعَّل — كل ${r.interval_hours}h`:'⏸ Auto-Pilot معطَّل','success');
+          if(nxt) nxt.textContent = r.next_run ? `⏭ التالية: ${new Date(r.next_run).toLocaleTimeString('ar-SA')}` : (r.enabled?'⏳ مجدولة':'⏸ معطّل');
+        } else toast('❌ خطأ في حفظ Auto-Pilot','error');
+      });
+
       /* Run now */
       document.getElementById('btn-hermes-run')?.addEventListener('click', async()=>{
         const btn=document.getElementById('btn-hermes-run');
@@ -2110,8 +2172,8 @@ const Admin = {
       const s = r.settings || {};
       const replitOk = r.replit_available;
 
-      const providerLabel = p => p==='replit'?'⚡ Replit AI (OpenAI)':p==='pollinations'?'🆓 Pollinations AI (مجاني)':p==='custom'?'🔑 مفتاح مخصص':'بلا';
-      const providerDesc  = p => p==='replit'?'يستخدم مفاتيح Replit المُدمجة تلقائياً — موثوق وسريع':p==='pollinations'?'مجاني تماماً بدون مفتاح — يعمل مباشرة في الكود':p==='custom'?'أدخل رابط API ومفتاحك الخاص':'—';
+      const providerLabel = p => p==='replit'?'⚡ Replit AI':p==='pollinations'?'🆓 Pollinations AI (مجاني)':p==='nvidia_nim'?'🟢 NVIDIA NIM':p==='custom'?'🔑 مفتاح مخصص':'بلا';
+      const providerDesc  = p => p==='replit'?'يستخدم مفاتيح Replit المُدمجة تلقائياً — موثوق وسريع':p==='pollinations'?'مجاني تماماً بدون مفتاح — يعمل مباشرة في الكود':p==='nvidia_nim'?'نماذج NVIDIA قوية — أدخل API Key من build.nvidia.com مجاناً':p==='custom'?'أدخل رابط API ومفتاحك الخاص':'—';
 
       el.innerHTML = `
       <div style="background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(52,211,153,.06));border:1px solid rgba(52,211,153,.25);border-radius:12px;padding:14px;margin-bottom:12px">
@@ -2125,17 +2187,26 @@ const Admin = {
         ${!replitOk?`<div style="margin-top:8px;padding:7px 10px;background:rgba(239,68,68,.08);border-radius:7px;border:1px solid rgba(239,68,68,.2);font-size:.78rem;color:var(--red)">⚠️ Replit AI غير مُفعَّل في هذا المشروع</div>`:`<div style="margin-top:8px;padding:7px 10px;background:rgba(52,211,153,.08);border-radius:7px;border:1px solid rgba(52,211,153,.2);font-size:.78rem;color:var(--mint)">✅ Replit AI مُفعَّل ومتاح</div>`}
       </div>
 
+      <!-- Active AI Banner -->
+      ${r.active_provider?`<div style="margin-bottom:10px;padding:8px 12px;background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:8px;font-size:.78rem;display:flex;align-items:center;gap:8px">
+        <span>🤖 الذكاء الفعّال الآن:</span>
+        <span style="font-weight:700;color:var(--mint)">${providerLabel(r.active_provider)}</span>
+        <span style="color:var(--text-3);font-size:.72rem">(هذا ما يستخدمه Hermes الآن)</span>
+      </div>`:''}
+
       <!-- Primary Provider -->
       <div class="glass-card pad" style="margin-bottom:10px">
         <div style="font-size:.85rem;font-weight:700;color:var(--mint);margin-bottom:10px">🥇 المزوّد الرئيسي</div>
         <div style="display:flex;flex-direction:column;gap:8px" id="ai-primary-list">
-          ${['replit','pollinations','custom'].map(p=>`
+          ${['replit','pollinations','nvidia_nim','custom'].map(p=>`
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px;border-radius:8px;border:1px solid ${s.primary_provider===p?'rgba(52,211,153,.4)':'rgba(255,255,255,.08)'};background:${s.primary_provider===p?'rgba(52,211,153,.08)':'rgba(0,0,0,.15)'};transition:.2s">
             <input type="radio" name="ai-primary" value="${p}" ${s.primary_provider===p?'checked':''} style="margin-top:2px;flex-shrink:0">
             <div style="flex:1">
               <div style="font-size:.85rem;font-weight:600">${providerLabel(p)}</div>
               <div style="font-size:.73rem;color:var(--text-3);margin-top:2px">${providerDesc(p)}</div>
               ${p==='replit'&&!replitOk?`<div style="font-size:.7rem;color:var(--red);margin-top:3px">⚠️ غير متاح حالياً</div>`:''}
+              ${p==='nvidia_nim'&&!r.nim_available?`<div style="font-size:.7rem;color:var(--gold);margin-top:3px">⚠️ أدخل API Key أدناه أولاً</div>`:''}
+              ${p==='nvidia_nim'&&r.nim_available?`<div style="font-size:.7rem;color:var(--mint);margin-top:3px">✅ المفتاح محفوظ وجاهز</div>`:''}
             </div>
             <button class="btn btn-sm btn-ghost ai-test-btn" data-provider="${p}" style="font-size:.68rem;flex-shrink:0;margin-top:1px">اختبار</button>
           </label>`).join('')}
@@ -2146,7 +2217,7 @@ const Admin = {
       <div class="glass-card pad" style="margin-bottom:10px">
         <div style="font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:10px">🔄 المزوّد الاحتياطي</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          ${['none','replit','pollinations','custom'].map(p=>`
+          ${['none','replit','pollinations','nvidia_nim','custom'].map(p=>`
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px;border-radius:8px;border:1px solid ${s.fallback_provider===p?'rgba(250,204,21,.4)':'rgba(255,255,255,.08)'};background:${s.fallback_provider===p?'rgba(250,204,21,.06)':'rgba(0,0,0,.15)'};transition:.2s">
             <input type="radio" name="ai-fallback" value="${p}" ${s.fallback_provider===p?'checked':''} style="margin-top:2px;flex-shrink:0">
             <div style="flex:1">

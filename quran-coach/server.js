@@ -42,6 +42,8 @@ if(!DB.admin.ai_settings.github) DB.admin.ai_settings.github = {
   repo_name: 'Quranic-Plan-Manager',
   branch: 'main'
 };
+if(!DB.admin.ai_settings.nvidia_nim_key) DB.admin.ai_settings.nvidia_nim_key = '';
+if(!DB.admin.ai_settings.hermes_autopilot) DB.admin.ai_settings.hermes_autopilot = { enabled:false, interval_hours:6 };
 let writePending = false;
 function persist(){
   if (writePending) return;
@@ -840,15 +842,16 @@ R('PATCH','/qqc/admin/weights', async (req,res)=>{
 R('GET','/qqc/admin/ai-settings', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const s = DB.admin.ai_settings || {};
-  // Check Replit provider availability
   const replitAvailable = !!(process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && process.env.AI_INTEGRATIONS_OPENAI_API_KEY);
-  send(res,200,{ settings: s, replit_available: replitAvailable });
+  const nimAvailable    = !!(s.nvidia_nim_key || process.env.NVIDIA_NIM_API_KEY);
+  const activeProvider  = getActiveAIProviderName();
+  send(res,200,{ settings: s, replit_available: replitAvailable, nim_available: nimAvailable, active_provider: activeProvider });
 });
 
 R('POST','/qqc/admin/ai-settings', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
-  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model'];
+  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model','nvidia_nim_key'];
   allowed.forEach(k=>{ if(b[k] !== undefined) DB.admin.ai_settings[k] = String(b[k]).slice(0,500); });
   persist(); send(res,200,{ok:true, settings: DB.admin.ai_settings});
 });
@@ -967,6 +970,11 @@ function getAIProviderConfig(providerName){
   if(providerName === 'claude_free'){
     return { baseUrl: 'https://text.pollinations.ai/openai', apiKey: 'dummy', model: 'claude-sonnet-4-5' };
   }
+  if(providerName === 'nvidia_nim'){
+    const key = s.nvidia_nim_key || process.env.NVIDIA_NIM_API_KEY;
+    if(!key) return null;
+    return { baseUrl: 'https://integrate.api.nvidia.com/v1', apiKey: key, model: 'meta/llama-3.1-nemotron-70b-instruct' };
+  }
   if(providerName === 'custom'){
     if(!s.custom_base_url || !s.custom_api_key) return null;
     return { baseUrl: s.custom_base_url, apiKey: s.custom_api_key, model: s.custom_model || 'gpt-4o-mini' };
@@ -979,7 +987,19 @@ function getActiveAIConfig(){
   const fallback = s.fallback_provider || 'pollinations';
   const list = [primary];
   if(fallback && fallback !== 'none' && fallback !== primary) list.push(fallback);
+  // Always try pollinations as last resort (truly free, no key needed)
+  if(!list.includes('pollinations')) list.push('pollinations');
   for(const p of list){ const cfg = getAIProviderConfig(p); if(cfg) return cfg; }
+  return null;
+}
+function getActiveAIProviderName(){
+  const s = DB.admin.ai_settings || {};
+  const primary  = s.primary_provider  || 'replit';
+  const fallback = s.fallback_provider || 'pollinations';
+  const list = [primary];
+  if(fallback && fallback !== 'none' && fallback !== primary) list.push(fallback);
+  if(!list.includes('pollinations')) list.push('pollinations');
+  for(const p of list){ const cfg = getAIProviderConfig(p); if(cfg) return p; }
   return null;
 }
 async function callAI(systemPrompt, userMsg, maxTokens=300){
@@ -2767,6 +2787,65 @@ R('POST','/qqc/admin/claude-proxy/stop', async(req,res)=>{
   catch(e){ send(res,200,{ok:false, error:e.message}); }
 });
 
+/* ══ NVIDIA NIM — اختبار مباشر ══ */
+R('POST','/qqc/admin/nim-test', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const key = String(b.api_key||'').trim() || DB.admin.ai_settings?.nvidia_nim_key || process.env.NVIDIA_NIM_API_KEY;
+  if(!key) return send(res,200,{ok:false, error:'أدخل NVIDIA NIM API Key أولاً'});
+  // Save key if provided
+  if(b.api_key) { DB.admin.ai_settings.nvidia_nim_key = key; persist(); }
+  const model = 'meta/llama-3.1-nemotron-70b-instruct';
+  try {
+    const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model, messages:[{role:'user',content:'قل: جاهز (كلمة واحدة فقط)'}], max_tokens:20}),
+      signal:AbortSignal.timeout(15000)
+    });
+    const data = await resp.json();
+    const reply = data.choices?.[0]?.message?.content;
+    if(reply) send(res,200,{ok:true, reply, model, note:'NVIDIA NIM يعمل بنجاح! ✅'});
+    else send(res,200,{ok:false, error: data.detail||data.message||'لم يرد NIM', raw:JSON.stringify(data).slice(0,200)});
+  } catch(e){ send(res,200,{ok:false, error:e.message}); }
+});
+
+/* ══ Hermes Auto-Pilot ══ */
+let _autoPilotInterval = null;
+let _autoPilotNextRun  = null;
+
+function setupAutoPilot(){
+  if(_autoPilotInterval){ clearInterval(_autoPilotInterval); _autoPilotInterval=null; _autoPilotNextRun=null; }
+  const ap = DB.admin.ai_settings?.hermes_autopilot;
+  if(!ap?.enabled || !ap?.interval_hours || ap.interval_hours < 0.5) return;
+  const ms = ap.interval_hours * 60 * 60 * 1000;
+  _autoPilotNextRun = new Date(Date.now() + ms).toISOString();
+  console.log(`[AutoPilot] 🤖 Hermes scheduled every ${ap.interval_hours}h — next: ${_autoPilotNextRun}`);
+  _autoPilotInterval = setInterval(async()=>{
+    console.log('[AutoPilot] ⏰ Triggering scheduled Hermes run...');
+    _autoPilotNextRun = new Date(Date.now() + ms).toISOString();
+    try { await runHermesAgent(); } catch(e){ console.error('[AutoPilot] Error:', e.message); }
+  }, ms);
+}
+
+R('GET','/qqc/admin/hermes/autopilot', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const ap = DB.admin.ai_settings?.hermes_autopilot || {};
+  send(res,200,{ enabled:ap.enabled||false, interval_hours:ap.interval_hours||6, next_run:_autoPilotNextRun, active_provider:getActiveAIProviderName() });
+});
+
+R('POST','/qqc/admin/hermes/autopilot', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  if(!DB.admin.ai_settings.hermes_autopilot) DB.admin.ai_settings.hermes_autopilot = {};
+  const ap = DB.admin.ai_settings.hermes_autopilot;
+  if(b.enabled !== undefined) ap.enabled = !!b.enabled;
+  if(b.interval_hours) ap.interval_hours = Math.max(0.5, Math.min(48, +b.interval_hours||6));
+  persist();
+  setupAutoPilot();
+  send(res,200,{ok:true, enabled:ap.enabled, interval_hours:ap.interval_hours, next_run:_autoPilotNextRun});
+});
+
 R('GET','/qqc/admin/hermes/status', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const mem=readHermesMemory();
@@ -3662,3 +3741,6 @@ R('GET','/qqc/admin/logs-stats', async(req,res)=>{
   }
   send(res,200,{ stats });
 });
+
+/* ══ Boot: start auto-pilot if previously enabled ══ */
+setupAutoPilot();
