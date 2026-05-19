@@ -1657,7 +1657,7 @@ const Admin = {
 
       <!-- Tabs inside Hermes -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
-        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['chat','💬 محادثة'],['lab','🧪 المختبر']].map(([t,l])=>
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['claude','🤖 Claude AI'],['chat','💬 محادثة'],['lab','🧪 المختبر']].map(([t,l])=>
           `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
       </div>
 
@@ -1741,43 +1741,116 @@ const Admin = {
 
       <!-- GitHub Commits -->
       <div id="h-commits" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
           <div style="font-size:.8rem;color:var(--text-3)">كل تعديل كود يُرفع Hermes تلقائياً إلى GitHub</div>
-          <a href="https://github.com/abuahmad-21/Quranic-Plan-Manager/commits/main" target="_blank"
-             style="font-size:.72rem;color:#6366f1;text-decoration:none;padding:4px 10px;border:1px solid rgba(99,102,241,.3);border-radius:6px">↗ فتح GitHub</a>
+          <div style="display:flex;gap:6px">
+            <button id="btn-load-gh-commits" class="btn btn-sm btn-ghost" style="font-size:.72rem">📡 تحميل من GitHub</button>
+            <a id="gh-repo-link" href="#" target="_blank" style="font-size:.72rem;color:#6366f1;text-decoration:none;padding:4px 10px;border:1px solid rgba(99,102,241,.3);border-radius:6px;display:flex;align-items:center;gap:3px">↗ فتح GitHub</a>
+          </div>
         </div>
+        <!-- Local Hermes memory edits -->
+        <div style="font-size:.72rem;color:var(--text-3);margin-bottom:6px;font-weight:600">📝 تعديلات Hermes المحلية (ذاكرة)</div>
         ${codeEdits.length===0
-          ? `<div style="text-align:center;padding:30px 20px;background:rgba(0,0,0,.15);border-radius:10px;border:1px dashed rgba(255,255,255,.08)">
-               <div style="font-size:2rem;margin-bottom:8px">🔗</div>
-               <div style="color:var(--text-2);font-size:.85rem">لم يُرفع أي commit بعد</div>
-               <div style="color:var(--text-3);font-size:.75rem;margin-top:4px">Hermes سيرفع تلقائياً بعد تعديل الكود</div>
+          ? `<div style="text-align:center;padding:20px;background:rgba(0,0,0,.15);border-radius:10px;border:1px dashed rgba(255,255,255,.08)">
+               <div style="font-size:1.5rem;margin-bottom:6px">🔗</div>
+               <div style="color:var(--text-2);font-size:.82rem">لم يُرفع أي commit بعد</div>
+               <div style="color:var(--text-3);font-size:.72rem;margin-top:3px">Hermes سيرفع تلقائياً بعد كل تعديل ناجح للكود</div>
              </div>`
           : codeEdits.map(ed=>{
               const isGit = !!ed.commit;
               const borderColor = isGit ? 'rgba(34,197,94,.5)' : 'rgba(99,102,241,.4)';
               const icon = isGit ? '✅' : '📝';
-              const ghUrl = isGit ? `https://github.com/abuahmad-21/Quranic-Plan-Manager/commit/${ed.commit}` : null;
-              return `<div class="glass-card" style="margin-bottom:8px;padding:11px;border-right:3px solid ${borderColor}">
+              return `<div class="glass-card" style="margin-bottom:7px;padding:10px;border-right:3px solid ${borderColor}">
                 <div style="display:flex;align-items:flex-start;gap:8px">
-                  <span style="font-size:1rem;flex-shrink:0;margin-top:1px">${icon}</span>
+                  <span style="font-size:.95rem;flex-shrink:0">${icon}</span>
                   <div style="flex:1;min-width:0">
-                    <div style="font-size:.8rem;font-weight:600;color:${isGit?'#4ade80':'#a78bfa'};margin-bottom:3px">
-                      ${isGit ? `<a href="${ghUrl}" target="_blank" style="color:inherit;text-decoration:none">${escapeHTML(ed.message||ed.commit)}</a>` : escapeHTML(ed.reason||ed.file||'—')}
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-                      ${ed.commit ? `<code style="font-size:.68rem;background:rgba(34,197,94,.1);color:#4ade80;padding:1px 6px;border-radius:4px;border:1px solid rgba(34,197,94,.2)">${ed.commit}</code>` : ''}
-                      ${ed.file ? `<span style="font-size:.68rem;color:var(--text-3);background:rgba(255,255,255,.05);padding:1px 6px;border-radius:4px">${escapeHTML(ed.file)}</span>` : ''}
-                      ${ed.chars_changed ? `<span style="font-size:.68rem;color:var(--text-3)">±${ed.chars_changed} حرف</span>` : ''}
+                    <div style="font-size:.79rem;font-weight:600;color:${isGit?'#4ade80':'#a78bfa'};margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(ed.message||ed.reason||ed.file||'—')}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+                      ${ed.commit ? `<code style="font-size:.67rem;background:rgba(34,197,94,.1);color:#4ade80;padding:1px 5px;border-radius:4px">${ed.commit}</code>` : ''}
+                      ${ed.file ? `<span style="font-size:.67rem;color:var(--text-3);background:rgba(255,255,255,.05);padding:1px 5px;border-radius:4px">${escapeHTML(ed.file)}</span>` : ''}
+                      ${ed.chars_changed ? `<span style="font-size:.67rem;color:var(--text-3)">±${ed.chars_changed} حرف</span>` : ''}
                     </div>
                   </div>
-                  <div style="font-size:.65rem;color:var(--text-3);flex-shrink:0;text-align:left">${fmtTime(ed.at)}</div>
+                  <div style="font-size:.63rem;color:var(--text-3);flex-shrink:0">${fmtTime(ed.at)}</div>
                 </div>
               </div>`;
             }).join('')}
+        <!-- Live GitHub commits (loaded on demand) -->
+        <div id="h-gh-live-section" style="display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px">
+          <div style="font-size:.72rem;color:var(--text-3);margin-bottom:6px;font-weight:600">📡 Commits مباشر من GitHub</div>
+          <div id="h-gh-live-list"></div>
+        </div>
+      </div>
+
+      <!-- Claude AI Proxy tab -->
+      <div id="h-claude" style="display:none">
+        <div style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(99,102,241,.08));border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span style="font-size:1.5rem">🤖</span>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:.92rem;color:#a78bfa">Claude AI مجاني — free-claude-code</div>
+              <div style="font-size:.72rem;color:var(--text-3)">بروكسي محلي يوجّه Hermes إلى NVIDIA NIM / Kimi / OpenRouter مجاناً</div>
+            </div>
+            <div id="claude-status-badge" style="font-size:.72rem;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.3);color:var(--text-3)">⏳ جارٍ الفحص…</div>
+          </div>
+
+          <!-- Provider & API Key -->
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+            <div>
+              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🔌 مزوّد الخدمة المجانية</label>
+              <select id="claude-provider" class="field-input" style="width:100%;padding:7px">
+                <option value="nvidia_nim">🟢 NVIDIA NIM (مجاني — يحتاج حساب NVIDIA)</option>
+                <option value="openrouter">🔵 OpenRouter (مجاني جزئياً — Claude 3.5 Haiku)</option>
+                <option value="kimi">🟡 Kimi AI (مجاني — Claude-compatible)</option>
+                <option value="deepseek">🟠 DeepSeek (مجاني — نماذج مفتوحة)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🔑 API Key للمزوّد</label>
+              <input id="claude-apikey" class="field-input" type="password" placeholder="أدخل API Key الخاص بالمزوّد المختار" style="width:100%">
+              <div style="font-size:.68rem;color:var(--text-3);margin-top:3px">
+                NVIDIA: <a href="https://build.nvidia.com" target="_blank" style="color:#818cf8">build.nvidia.com</a> |
+                OpenRouter: <a href="https://openrouter.ai/keys" target="_blank" style="color:#818cf8">openrouter.ai/keys</a> |
+                Kimi: <a href="https://kimi.moonshot.cn" target="_blank" style="color:#818cf8">kimi.moonshot.cn</a>
+              </div>
+            </div>
+          </div>
+
+          <div id="claude-proxy-result" style="font-size:.75rem;min-height:16px;margin-bottom:10px"></div>
+
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button id="btn-claude-save" class="btn btn-ghost" style="font-size:.78rem;flex:1">💾 حفظ الإعدادات</button>
+            <button id="btn-claude-start" class="btn btn-primary" style="font-size:.78rem;flex:1;background:linear-gradient(135deg,rgba(124,58,237,.8),rgba(99,102,241,.7));border:none">▶ تشغيل البروكسي</button>
+            <button id="btn-claude-stop" class="btn btn-danger" style="font-size:.78rem;flex:1">⏹ إيقاف</button>
+            <button id="btn-claude-test" class="btn btn-ghost" style="font-size:.78rem;flex:1">🔍 اختبار</button>
+          </div>
+        </div>
+
+        <!-- Integration info -->
+        <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,.06)">
+          <div style="font-size:.78rem;font-weight:600;color:#a78bfa;margin-bottom:8px">🔗 كيفية الربط مع Hermes</div>
+          <div style="font-size:.73rem;color:var(--text-2);line-height:1.7">
+            1. اختر المزوّد وأدخل الـ API Key ← اضغط <b>حفظ</b><br>
+            2. اضغط <b>تشغيل البروكسي</b> (يشتغل على port 8082 محلياً)<br>
+            3. اضغط <b>اختبار</b> للتأكد من عمله<br>
+            4. اذهب لـ <b>⚡ إعدادات الذكاء الاصطناعي</b> ← اختر <b>مخصص</b> ← اكتب:<br>
+            &nbsp;&nbsp;• URL: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">http://localhost:8082/v1</code><br>
+            &nbsp;&nbsp;• API Key: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">dummy</code><br>
+            &nbsp;&nbsp;• Model: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">claude-sonnet-4-5</code>
+          </div>
+        </div>
+
+        <!-- GitHub + Claude integration note -->
+        <div style="margin-top:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:10px">
+          <div style="font-size:.75rem;color:var(--mint);font-weight:600;margin-bottom:4px">⚡ التكامل الكامل</div>
+          <div style="font-size:.72rem;color:var(--text-2);line-height:1.6">
+            عند تشغيل البروكسي + ربط GitHub: Hermes سيستخدم Claude مجاناً لتحليل الكود، ثم يحفظ ما تعلّمه كمهارة تلقائية، ويرفع التعديلات لـ GitHub — كل ذلك بدون أي تكلفة.
+          </div>
+        </div>
       </div>`;
 
       /* Tab switching inside Hermes */
-      const hTabs=['runs','skills','insights','commits','chat','lab'];
+      const hTabs=['runs','skills','insights','commits','claude','chat','lab'];
       el.querySelectorAll('[data-htab]').forEach(btn=>{
         btn.onclick=()=>{
           el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
@@ -1786,7 +1859,118 @@ const Admin = {
           const target=document.getElementById('h-'+btn.dataset.htab);
           if(target) target.style.display='block';
           if(btn.dataset.htab==='lab') HermesLab.loadFiles();
+          if(btn.dataset.htab==='claude') loadClaudeProxyStatus();
         };
+      });
+
+      /* ── GitHub Live Commits ── */
+      // Set repo link href dynamically
+      (async()=>{
+        try {
+          const gs = await Api.get('/admin/github-status', true);
+          const repoLink = document.getElementById('gh-repo-link');
+          if(repoLink && gs.repo_owner && gs.repo_name){
+            repoLink.href = `https://github.com/${gs.repo_owner}/${gs.repo_name}/commits/${gs.branch||'main'}`;
+            repoLink.title = `${gs.repo_owner}/${gs.repo_name}`;
+          }
+        } catch(e){}
+      })();
+
+      document.getElementById('btn-load-gh-commits')?.addEventListener('click', async()=>{
+        const btn = document.getElementById('btn-load-gh-commits');
+        const sec = document.getElementById('h-gh-live-section');
+        const lst = document.getElementById('h-gh-live-list');
+        btn.textContent='⏳'; btn.disabled=true;
+        const r = await Api.get('/admin/github-live-commits', true);
+        btn.textContent='📡 تحميل من GitHub'; btn.disabled=false;
+        if(!sec||!lst) return;
+        sec.style.display='block';
+        if(!r.ok){
+          lst.innerHTML=`<div style="text-align:center;padding:16px;color:var(--red);font-size:.8rem">❌ ${escapeHTML(r.error||'فشل تحميل الـ commits')}</div>`;
+          return;
+        }
+        if(!r.commits?.length){ lst.innerHTML='<p style="text-align:center;color:var(--text-3);font-size:.8rem">لا يوجد commits في هذا الـ branch</p>'; return; }
+        lst.innerHTML = r.commits.map(c=>`
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+            <code style="font-size:.68rem;color:${c.by_hermes?'#4ade80':'#818cf8'};background:rgba(99,102,241,.12);padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:1px">${escapeHTML(c.sha||'')}</code>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.76rem;color:${c.by_hermes?'var(--mint)':'var(--text-1)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                ${c.url?`<a href="${c.url}" target="_blank" style="color:inherit;text-decoration:none">${escapeHTML(c.message||'—')}</a>`:escapeHTML(c.message||'—')}
+                ${c.by_hermes?'<span style="font-size:.6rem;color:var(--mint);margin-left:4px">🤖 Hermes</span>':''}
+              </div>
+              <div style="font-size:.65rem;color:var(--text-3)">${escapeHTML(c.author||'')} · ${c.date?fmtTime(c.date):''}</div>
+            </div>
+          </div>`).join('');
+        toast(`✅ تم تحميل ${r.commits.length} commit من GitHub`,'success');
+      });
+
+      /* ── Claude Proxy Tab Handlers ── */
+      async function loadClaudeProxyStatus(){
+        const badge = document.getElementById('claude-status-badge');
+        const result = document.getElementById('claude-proxy-result');
+        try {
+          const s = await Api.get('/admin/claude-proxy/status', true);
+          if(badge){
+            if(s.reachable){
+              badge.textContent='✅ يعمل على port 8082';
+              badge.style.background='rgba(16,185,129,.2)'; badge.style.color='var(--mint)';
+            } else if(s.running){
+              badge.textContent='⏳ جارٍ التشغيل…';
+              badge.style.background='rgba(250,204,21,.15)'; badge.style.color='var(--gold)';
+            } else {
+              badge.textContent='❌ متوقف';
+              badge.style.background='rgba(239,68,68,.15)'; badge.style.color='#f87171';
+            }
+          }
+          const provSel = document.getElementById('claude-provider');
+          const apiKeyEl = document.getElementById('claude-apikey');
+          if(provSel && s.provider) provSel.value = s.provider;
+          if(apiKeyEl && s.api_key_set) apiKeyEl.placeholder = '••••••••••••••••••••••• (محفوظ)';
+          if(result && s.pid){ result.style.color='var(--mint)'; result.textContent=`PID: ${s.pid}`; }
+        } catch(e){ if(badge) badge.textContent='⚠️ تعذّر الفحص'; }
+      }
+
+      document.getElementById('btn-claude-save')?.addEventListener('click', async()=>{
+        const provider = document.getElementById('claude-provider')?.value||'nvidia_nim';
+        const apiKey = document.getElementById('claude-apikey')?.value?.trim()||'';
+        const result = document.getElementById('claude-proxy-result');
+        const r = await Api.post('/admin/claude-proxy/save-config', {provider, api_key:apiKey||undefined}, true);
+        if(r.ok){ if(result){ result.style.color='var(--mint)'; result.textContent=`✅ تم الحفظ — سيستخدم متغيّر: ${r.env_key}`; } toast('✅ تم حفظ إعدادات البروكسي','success'); }
+        else toast('❌ '+(r.error||'خطأ'),'error');
+      });
+
+      document.getElementById('btn-claude-start')?.addEventListener('click', async()=>{
+        const btn = document.getElementById('btn-claude-start');
+        const result = document.getElementById('claude-proxy-result');
+        btn.textContent='⏳ جارٍ التشغيل…'; btn.disabled=true;
+        const r = await Api.post('/admin/claude-proxy/start', {}, true);
+        btn.textContent='▶ تشغيل البروكسي'; btn.disabled=false;
+        if(result){
+          result.style.color = r.ok?'var(--mint)':'#f87171';
+          result.textContent = r.ok ? `✅ ${r.note||'يعمل'} (PID:${r.pid||'?'})` : `❌ ${r.error||'فشل'}`;
+        }
+        if(r.ok){ toast('✅ Claude Proxy يعمل الآن على port 8082!','success'); setTimeout(loadClaudeProxyStatus, 3000); }
+        else toast('❌ '+(r.error||'فشل'),'error');
+      });
+
+      document.getElementById('btn-claude-stop')?.addEventListener('click', async()=>{
+        const r = await Api.post('/admin/claude-proxy/stop', {}, true);
+        const result = document.getElementById('claude-proxy-result');
+        if(result){ result.style.color=r.ok?'var(--text-3)':'#f87171'; result.textContent=r.ok?'⏹ تم إيقاف البروكسي':`❌ ${r.error||''}`; }
+        if(r.ok){ toast('⏹ تم إيقاف البروكسي','success'); loadClaudeProxyStatus(); }
+        else toast('❌ '+(r.error||'خطأ'),'error');
+      });
+
+      document.getElementById('btn-claude-test')?.addEventListener('click', async()=>{
+        const btn = document.getElementById('btn-claude-test');
+        const result = document.getElementById('claude-proxy-result');
+        btn.textContent='⏳'; btn.disabled=true;
+        try {
+          const r = await Api.post('/admin/ai-test', {provider:'custom', base_url:'http://localhost:8082/v1', api_key:'dummy', model:'claude-sonnet-4-5'}, true);
+          btn.textContent='🔍 اختبار'; btn.disabled=false;
+          if(r.ok){ if(result){ result.style.color='var(--mint)'; result.textContent=`✅ Claude يرد: "${escapeHTML(r.reply||'')}"`;} toast('✅ Claude يعمل مجاناً!','success'); }
+          else { if(result){ result.style.color='#f87171'; result.textContent=`❌ ${escapeHTML(r.error||'لم يرد البروكسي')}`; } toast('❌ '+(r.error||'البروكسي لا يعمل'),'error'); }
+        } catch(e){ btn.textContent='🔍 اختبار'; btn.disabled=false; if(result){ result.style.color='#f87171'; result.textContent='❌ البروكسي لا يعمل أو غير مشغّل'; } }
       });
 
       /* Run now */

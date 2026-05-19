@@ -857,18 +857,25 @@ R('POST','/qqc/admin/ai-test', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
   const providerName = String(b.provider || 'replit');
-  const cfg = getAIProviderConfig(providerName);
+  // Support ad-hoc override (for Claude proxy test)
+  let cfg;
+  if(b.base_url && b.api_key){
+    cfg = { baseUrl: String(b.base_url), apiKey: String(b.api_key), model: String(b.model||'gpt-4o-mini') };
+  } else {
+    cfg = getAIProviderConfig(providerName);
+  }
   if(!cfg) return send(res,200,{ok:false, error:'المزوّد غير مُعدّ أو مفاتيحه مفقودة'});
   try {
     const resp = await fetch(`${cfg.baseUrl}/chat/completions`,{
       method:'POST',
       headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify({ model:cfg.model, messages:[{role:'user',content:'قل: جاهز — كلمة واحدة فقط'}], max_completion_tokens:20 })
+      body:JSON.stringify({ model:cfg.model, messages:[{role:'user',content:'قل: جاهز — كلمة واحدة فقط'}], max_completion_tokens:20 }),
+      signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
     const reply = data.choices?.[0]?.message?.content || null;
-    if(reply) send(res,200,{ok:true, reply});
-    else send(res,200,{ok:false, error:'لم يرد الذكاء الاصطناعي'});
+    if(reply) send(res,200,{ok:true, reply, provider:providerName, model:cfg.model});
+    else send(res,200,{ok:false, error:'لم يرد الذكاء الاصطناعي', raw:JSON.stringify(data).slice(0,200)});
   } catch(e){ send(res,200,{ok:false, error:e.message}); }
 });
 
@@ -2178,7 +2185,32 @@ async function executeHermesTool(toolName, args, mem){
         if (!mem.code_edits) mem.code_edits=[];
         mem.code_edits.push({ file:safePath, reason, at:now(), chars_changed: Math.abs(newText.length-oldText.length) });
         mem.code_edits = mem.code_edits.slice(-20); // آخر 20 تعديل فقط
-        return { ok:true, file:safePath, reason, backup:backupPath, chars_before:oldText.length, chars_after:newText.length };
+        const editResult = { ok:true, file:safePath, reason, backup:backupPath, chars_before:oldText.length, chars_after:newText.length };
+        // ══ تعلّم Hermes من التعديل (خلفي — لا يعرقل الاستجابة) ══
+        setImmediate(async()=>{
+          try {
+            const cfg = getActiveAIConfig();
+            if(!cfg) return;
+            const learning = await callAI(
+              'أنت Hermes Agent. استخرج درساً مكتسباً واحداً مختصراً من هذا التعديل على الكود (جملة واحدة بالعربية فقط).',
+              `الملف: ${safePath}\nالسبب: ${reason}\nقبل: ${oldText.slice(0,250)}\nبعد: ${newText.slice(0,250)}`, 80
+            );
+            if(learning && learning.length > 5){
+              const freshMem = readHermesMemory();
+              if(!freshMem.skills) freshMem.skills=[];
+              const existingIdx = freshMem.skills.findIndex(s=>s.applies_to==='code_edit' && s.title===safePath);
+              if(existingIdx>=0){
+                freshMem.skills[existingIdx] = {...freshMem.skills[existingIdx], content:learning, updated_at:now(), updated_count:(freshMem.skills[existingIdx].updated_count||1)+1};
+              } else {
+                freshMem.skills.push({id:uid(), title:safePath, content:learning, applies_to:'code_edit', tags:['code_change','auto_learned'], created_at:now(), updated_count:1});
+              }
+              freshMem.skills = freshMem.skills.slice(-40);
+              writeHermesMemory(freshMem);
+              console.log(`[Hermes Learning] ✅ Learned from ${safePath}: ${learning.slice(0,80)}`);
+            }
+          } catch(e){ console.error('[Hermes Learning]', e.message); }
+        });
+        return editResult;
       } catch(e){ return {error:e.message}; }
     }
 
@@ -2658,6 +2690,81 @@ R('GET','/qqc/admin/hermes-memory', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const mem=readHermesMemory();
   send(res,200,{ code_edits: mem.code_edits||[], skills: mem.skills||[], insights: mem.insights||[], stats: mem.stats||{} });
+});
+
+/* ══ GitHub Live Commits Feed ══ */
+R('GET','/qqc/admin/github-live-commits', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const gh = DB.admin.ai_settings?.github || {};
+  const token = gh.token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+  const owner = gh.repo_owner; const repo = gh.repo_name; const branch = gh.branch||'main';
+  if(!token||!owner||!repo) return send(res,200,{ok:false, error:'GitHub غير مربوط — اذهب لإعدادات الذكاء الاصطناعي وأدخل PAT والريبو', commits:[]});
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&per_page=20`, {
+      headers:{Authorization:`token ${token}`,'User-Agent':'HermesAgent/2.0'}, signal:AbortSignal.timeout(8000)
+    });
+    const data = await r.json();
+    if(!Array.isArray(data)) return send(res,200,{ok:false, error:data.message||'خطأ من GitHub API', commits:[]});
+    const commits = data.map(c=>({
+      sha:c.sha?.slice(0,7), full_sha:c.sha,
+      message:c.commit?.message?.split('\n')[0].slice(0,120),
+      author:c.commit?.author?.name,
+      date:c.commit?.author?.date,
+      url:c.html_url,
+      by_hermes: !!(c.commit?.author?.email === 'hermes@qqc.ai')
+    }));
+    send(res,200,{ok:true, repo:`${owner}/${repo}`, branch, commits, count:commits.length});
+  } catch(e){ send(res,200,{ok:false, error:e.message, commits:[]}); }
+});
+
+/* ══ Claude Free Proxy (free-claude-code) ══ */
+let _claudeProxyProcess = null;
+
+R('GET','/qqc/admin/claude-proxy/status', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const running = !!(_claudeProxyProcess && !_claudeProxyProcess.exitCode);
+  let reachable = false;
+  try { const pr = await fetch('http://localhost:8082/v1/models',{signal:AbortSignal.timeout(2000)}); reachable=pr.ok; } catch{}
+  const cp = DB.admin.ai_settings?.claude_proxy||{};
+  send(res,200,{ running, reachable, port:8082, provider:cp.provider||'nvidia_nim', api_key_set:!!(cp.api_key), pid:_claudeProxyProcess?.pid });
+});
+
+R('POST','/qqc/admin/claude-proxy/save-config', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  if(!DB.admin.ai_settings.claude_proxy) DB.admin.ai_settings.claude_proxy={};
+  const cp = DB.admin.ai_settings.claude_proxy;
+  if(b.provider) cp.provider = String(b.provider).slice(0,50);
+  if(b.api_key !== undefined) cp.api_key = String(b.api_key).trim().slice(0,300);
+  persist();
+  const provMap = {nvidia_nim:'NVIDIA_NIM_API_KEY', openrouter:'OPENROUTER_API_KEY', kimi:'KIMI_API_KEY', deepseek:'DEEPSEEK_API_KEY'};
+  const envKey = provMap[cp.provider]||'OPENROUTER_API_KEY';
+  const envContent = `# Auto-generated by Hermes Admin\nFCC_PROVIDER=${cp.provider||'nvidia_nim'}\n${envKey}=${cp.api_key||''}\n`;
+  try { fs.writeFileSync(path.join(ROOT,'free-claude-code','.env'), envContent, 'utf8'); } catch{}
+  send(res,200,{ok:true, provider:cp.provider, env_key:envKey});
+});
+
+R('POST','/qqc/admin/claude-proxy/start', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  if(_claudeProxyProcess && !_claudeProxyProcess.exitCode) return send(res,200,{ok:true, already_running:true, port:8082, note:'البروكسي يعمل بالفعل على port 8082'});
+  try {
+    const {spawn} = await import('child_process');
+    const proxyDir = path.join(ROOT,'free-claude-code');
+    _claudeProxyProcess = spawn('uv',['run','uvicorn','server:app','--host','0.0.0.0','--port','8082','--timeout-graceful-shutdown','5'],
+      {cwd:proxyDir, stdio:'pipe', detached:false});
+    _claudeProxyProcess.stdout?.on('data',d=>console.log('[ClaudeProxy]',d.toString().trim()));
+    _claudeProxyProcess.stderr?.on('data',d=>console.error('[ClaudeProxy]',d.toString().trim()));
+    _claudeProxyProcess.on('exit',code=>{console.log('[ClaudeProxy] exited',code); _claudeProxyProcess=null;});
+    await new Promise(r=>setTimeout(r,2500));
+    send(res,200,{ok:true, pid:_claudeProxyProcess?.pid, port:8082, note:'جارٍ تشغيل Claude Proxy — انتظر بضع ثوانٍ ثم اختبر الاتصال'});
+  } catch(e){ send(res,200,{ok:false, error:e.message}); }
+});
+
+R('POST','/qqc/admin/claude-proxy/stop', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  if(!_claudeProxyProcess) return send(res,200,{ok:true, note:'البروكسي لم يكن يعمل'});
+  try { _claudeProxyProcess.kill('SIGTERM'); _claudeProxyProcess=null; send(res,200,{ok:true}); }
+  catch(e){ send(res,200,{ok:false, error:e.message}); }
 });
 
 R('GET','/qqc/admin/hermes/status', async(req,res)=>{
