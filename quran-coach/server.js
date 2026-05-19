@@ -36,6 +36,12 @@ if(!DB.admin.ai_settings) DB.admin.ai_settings = {
   custom_api_key: '',
   custom_model: 'gpt-4o-mini'
 };
+if(!DB.admin.ai_settings.github) DB.admin.ai_settings.github = {
+  token: '',
+  repo_owner: 'abuahmad-21',
+  repo_name: 'Quranic-Plan-Manager',
+  branch: 'main'
+};
 let writePending = false;
 function persist(){
   if (writePending) return;
@@ -866,6 +872,53 @@ R('POST','/qqc/admin/ai-test', async (req,res)=>{
   } catch(e){ send(res,200,{ok:false, error:e.message}); }
 });
 
+/* ══ GitHub Integration Routes ══ */
+R('GET','/qqc/admin/github-status', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const gh = DB.admin.ai_settings.github || {};
+  // Never return the token itself
+  send(res,200,{
+    connected: !!(gh.token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN),
+    has_env_token: !!process.env.GITHUB_PERSONAL_ACCESS_TOKEN,
+    repo_owner: gh.repo_owner || '',
+    repo_name: gh.repo_name || '',
+    branch: gh.branch || 'main',
+    token_set: !!(gh.token)
+  });
+});
+
+R('POST','/qqc/admin/github-save', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  if(!DB.admin.ai_settings.github) DB.admin.ai_settings.github = {};
+  const gh = DB.admin.ai_settings.github;
+  if(b.token      !== undefined) gh.token      = String(b.token).trim().slice(0,200);
+  if(b.repo_owner !== undefined) gh.repo_owner = String(b.repo_owner).trim().slice(0,100);
+  if(b.repo_name  !== undefined) gh.repo_name  = String(b.repo_name).trim().slice(0,100);
+  if(b.branch     !== undefined) gh.branch     = String(b.branch).trim().slice(0,100) || 'main';
+  persist();
+  send(res,200,{ok:true, connected:!!(gh.token||process.env.GITHUB_PERSONAL_ACCESS_TOKEN)});
+});
+
+R('POST','/qqc/admin/github-test', async (req,res)=>{
+  if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const gh = DB.admin.ai_settings.github || {};
+  const token = gh.token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+  if(!token) return send(res,200,{ok:false, error:'لا يوجد GitHub Token — أدخله أولاً'});
+  const owner = gh.repo_owner;
+  const repo  = gh.repo_name;
+  if(!owner || !repo) return send(res,200,{ok:false, error:'أدخل اسم المالك والريبو أولاً'});
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers:{ Authorization:`token ${token}`, 'User-Agent':'HermesAgent/2.0' },
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await r.json();
+    if(r.ok) send(res,200,{ok:true, full_name:data.full_name, private:data.private, default_branch:data.default_branch, stars:data.stargazers_count});
+    else send(res,200,{ok:false, error: data.message || `HTTP ${r.status}`, tip:'تحقق من صحة الـ Token وأذونات الوصول للريبو'});
+  } catch(e){ send(res,200,{ok:false, error:e.message}); }
+});
+
 R('POST','/qqc/admin/quote', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
@@ -904,10 +957,22 @@ function getAIProviderConfig(providerName){
   if(providerName === 'pollinations'){
     return { baseUrl: 'https://text.pollinations.ai/openai', apiKey: 'dummy', model: 'openai' };
   }
+  if(providerName === 'claude_free'){
+    return { baseUrl: 'https://text.pollinations.ai/openai', apiKey: 'dummy', model: 'claude-sonnet-4-5' };
+  }
   if(providerName === 'custom'){
     if(!s.custom_base_url || !s.custom_api_key) return null;
     return { baseUrl: s.custom_base_url, apiKey: s.custom_api_key, model: s.custom_model || 'gpt-4o-mini' };
   }
+  return null;
+}
+function getActiveAIConfig(){
+  const s = DB.admin.ai_settings || {};
+  const primary  = s.primary_provider  || 'replit';
+  const fallback = s.fallback_provider || 'pollinations';
+  const list = [primary];
+  if(fallback && fallback !== 'none' && fallback !== primary) list.push(fallback);
+  for(const p of list){ const cfg = getAIProviderConfig(p); if(cfg) return cfg; }
   return null;
 }
 async function callAI(systemPrompt, userMsg, maxTokens=300){
@@ -2194,11 +2259,12 @@ Focus: ${focus}
     case 'git_commit_changes': {
       const { message } = args;
       if (!message) return { ok:false, error:'message مطلوب' };
-      const githubToken = process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
-      if (!githubToken) return { ok:false, error:'GITHUB_PERSONAL_ACCESS_TOKEN غير موجود في البيئة' };
-      const REPO_OWNER = 'abuahmad-21';
-      const REPO_NAME  = 'Quranic-Plan-Manager';
-      const BRANCH     = 'main';
+      const gh = DB.admin.ai_settings?.github || {};
+      const githubToken = gh.token || process.env.GITHUB_PERSONAL_ACCESS_TOKEN;
+      if (!githubToken) return { ok:false, error:'لم يتم ربط GitHub بعد — اذهب لإعدادات الذكاء الاصطناعي وأدخل GitHub Token' };
+      const REPO_OWNER = gh.repo_owner || 'abuahmad-21';
+      const REPO_NAME  = gh.repo_name  || 'Quranic-Plan-Manager';
+      const BRANCH     = gh.branch     || 'main';
       const { execSync } = await import('child_process');
       try {
         const repoUrl = `https://${REPO_OWNER}:${githubToken}@github.com/${REPO_OWNER}/${REPO_NAME}.git`;
@@ -2461,8 +2527,9 @@ Focus: ${focus}
 
 /* ─── Main Hermes agentic loop — حلقة tool-calling الحقيقية ─── */
 async function runHermesAgent(){
-  const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if(!baseUrl||!apiKey){ console.log('[Hermes] AI not configured, skipping run.'); return; }
+  const aiCfg = getActiveAIConfig();
+  if(!aiCfg){ console.log('[Hermes] No AI provider configured, skipping run.'); return; }
+  const { baseUrl, apiKey, model: hermesModel } = aiCfg;
 
   const mem = readHermesMemory();
   const runId = uid();
@@ -2543,7 +2610,7 @@ ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه ال�
       resp = await fetch(`${baseUrl}/chat/completions`,{
         method:'POST',
         headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-        body:JSON.stringify({ model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:forcedTool, max_completion_tokens:1200 })
+        body:JSON.stringify({ model:hermesModel||'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:forcedTool, max_completion_tokens:1200 })
       });
     } catch(e){ console.error('[Hermes] API fetch error',e.message); break; }
     if(!resp.ok){ console.error('[Hermes] API HTTP',resp.status); break; }
@@ -2587,6 +2654,12 @@ ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه ال�
 }
 
 /* ─── Hermes Admin Endpoints ─── */
+R('GET','/qqc/admin/hermes-memory', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const mem=readHermesMemory();
+  send(res,200,{ code_edits: mem.code_edits||[], skills: mem.skills||[], insights: mem.insights||[], stats: mem.stats||{} });
+});
+
 R('GET','/qqc/admin/hermes/status', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const mem=readHermesMemory();

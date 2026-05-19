@@ -2014,6 +2014,64 @@ const Admin = {
           <div style="font-size:.75rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'Pollinations':'مخصص'}</div>
           <div style="font-size:.85rem">—</div>
         </div>`).join('')}
+      </div>
+
+      <!-- GitHub Integration Card -->
+      <div id="gh-card" style="margin-top:16px;background:linear-gradient(135deg,rgba(31,41,55,.9),rgba(17,24,39,.95));border:1px solid rgba(99,102,241,.25);border-radius:12px;padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <span style="font-size:1.4rem">🔗</span>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem;color:#818cf8">GitHub Integration</div>
+            <div style="font-size:.72rem;color:var(--text-3)">ربط GitHub يتيح لـ Hermes رفع التعديلات تلقائياً بعد كل تحسين</div>
+          </div>
+          <div id="gh-connect-badge" style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,.3);color:var(--text-3)">⏳ جارٍ الفحص…</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🔑 GitHub Personal Access Token (PAT)</label>
+            <input id="gh-token" class="field-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="new-password" style="width:100%;font-family:monospace;font-size:.82rem">
+            <div style="font-size:.68rem;color:var(--text-3);margin-top:3px">Settings → Developer settings → Personal access tokens → Fine-grained tokens (أذونات: Contents: Read & Write)</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">👤 Repo Owner</label>
+              <input id="gh-owner" class="field-input" type="text" placeholder="abuahmad-21" style="width:100%">
+            </div>
+            <div>
+              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">📦 Repo Name</label>
+              <input id="gh-repo" class="field-input" type="text" placeholder="Quranic-Plan-Manager" style="width:100%">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🌿 Branch</label>
+            <input id="gh-branch" class="field-input" type="text" placeholder="main" style="width:100%;max-width:160px">
+          </div>
+        </div>
+
+        <div id="gh-test-result" style="min-height:18px;font-size:.75rem;text-align:center;margin-top:8px;padding:6px;border-radius:6px;display:none"></div>
+
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-ghost" id="btn-gh-test" style="flex:1;font-size:.8rem">🔍 اختبار الاتصال</button>
+          <button class="btn btn-primary" id="btn-gh-save" style="flex:1;font-size:.8rem;background:linear-gradient(135deg,rgba(99,102,241,.8),rgba(79,70,229,.7));border:none">💾 حفظ ربط GitHub</button>
+        </div>
+
+        <!-- Recent commits from Hermes -->
+        <div id="gh-commits-section" style="margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px;display:none">
+          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:6px">📝 آخر commits من Hermes</div>
+          <div id="gh-commits-list"></div>
+        </div>
+
+        <!-- free-claude-code info -->
+        <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="font-size:.85rem">🤖</span>
+            <span style="font-size:.78rem;font-weight:600;color:#a78bfa">Claude AI مجاني (free-claude-code)</span>
+          </div>
+          <div style="font-size:.7rem;color:var(--text-3);line-height:1.5">
+            لاستخدام Claude مجاناً عبر NVIDIA NIM / Kimi / DeepSeek: شغّل <a href="https://github.com/Alishahryar1/free-claude-code" target="_blank" style="color:#818cf8">free-claude-code</a> محلياً (Python proxy)، ثم اختر <b>"مخصص"</b> في مزوّد الذكاء الاصطناعي فوق وأدخل رابط الـ proxy (http://localhost:8082/v1) مع أي API Key.
+          </div>
+        </div>
       </div>`;
 
       /* Test buttons */
@@ -2068,6 +2126,118 @@ const Admin = {
           });
         };
       });
+
+      /* ══ GitHub Integration Handlers ══ */
+      const ghBadge = document.getElementById('gh-connect-badge');
+      const ghResult = document.getElementById('gh-test-result');
+
+      function setGhBadge(connected, hasEnvToken){
+        if(!ghBadge) return;
+        if(connected){
+          ghBadge.textContent = hasEnvToken ? '✅ متصل (ENV)' : '✅ متصل';
+          ghBadge.style.background = 'rgba(16,185,129,.2)';
+          ghBadge.style.color = 'var(--mint)';
+          ghBadge.style.borderColor = 'rgba(16,185,129,.3)';
+        } else {
+          ghBadge.textContent = '❌ غير متصل';
+          ghBadge.style.background = 'rgba(239,68,68,.15)';
+          ghBadge.style.color = '#f87171';
+        }
+      }
+
+      // Load current GitHub status
+      (async()=>{
+        try {
+          const gs = await Api.get('/admin/github-status', true);
+          if(gs.repo_owner) document.getElementById('gh-owner').value = gs.repo_owner;
+          if(gs.repo_name)  document.getElementById('gh-repo').value  = gs.repo_name;
+          if(gs.branch)     document.getElementById('gh-branch').value = gs.branch;
+          if(gs.token_set)  document.getElementById('gh-token').placeholder = '••••••••••••••••••••••• (محفوظ)';
+          setGhBadge(gs.connected, gs.has_env_token);
+          // Show recent commits from Hermes memory
+          if(gs.connected){
+            try{
+              const mem = await Api.get('/admin/hermes-memory', true);
+              const commits = (mem?.code_edits||[]).filter(e=>e.commit).slice(-5).reverse();
+              if(commits.length){
+                const sec = document.getElementById('gh-commits-section');
+                const lst = document.getElementById('gh-commits-list');
+                if(sec && lst){
+                  sec.style.display='block';
+                  lst.innerHTML = commits.map(c=>`
+                    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                      <span style="font-family:monospace;font-size:.7rem;color:#818cf8;background:rgba(99,102,241,.15);padding:2px 6px;border-radius:4px">${escapeHTML(c.commit||'')}</span>
+                      <span style="font-size:.72rem;color:var(--text-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(c.message||'')}</span>
+                      <span style="font-size:.65rem;color:var(--text-3)">${c.at?fmtTime(c.at):''}</span>
+                    </div>`).join('');
+                }
+              }
+            }catch(e){}
+          }
+        } catch(e){ if(ghBadge) ghBadge.textContent = '⚠️ تعذّر الفحص'; }
+      })();
+
+      // Test GitHub connection
+      document.getElementById('btn-gh-test').onclick = async()=>{
+        const btn = document.getElementById('btn-gh-test');
+        btn.textContent='⏳'; btn.disabled=true;
+        if(ghResult){ ghResult.style.display='none'; }
+        // Save first so test uses latest values
+        const ghSavePayload = {
+          repo_owner: document.getElementById('gh-owner').value.trim(),
+          repo_name:  document.getElementById('gh-repo').value.trim(),
+          branch:     document.getElementById('gh-branch').value.trim()||'main'
+        };
+        const tokenVal = document.getElementById('gh-token').value.trim();
+        if(tokenVal && !tokenVal.includes('•')) ghSavePayload.token = tokenVal;
+        await Api.post('/admin/github-save', ghSavePayload, true);
+        const r = await Api.post('/admin/github-test', {}, true);
+        btn.textContent='🔍 اختبار الاتصال'; btn.disabled=false;
+        if(ghResult){
+          ghResult.style.display='block';
+          if(r.ok){
+            ghResult.style.background='rgba(16,185,129,.1)';
+            ghResult.style.border='1px solid rgba(16,185,129,.25)';
+            ghResult.style.color='var(--mint)';
+            ghResult.textContent=`✅ متصل: ${r.full_name||''} ${r.private?'(خاص)':'(عام)'} • Branch الافتراضي: ${r.default_branch||'main'}`;
+            setGhBadge(true, false);
+            toast('✅ تم الاتصال بـ GitHub بنجاح','success');
+          } else {
+            ghResult.style.background='rgba(239,68,68,.1)';
+            ghResult.style.border='1px solid rgba(239,68,68,.2)';
+            ghResult.style.color='#f87171';
+            ghResult.textContent=`❌ ${r.error||'فشل الاتصال'} ${r.tip?'— '+r.tip:''}`;
+            setGhBadge(false, false);
+            toast('❌ '+(r.error||'فشل الاتصال'),'error');
+          }
+        }
+      };
+
+      // Save GitHub settings
+      document.getElementById('btn-gh-save').onclick = async()=>{
+        const btn = document.getElementById('btn-gh-save');
+        btn.textContent='⏳ جارٍ الحفظ…'; btn.disabled=true;
+        const payload = {
+          repo_owner: document.getElementById('gh-owner').value.trim(),
+          repo_name:  document.getElementById('gh-repo').value.trim(),
+          branch:     document.getElementById('gh-branch').value.trim()||'main'
+        };
+        const tokenVal = document.getElementById('gh-token').value.trim();
+        if(tokenVal && !tokenVal.includes('•')) payload.token = tokenVal;
+        const r = await Api.post('/admin/github-save', payload, true);
+        btn.textContent='💾 حفظ ربط GitHub'; btn.disabled=false;
+        if(r.ok){
+          setGhBadge(r.connected, false);
+          toast('✅ تم حفظ إعدادات GitHub','success');
+          if(ghResult){
+            ghResult.style.display='block';
+            ghResult.style.background='rgba(16,185,129,.1)';
+            ghResult.style.border='1px solid rgba(16,185,129,.25)';
+            ghResult.style.color='var(--mint)';
+            ghResult.textContent=`✅ تم الحفظ — استخدم "اختبار الاتصال" للتحقق`;
+          }
+        } else { toast('❌ '+(r.error||'فشل الحفظ'),'error'); }
+      };
     }
   }
 };

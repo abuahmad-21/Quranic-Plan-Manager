@@ -133,7 +133,13 @@
       "replit_model": "gpt-5-mini",
       "custom_base_url": "",
       "custom_api_key": "",
-      "custom_model": "gpt-4o-mini"
+      "custom_model": "gpt-4o-mini",
+      "github": {
+        "token": "",
+        "repo_owner": "abuahmad-21",
+        "repo_name": "Quranic-Plan-Manager",
+        "branch": "main"
+      }
     }
   },
   "users": {
@@ -8605,7 +8611,7 @@
       "password_hash": "79fb29995b1c4c49e2597c8d89861e61347af4efbf491cf670d470120f0f1263",
       "display_name": "تبتبتب",
       "created_at": "2026-05-19T17:51:36.480Z",
-      "last_active": "2026-05-19T17:58:09.217Z",
+      "last_active": "2026-05-19T18:04:43.240Z",
       "avatar_color": "#0ccef6",
       "bio": "",
       "is_banned": false,
