@@ -1684,7 +1684,7 @@ const Admin = {
 
       <!-- Tabs inside Hermes -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
-        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['claude','🤖 Claude AI'],['chat','💬 محادثة'],['lab','🧪 المختبر']].map(([t,l])=>
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['claude','🤖 Claude AI'],['chat','💬 محادثة'],['videos','🎬 تدريب الفيديو'],['lab','🧪 المختبر']].map(([t,l])=>
           `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
       </div>
 
@@ -1766,6 +1766,45 @@ const Admin = {
             ${['ابحث عن أفضل مكتبات تحليل الصوت العربي','ولّد ملف صوتي لـ بسم الله الرحمن الرحيم','حلّل بيانات التلاوة وأنشئ تقريراً','ما هي أخطاء المستخدمين الأكثر تكراراً؟'].map(q=>`<button class="btn btn-sm btn-ghost h-chat-quick" style="font-size:.68rem" data-q="${q}">${q}</button>`).join('')}
           </div>
         </div>
+      </div>
+
+      <!-- Video Training Tab -->
+      <div id="h-videos" style="display:none">
+        <!-- Stats bar -->
+        <div id="hvid-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+
+        <!-- No API Key warning (shown when needed) -->
+        <div id="hvid-nokey" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:.82rem;color:#f87171;text-align:center">
+          ⚠️ لا يوجد YouTube API Key — اذهب إلى <b>إعدادات الذكاء الاصطناعي</b> وأضف مفتاح <b>API الفيديو</b>
+        </div>
+
+        <!-- Search bar -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;align-items:center">
+          <input id="hvid-q" class="input" style="flex:1;font-size:.84rem" dir="rtl"
+            placeholder="ابحث: تلاوة الفاتحة المنشاوي، سورة البقرة الحصري…" />
+          <select id="hvid-n" class="input" style="width:70px;font-size:.78rem">
+            <option value="8">8</option><option value="12" selected>12</option><option value="20">20</option>
+          </select>
+          <button id="hvid-search-btn" class="btn btn-primary" style="font-size:.82rem;padding:7px 14px">🔍 بحث</button>
+        </div>
+
+        <!-- Quick search chips -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+          ${[['سورة الفاتحة تلاوة','الفاتحة'],['تسميع قرآن شيوخ','تسميع'],['تلاوة مشاري العفاسي','العفاسي'],['سورة البقرة الحصري','الحصري'],['تجويد القرآن تعليم','تجويد'],['تلاوة عبد الباسط','عبد الباسط']].map(([q,l])=>
+            `<button class="btn btn-sm btn-ghost hvid-chip" data-q="${q}" style="font-size:.72rem;padding:3px 9px">${l}</button>`).join('')}
+        </div>
+
+        <!-- Results grid -->
+        <div id="hvid-results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:18px"></div>
+
+        <!-- Divider -->
+        <div style="border-top:1px solid rgba(255,255,255,.08);margin:10px 0 14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:.8rem;font-weight:600;color:var(--text-2)">📚 بيانات التدريب المحفوظة في ذاكرة هرمز</div>
+          <button id="hvid-refresh-saved" class="btn btn-sm btn-ghost" style="font-size:.72rem">↻ تحديث</button>
+        </div>
+
+        <!-- Saved training videos list -->
+        <div id="hvid-saved" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px"></div>
       </div>
 
       <!-- Lab Files -->
@@ -1903,7 +1942,7 @@ const Admin = {
       </div>`;
 
       /* Tab switching inside Hermes */
-      const hTabs=['runs','skills','insights','commits','claude','chat','lab'];
+      const hTabs=['runs','skills','insights','commits','claude','chat','videos','lab'];
       el.querySelectorAll('[data-htab]').forEach(btn=>{
         btn.onclick=()=>{
           el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
@@ -1913,6 +1952,7 @@ const Admin = {
           if(target) target.style.display='block';
           if(btn.dataset.htab==='lab') HermesLab.loadFiles();
           if(btn.dataset.htab==='claude') loadClaudeProxyStatus();
+          if(btn.dataset.htab==='videos') HermesVideos.init();
         };
       });
 
@@ -2747,6 +2787,177 @@ const HermesLab = {
     const r=await fetch(`${API}/admin/hermes/lab/file/${encodeURIComponent(filename)}`,{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
     if(r.ok){ toast('تم الحذف','success'); HermesLab.loadFiles(); }
     else toast(r.error||'فشل الحذف','error');
+  }
+};
+
+/* ══════════════════════════════════════════════
+   HermesVideos — تدريب التسميع الذكي على مقاطع اليوتيوب
+   ══════════════════════════════════════════════ */
+const HermesVideos = {
+  _initialized: false,
+
+  async init(){
+    if(this._initialized) return;
+    this._initialized = true;
+    await this.loadSaved();
+    this._bindEvents();
+  },
+
+  _bindEvents(){
+    const searchBtn = document.getElementById('hvid-search-btn');
+    const qInput   = document.getElementById('hvid-q');
+    const refreshBtn = document.getElementById('hvid-refresh-saved');
+    if(searchBtn) searchBtn.onclick = ()=> HermesVideos.doSearch();
+    if(qInput)   qInput.onkeydown  = e=> { if(e.key==='Enter') HermesVideos.doSearch(); };
+    if(refreshBtn) refreshBtn.onclick = ()=> HermesVideos.loadSaved();
+    // Quick chips
+    document.querySelectorAll('.hvid-chip').forEach(chip=>{
+      chip.onclick = ()=>{
+        const q = chip.dataset.q;
+        const inp = document.getElementById('hvid-q');
+        if(inp){ inp.value=q; }
+        HermesVideos.doSearch(q);
+      };
+    });
+  },
+
+  async doSearch(forcedQ){
+    const q = forcedQ || document.getElementById('hvid-q')?.value?.trim() || 'تلاوة قرآن كريم';
+    const n = document.getElementById('hvid-n')?.value || '12';
+    const btn = document.getElementById('hvid-search-btn');
+    const res = document.getElementById('hvid-results');
+    const nokey = document.getElementById('hvid-nokey');
+    if(!res) return;
+    if(btn){ btn.disabled=true; btn.textContent='⏳ جارٍ البحث…'; }
+    res.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-3);font-size:.85rem">🔍 جارٍ البحث في YouTube…</div>`;
+    try {
+      const r = await fetch(`${API}/admin/youtube-search?q=${encodeURIComponent(q)}&n=${n}`,
+        {headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+      if(nokey) nokey.style.display = r.needs_key ? 'block' : 'none';
+      if(!r.ok || r.needs_key){
+        res.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);font-size:.85rem">❌ ${escapeHTML(r.error||'خطأ غير معروف')}</div>`;
+        return;
+      }
+      if(!r.videos||!r.videos.length){
+        res.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-3);font-size:.85rem">لا توجد نتائج لـ "${escapeHTML(q)}"</div>`;
+        return;
+      }
+      res.innerHTML = r.videos.map(v=> HermesVideos._videoCard(v)).join('');
+    } catch(e){
+      res.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:.8rem">❌ ${escapeHTML(e.message)}</div>`;
+    } finally {
+      if(btn){ btn.disabled=false; btn.textContent='🔍 بحث'; }
+    }
+  },
+
+  _videoCard(v){
+    const safeId = encodeURIComponent(v.id);
+    const safeTh = v.thumbnail ? escapeHTML(v.thumbnail) : '';
+    return `<div class="glass-card" style="padding:0;overflow:hidden;border-radius:12px;display:flex;flex-direction:column">
+      <a href="https://youtu.be/${encodeURIComponent(v.id)}" target="_blank" style="display:block;position:relative">
+        ${safeTh
+          ? `<img src="${safeTh}" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block">`
+          : `<div style="width:100%;aspect-ratio:16/9;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:2rem">🎬</div>`}
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7),transparent);pointer-events:none"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.2rem;opacity:.85">▶</div>
+      </a>
+      <div style="padding:9px 10px;flex:1;display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:.77rem;font-weight:600;line-height:1.3;color:var(--text-1);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="${escapeHTML(v.title)}">${escapeHTML(v.title)}</div>
+        <div style="font-size:.68rem;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📺 ${escapeHTML(v.channel)}</div>
+        <div style="margin-top:auto;padding-top:6px">
+          <button class="btn btn-sm btn-primary" style="width:100%;font-size:.74rem;padding:5px"
+            onclick="HermesVideos.trainOnVideo(${JSON.stringify(v).replace(/</g,'&lt;')})">
+            🧠 تدريب هرمز
+          </button>
+        </div>
+      </div>
+    </div>`;
+  },
+
+  async trainOnVideo(v){
+    const btn = event?.target;
+    if(btn){ btn.disabled=true; btn.textContent='⏳ جارٍ التحليل والحفظ…'; }
+    try {
+      const r = await fetch(`${API}/admin/hermes/video-train`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},
+        body: JSON.stringify({ video_id:v.id, title:v.title, channel:v.channel, thumbnail:v.thumbnail })
+      }).then(x=>x.json());
+      if(r.ok){
+        toast(`✅ تم حفظ الفيديو كبيانات تدريب (${r.total} إجمالاً)`,'success');
+        if(btn){ btn.textContent='✅ تم التدريب'; btn.style.background='rgba(34,197,94,.3)'; }
+        await this.loadSaved();
+      } else {
+        toast(r.error||'فشل الحفظ','error');
+        if(btn){ btn.disabled=false; btn.textContent='🧠 تدريب هرمز'; }
+      }
+    } catch(e){
+      toast(e.message,'error');
+      if(btn){ btn.disabled=false; btn.textContent='🧠 تدريب هرمز'; }
+    }
+  },
+
+  async loadSaved(){
+    const el = document.getElementById('hvid-saved');
+    const stats = document.getElementById('hvid-stats');
+    if(!el||!S.adminPw) return;
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-3);font-size:.8rem">جارٍ التحميل…</div>`;
+    try {
+      const r = await fetch(`${API}/admin/hermes/video-training`,
+        {headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+
+      // Stats bar
+      if(stats){
+        const sheikhs = Object.keys(r.sheikh_coverage||{});
+        stats.innerHTML = [
+          `<div style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:6px 12px;font-size:.75rem;color:#a5b4fc">📹 <b>${r.total}</b> مقطع</div>`,
+          sheikhs.length ? `<div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:6px 12px;font-size:.75rem;color:#4ade80">🎤 <b>${sheikhs.length}</b> شيخ</div>` : '',
+          !r.has_yt_key ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:6px 10px;font-size:.72rem;color:#f87171">⚠️ لا يوجد API Key</div>` : '',
+        ].filter(Boolean).join('');
+      }
+
+      const videos = r.videos||[];
+      if(!videos.length){
+        el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-3);font-size:.85rem">
+          <div style="font-size:2rem;margin-bottom:8px">🎬</div>
+          لا توجد بيانات تدريب بعد<br>
+          <span style="font-size:.75rem">ابحث عن مقاطع تلاوة واضغط "تدريب هرمز" لتدريب نموذج التسميع الذكي</span>
+        </div>`;
+        return;
+      }
+      el.innerHTML = videos.map(v=> HermesVideos._savedCard(v)).join('');
+    } catch(e){
+      el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red);font-size:.8rem">❌ ${escapeHTML(e.message)}</div>`;
+    }
+  },
+
+  _savedCard(v){
+    return `<div class="glass-card" style="padding:10px 12px;border-right:3px solid rgba(99,102,241,.6)">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        ${v.thumbnail ? `<a href="${escapeHTML(v.url)}" target="_blank"><img src="${escapeHTML(v.thumbnail)}" style="width:72px;height:45px;object-fit:cover;border-radius:6px;flex-shrink:0"></a>` : '<div style="width:72px;height:45px;background:rgba(255,255,255,.07);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🎬</div>'}
+        <div style="flex:1;min-width:0">
+          <a href="${escapeHTML(v.url)}" target="_blank" style="font-size:.77rem;font-weight:600;color:#a5b4fc;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHTML(v.title)}">${escapeHTML(v.title)}</a>
+          ${v.sheikh ? `<div style="font-size:.68rem;color:var(--mint);margin-top:2px">🎤 ${escapeHTML(v.sheikh)}</div>` : ''}
+          ${v.surah ? `<div style="font-size:.68rem;color:var(--text-3)">📖 ${escapeHTML(v.surah)}</div>` : ''}
+          ${v.channel && !v.sheikh ? `<div style="font-size:.68rem;color:var(--text-3)">📺 ${escapeHTML(v.channel)}</div>` : ''}
+        </div>
+        <button class="btn btn-sm" style="font-size:.65rem;padding:3px 7px;background:rgba(239,68,68,.15);color:#f87171;flex-shrink:0;border:1px solid rgba(239,68,68,.25)"
+          onclick="HermesVideos.deleteTraining('${encodeURIComponent(v.id)}')">🗑</button>
+      </div>
+      ${v.notes ? `<div style="margin-top:8px;font-size:.72rem;color:var(--text-2);background:rgba(0,0,0,.2);border-radius:7px;padding:7px 9px;line-height:1.5;border-right:2px solid rgba(99,102,241,.4)">💡 ${escapeHTML(v.notes.slice(0,220))}${v.notes.length>220?'…':''}</div>` : ''}
+      <div style="font-size:.63rem;color:var(--text-3);margin-top:5px;text-align:left">${fmtTime(v.added_at)}</div>
+    </div>`;
+  },
+
+  async deleteTraining(encodedId){
+    const id = decodeURIComponent(encodedId);
+    if(!confirm('حذف هذا المقطع من بيانات التدريب؟')) return;
+    try {
+      const r = await fetch(`${API}/admin/hermes/video-train/${encodeURIComponent(id)}`,
+        {method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+      if(r.ok){ toast('تم الحذف','success'); await HermesVideos.loadSaved(); }
+      else toast(r.error||'فشل الحذف','error');
+    } catch(e){ toast(e.message,'error'); }
   }
 };
 

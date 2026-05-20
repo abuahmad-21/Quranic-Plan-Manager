@@ -1,0 +1,4 @@
+{"ts":1779283786379,"provider":"nvidia_nim","error":"no_config","hint":"مفتاح غير محفوظ أو المزوّد غير مدعوم","logged_at":"2026-05-20T13:29:46.379Z"}
+{"ts":1779284106505,"provider":"nvidia_nim","model":"meta/llama-3.1-nemotron-70b-instruct","error":"HTTP 404","hint":"404 page not found\n","logged_at":"2026-05-20T13:35:06.505Z"}
+{"ts":1779284136611,"provider":"nvidia_nim","model":"meta/llama-3.1-nemotron-70b-instruct","error":"HTTP 404","hint":"404 page not found\n","logged_at":"2026-05-20T13:35:36.611Z"}
+{"ts":1779284443597,"provider":"nvidia_nim","model":"meta/llama-3.1-nemotron-70b-instruct","error":"HTTP 404","hint":"404 page not found\n","logged_at":"2026-05-20T13:40:43.597Z"}

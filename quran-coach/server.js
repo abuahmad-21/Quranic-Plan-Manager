@@ -1846,7 +1846,12 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'improve_recitation_model', description:'تحسين نموذج تقييم التلاوة بناءً على بيانات التدريب: يعدّل معايير تطابق الكلمات، يحدّد الكلمات الصعبة، ويحفظ المعايير المحسّنة في الذاكرة لاستخدامها في التقييم التلقائي.', parameters:{ type:'object', properties:{ save_to_memory:{ type:'boolean', description:'حفظ النموذج في الذاكرة (افتراضي true)' } } } } },
   { type:'function', function:{ name:'list_lab_files', description:'قائمة كل ملفات مختبر Hermes (صوتية ونصية وبيانات).', parameters:{ type:'object', properties:{} } } },
   { type:'function', function:{ name:'delete_lab_file', description:'حذف ملف من مختبر Hermes.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده' } }, required:['filename'] } } },
-  { type:'function', function:{ name:'create_text_file', description:'إنشاء ملف نصي أو JSON أو Markdown في مختبر Hermes. يُستخدم لحفظ تقارير التحليل، خطط التدريب، ملاحظات المقارنة.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده (.txt .json .md)' }, content:{ type:'string', description:'محتوى الملف' } }, required:['filename','content'] } } }
+  { type:'function', function:{ name:'create_text_file', description:'إنشاء ملف نصي أو JSON أو Markdown في مختبر Hermes. يُستخدم لحفظ تقارير التحليل، خطط التدريب، ملاحظات المقارنة.', parameters:{ type:'object', properties:{ filename:{ type:'string', description:'اسم الملف مع امتداده (.txt .json .md)' }, content:{ type:'string', description:'محتوى الملف' } }, required:['filename','content'] } } },
+
+  /* ═══ أدوات التسميع الذكي — Hermes يتدرب على مقاطع التلاوة ═══ */
+  { type:'function', function:{ name:'search_recitation_videos', description:'البحث في YouTube عن مقاطع تلاوة قرآنية لتدريب نموذج التسميع الذكي. يعيد قائمة بالفيديوهات ومعلوماتها (الشيخ، السورة، الأسلوب) لاستخراج الأنماط وتحسين التقييم.', parameters:{ type:'object', properties:{ query:{ type:'string', description:'كلمات البحث (مثال: تلاوة سورة البقرة المنشاوي، سورة الفاتحة الحصري، تسميع القرآن)' }, max_results:{ type:'number', description:'عدد النتائج 1-20 (افتراضي 10)' } }, required:['query'] } } },
+  { type:'function', function:{ name:'add_video_training', description:'حفظ فيديو تلاوة كبيانات تدريب لنموذج التسميع الذكي. هرمز يحلّل العنوان ويستخرج رؤى الشيخ والسورة وأسلوب الأداء ويحفظها في ذاكرته لتحسين تقييم المستخدمين.', parameters:{ type:'object', properties:{ video_id:{ type:'string', description:'معرّف الفيديو على YouTube' }, title:{ type:'string', description:'عنوان الفيديو' }, channel:{ type:'string', description:'اسم القناة/الشيخ' }, sheikh_name:{ type:'string', description:'اسم الشيخ إن كان معروفاً' }, surah_info:{ type:'string', description:'السورة والآيات المعنية' }, recitation_notes:{ type:'string', description:'ملاحظات هرمز عن أسلوب التلاوة والدروس المستخلصة للتسميع الذكي' } }, required:['video_id','title','recitation_notes'] } } },
+  { type:'function', function:{ name:'get_video_training_data', description:'قراءة قائمة مقاطع التلاوة المحفوظة كبيانات تدريب في ذاكرة هرمز، مع الملاحظات والرؤى المستخلصة.', parameters:{ type:'object', properties:{} } } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -2583,6 +2588,64 @@ Focus: ${focus}
         mem.lab_files = mem.lab_files.slice(-100);
         return {ok:true, filename:safeName, size_kb:+(Buffer.byteLength(content)/1024).toFixed(1), url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(safeName)}`};
       } catch(e){ return {error:e.message}; }
+    }
+
+    case 'search_recitation_videos': {
+      const ytKey = DB.admin.ai_settings?.video_api_key || process.env.VIDEO_API_KEY;
+      if(!ytKey) return {error:'لا يوجد YouTube API Key — أضفه في إعدادات الذكاء الاصطناعي ← مفتاح API الفيديو'};
+      const query = String(args.query||'تلاوة قرآن كريم').slice(0,200);
+      const maxResults = Math.min(20, Math.max(1, +args.max_results||10));
+      try {
+        const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${ytKey}&maxResults=${maxResults}&relevanceLanguage=ar&order=relevance`;
+        const ytResp = await fetch(ytUrl, {signal:AbortSignal.timeout(12000)});
+        const ytData = await ytResp.json();
+        if(ytData.error) return {error:`YouTube API: ${ytData.error.message}`, code:ytData.error.code, hint:'تحقق من صحة YouTube Data API v3 Key'};
+        const videos = (ytData.items||[]).map(item=>({
+          id:item.id?.videoId||'',
+          title:(item.snippet?.title||'').slice(0,150),
+          channel:(item.snippet?.channelTitle||'').slice(0,80),
+          description:(item.snippet?.description||'').slice(0,250),
+          thumbnail:item.snippet?.thumbnails?.medium?.url||'',
+          published:(item.snippet?.publishedAt||'').slice(0,10),
+          url:`https://youtu.be/${item.id?.videoId}`
+        }));
+        // Store search in memory for context
+        if(!mem.video_searches) mem.video_searches=[];
+        mem.video_searches.push({ query, count:videos.length, at:now() });
+        mem.video_searches = mem.video_searches.slice(-20);
+        return {ok:true, query, videos, total:videos.length, hint:'استخدم add_video_training لحفظ الفيديوهات المفيدة كبيانات تدريب'};
+      } catch(e){ return {error:e.message}; }
+    }
+
+    case 'add_video_training': {
+      if(!mem.recitation_videos) mem.recitation_videos=[];
+      const vId = String(args.video_id||'').trim();
+      if(!vId) return {error:'video_id مطلوب'};
+      const existing = mem.recitation_videos.findIndex(v=>v.id===vId);
+      const entry = {
+        id:vId,
+        title:String(args.title||'').slice(0,200),
+        channel:String(args.channel||'').slice(0,100),
+        sheikh:String(args.sheikh_name||'').slice(0,100),
+        surah:String(args.surah_info||'').slice(0,200),
+        notes:String(args.recitation_notes||'').slice(0,1000),
+        url:`https://youtu.be/${vId}`,
+        added_at:now()
+      };
+      if(existing>=0) mem.recitation_videos[existing]={...entry};
+      else mem.recitation_videos.push(entry);
+      if(mem.recitation_videos.length>300) mem.recitation_videos=mem.recitation_videos.slice(-300);
+      // Auto-log insight
+      if(!mem.insights) mem.insights=[];
+      mem.insights.push({ text:`تدريب جديد: "${entry.title}" — ${entry.notes.slice(0,100)}`, category:'recitation', impact:'medium', at:now() });
+      return {ok:true, total_training:mem.recitation_videos.length, saved:entry.title, action:existing>=0?'updated':'added'};
+    }
+
+    case 'get_video_training_data': {
+      const videos = mem.recitation_videos||[];
+      const sheikhCounts = {};
+      videos.forEach(v=>{ if(v.sheikh){ sheikhCounts[v.sheikh]=(sheikhCounts[v.sheikh]||0)+1; } });
+      return { total_videos:videos.length, recent:videos.slice(-10), sheikh_coverage:sheikhCounts, searches_done:(mem.video_searches||[]).length };
     }
 
     default: return {error:`unknown_tool: ${toolName}`};
@@ -3791,6 +3854,85 @@ R('GET','/qqc/admin/logs-stats', async(req,res)=>{
     } catch{ stats[type] = { lines:0, size_kb:0 }; }
   }
   send(res,200,{ stats });
+});
+
+/* ══ YouTube Search + Video Training routes ══ */
+R('GET','/qqc/admin/youtube-search', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const url = new URL(req.url, 'http://localhost');
+  const q = url.searchParams.get('q')||'تلاوة قرآن';
+  const maxResults = Math.min(20, Math.max(1, +(url.searchParams.get('n')||12)));
+  const ytKey = DB.admin.ai_settings?.video_api_key || process.env.VIDEO_API_KEY;
+  if(!ytKey) return send(res,200,{ok:false, error:'لا يوجد YouTube API Key — أضف مفتاح API الفيديو في إعدادات الذكاء الاصطناعي', needs_key:true});
+  try {
+    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&key=${ytKey}&maxResults=${maxResults}&relevanceLanguage=ar&order=relevance`;
+    const ytResp = await fetch(ytUrl, {signal:AbortSignal.timeout(12000)});
+    const ytData = await ytResp.json();
+    if(ytData.error) return send(res,200,{ok:false, error:`YouTube API: ${ytData.error.message}`, code:ytData.error.code});
+    const videos = (ytData.items||[]).map(item=>({
+      id:item.id?.videoId||'',
+      title:(item.snippet?.title||'').slice(0,150),
+      channel:(item.snippet?.channelTitle||'').slice(0,80),
+      description:(item.snippet?.description||'').slice(0,200),
+      thumbnail:item.snippet?.thumbnails?.medium?.url||'',
+      published:(item.snippet?.publishedAt||'').slice(0,10),
+    }));
+    send(res,200,{ok:true, videos, query:q, total:videos.length});
+  } catch(e){ send(res,200,{ok:false, error:e.message}); }
+});
+
+R('GET','/qqc/admin/hermes/video-training', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const mem = readHermesMemory();
+  const videos = mem.recitation_videos||[];
+  const sheikhCounts={};
+  videos.forEach(v=>{ if(v.sheikh) sheikhCounts[v.sheikh]=(sheikhCounts[v.sheikh]||0)+1; });
+  send(res,200,{ videos:videos.slice().reverse(), total:videos.length, sheikh_coverage:sheikhCounts, has_yt_key:!!(DB.admin.ai_settings?.video_api_key||process.env.VIDEO_API_KEY) });
+});
+
+R('POST','/qqc/admin/hermes/video-train', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const vId = String(b.video_id||'').trim();
+  if(!vId) return send(res,400,{error:'video_id مطلوب'});
+  const mem = readHermesMemory();
+  if(!mem.recitation_videos) mem.recitation_videos=[];
+  const existing = mem.recitation_videos.findIndex(v=>v.id===vId);
+  // Use AI to generate recitation notes based on video title
+  const title = String(b.title||'').slice(0,150);
+  const channel = String(b.channel||'').slice(0,80);
+  let notes = String(b.notes||'').slice(0,1000);
+  if(!notes && title){
+    const aiNotes = await callAI(
+      'أنت خبير في تجويد القرآن وتعليم التلاوة. بناءً على عنوان مقطع الفيديو، استخرج: اسم الشيخ، السورة، الآيات، أسلوب التلاوة، وما يمكن أن يتعلمه نظام التسميع الذكي منه. كن مختصراً ومحدداً.',
+      `عنوان المقطع: "${title}" | القناة: "${channel}"`,
+      400
+    );
+    if(aiNotes) notes = aiNotes;
+  }
+  const entry = {
+    id:vId, title, channel, sheikh:String(b.sheikh||'').slice(0,100),
+    surah:String(b.surah||'').slice(0,150), notes,
+    url:`https://youtu.be/${vId}`, thumbnail:String(b.thumbnail||'').slice(0,300),
+    added_at:now()
+  };
+  if(existing>=0) mem.recitation_videos[existing]={...entry};
+  else mem.recitation_videos.push(entry);
+  if(mem.recitation_videos.length>300) mem.recitation_videos=mem.recitation_videos.slice(-300);
+  if(!mem.insights) mem.insights=[];
+  mem.insights.push({text:`تدريب فيديو جديد: "${title}"${notes?` — ${notes.slice(0,80)}`:''}`, category:'recitation', impact:'medium', at:now()});
+  writeHermesMemory(mem);
+  send(res,200,{ok:true, total:mem.recitation_videos.length, notes, action:existing>=0?'updated':'added'});
+});
+
+R('DELETE','/qqc/admin/hermes/video-train/:id', async(req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const mem = readHermesMemory();
+  if(!mem.recitation_videos) return send(res,200,{ok:true});
+  const before = mem.recitation_videos.length;
+  mem.recitation_videos = mem.recitation_videos.filter(v=>v.id!==p.id);
+  writeHermesMemory(mem);
+  send(res,200,{ok:true, removed:before-mem.recitation_videos.length, total:mem.recitation_videos.length});
 });
 
 /* ══ Boot: start auto-pilot if previously enabled ══ */
