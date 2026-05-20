@@ -1741,14 +1741,25 @@ const Admin = {
       <!-- Chat with Hermes -->
       <div id="h-chat" style="display:none">
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div id="h-chat-messages" style="min-height:180px;max-height:420px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+          <!-- Shared Attachments Area -->
+          <div id="shared-attachments" style="display:none;padding:8px 10px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:.75rem;font-weight:600;color:#a78bfa">📎 الملفات المرفقة (مشتركة بين المحادثتين)</span>
+              <button id="btn-clear-attachments" style="font-size:.68rem;color:var(--red);background:none;border:none;cursor:pointer;padding:0">✕ مسح الكل</button>
+            </div>
+            <div id="attachments-list" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+          </div>
+
+          <div id="h-chat-messages" style="min-height:180px;max-height:380px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
             <div style="text-align:center;color:var(--text-3);font-size:.8rem;padding:20px 0">
               ابدأ محادثة مع Hermes — يمكنه البحث بالإنترنت، توليد أصوات، تحليل البيانات، وتعديل الكود
             </div>
           </div>
           <div id="h-chat-status" style="font-size:.72rem;color:#a78bfa;min-height:16px;padding:0 4px"></div>
-          <div style="display:flex;gap:6px">
-            <input id="h-chat-input" type="text" placeholder="اكتب رسالتك لهرمس… (مثال: ابحث عن مكتبات تحليل الصوت، أو: ولّد صوت تلاوة للفاتحة)" style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;font-family:inherit" dir="auto" />
+          <div style="display:flex;gap:6px;align-items:center">
+            <label for="h-file-input" title="إرفاق ملف" style="cursor:pointer;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:1rem;line-height:1;flex-shrink:0">📎</label>
+            <input id="h-file-input" type="file" multiple accept=".txt,.json,.js,.py,.md,.csv,.log,.jsonl,.html,.css,.xml" style="display:none">
+            <input id="h-chat-input" type="text" placeholder="اكتب رسالتك لهرمس…" style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.85rem;font-family:inherit" dir="auto" />
             <button id="h-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;padding:8px 16px;white-space:nowrap">إرسال ↵</button>
           </div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -1872,6 +1883,21 @@ const Admin = {
           <div style="font-size:.75rem;color:var(--mint);font-weight:600;margin-bottom:4px">⚡ التكامل الكامل</div>
           <div style="font-size:.72rem;color:var(--text-2);line-height:1.6">
             عند تشغيل البروكسي + ربط GitHub: Hermes سيستخدم Claude مجاناً لتحليل الكود، ثم يحفظ ما تعلّمه كمهارة تلقائية، ويرفع التعديلات لـ GitHub — كل ذلك بدون أي تكلفة.
+          </div>
+        </div>
+
+        <!-- Claude Direct Chat -->
+        <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:12px">
+          <div style="font-size:.82rem;font-weight:700;color:#a78bfa;margin-bottom:8px">💬 محادثة مباشرة مع الذكاء الاصطناعي</div>
+          <div id="claude-chat-msgs" style="min-height:140px;max-height:300px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:7px">
+            <div style="text-align:center;color:var(--text-3);font-size:.78rem;padding:16px 0">أرسل رسالة أو ارفع ملفاً — يستخدم نفس مزوّد الذكاء الاصطناعي الفعّال</div>
+          </div>
+          <div id="claude-chat-status" style="font-size:.7rem;color:#a78bfa;min-height:14px;padding:3px 4px"></div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+            <label for="claude-file-input" title="إرفاق ملف" style="cursor:pointer;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:1rem;line-height:1;flex-shrink:0">📎</label>
+            <input id="claude-file-input" type="file" multiple accept=".txt,.json,.js,.py,.md,.csv,.log,.jsonl,.html,.css,.xml" style="display:none">
+            <input id="claude-chat-input" type="text" placeholder="اسأل الذكاء الاصطناعي أو ارفع ملفاً…" style="flex:1;padding:8px 11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.83rem;font-family:inherit" dir="auto">
+            <button id="claude-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;border:none;padding:8px 14px;white-space:nowrap">إرسال ↵</button>
           </div>
         </div>
       </div>`;
@@ -2104,10 +2130,14 @@ const Admin = {
         let hermesDiv=null;
         let hermesText='';
         try {
+          // Include shared attachments if any
+          const filesCtx = (window._sharedAttachments||[]).length
+            ? '\n\n--- الملفات المرفقة ---\n'+(window._sharedAttachments||[]).slice(0,5).map(f=>`📄 [${f.name}]:\n${f.content.slice(0,6000)}`).join('\n\n---\n')
+            : '';
           const resp=await fetch(API+'/admin/hermes/chat',{
             method:'POST',
             headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},
-            body:JSON.stringify({message:msg,history:chatHistory.slice(-10)})
+            body:JSON.stringify({message:msg+(filesCtx?` [${(window._sharedAttachments||[]).length} ملفات مرفقة]`:''),history:chatHistory.slice(-10),file_context:filesCtx||undefined})
           });
           if(!resp.ok){ hChatAppend('hermes','❌ خطأ في الاتصال'); return; }
           const reader=resp.body.getReader();
@@ -2162,6 +2192,82 @@ const Admin = {
       document.getElementById('h-chat-send')?.addEventListener('click', hChatSend);
       document.getElementById('h-chat-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); hChatSend(); } });
       el.querySelectorAll('.h-chat-quick').forEach(btn=>{ btn.onclick=()=>{ if(chatInput) chatInput.value=btn.dataset.q; hChatSend(); }; });
+
+      /* ── Shared Attachments system ── */
+      if(!window._sharedAttachments) window._sharedAttachments = [];
+
+      function renderAttachments(){
+        const area = document.getElementById('shared-attachments');
+        const list = document.getElementById('attachments-list');
+        if(!area||!list) return;
+        area.style.display = window._sharedAttachments.length ? 'block' : 'none';
+        list.innerHTML = window._sharedAttachments.map((f,i)=>`
+          <div style="display:flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);border-radius:12px;font-size:.7rem;color:#c4b5fd">
+            📄 ${escapeHTML(f.name)} <span style="color:var(--text-3)">(${Math.round(f.content.length/1024*10)/10}KB)</span>
+            <button onclick="window._sharedAttachments.splice(${i},1);renderAttachments&&renderAttachments()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.7rem;padding:0 0 0 3px">✕</button>
+          </div>`).join('');
+        // Sync to Claude chat area
+        const claudeArea = document.getElementById('claude-shared-attachments');
+        if(claudeArea){
+          claudeArea.style.display = window._sharedAttachments.length ? 'block' : 'none';
+          const claudeList = document.getElementById('claude-attachments-list');
+          if(claudeList) claudeList.innerHTML = list.innerHTML;
+        }
+      }
+      window.renderAttachments = renderAttachments;
+      renderAttachments();
+
+      document.getElementById('btn-clear-attachments')?.addEventListener('click', ()=>{ window._sharedAttachments=[]; renderAttachments(); toast('تم مسح الملفات المرفقة','success'); });
+
+      function handleFileInputChange(input){
+        const files = Array.from(input.files||[]);
+        let loaded=0;
+        files.forEach(file=>{
+          const reader = new FileReader();
+          reader.onload = e=>{
+            window._sharedAttachments.push({name:file.name, content:e.target.result});
+            loaded++;
+            if(loaded===files.length){ renderAttachments(); toast(`✅ تم إرفاق ${loaded} ملف(ات)`,'success'); }
+          };
+          reader.readAsText(file);
+        });
+        input.value='';
+      }
+
+      document.getElementById('h-file-input')?.addEventListener('change', function(){ handleFileInputChange(this); });
+
+      /* ── Claude direct chat ── */
+      const claudeMsgs = document.getElementById('claude-chat-msgs');
+      const claudeInput = document.getElementById('claude-chat-input');
+      const claudeStatus = document.getElementById('claude-chat-status');
+
+      document.getElementById('claude-file-input')?.addEventListener('change', function(){ handleFileInputChange(this); renderAttachments(); });
+
+      function claudeChatAppend(role, text){
+        if(!claudeMsgs) return;
+        const isUser = role==='user';
+        const div = document.createElement('div');
+        div.style.cssText = `display:flex;flex-direction:column;gap:2px;align-items:${isUser?'flex-end':'flex-start'}`;
+        div.innerHTML = `<div style="max-width:88%;padding:7px 11px;border-radius:${isUser?'12px 12px 4px 12px':'12px 12px 12px 4px'};background:${isUser?'rgba(99,102,241,.3)':'rgba(255,255,255,.06)'};font-size:.82rem;line-height:1.55;color:${isUser?'#e0e7ff':'var(--text-1)'};direction:auto">${escapeHTML(text)}</div>`;
+        claudeMsgs.appendChild(div);
+        claudeMsgs.scrollTop = claudeMsgs.scrollHeight;
+      }
+
+      async function claudeChatSend(){
+        const msg = claudeInput?.value?.trim(); if(!msg) return;
+        claudeChatAppend('user', msg + (window._sharedAttachments.length?` 📎×${window._sharedAttachments.length}`:''));
+        claudeInput.value='';
+        if(claudeStatus) claudeStatus.textContent='⏳ الذكاء الاصطناعي يفكر…';
+        try {
+          const r = await Api.post('/admin/ai-direct-chat', { message:msg, files:window._sharedAttachments.slice(0,5) }, true);
+          if(claudeStatus) claudeStatus.textContent='';
+          if(r.ok) claudeChatAppend('ai', r.reply||'—');
+          else claudeChatAppend('ai','❌ '+escapeHTML(r.error||'لم يرد الذكاء الاصطناعي'));
+        } catch(e){ if(claudeStatus) claudeStatus.textContent=''; claudeChatAppend('ai','❌ خطأ في الاتصال: '+e.message); }
+      }
+
+      document.getElementById('claude-chat-send')?.addEventListener('click', claudeChatSend);
+      document.getElementById('claude-chat-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); claudeChatSend(); } });
 
     }
     if (name==='ai-settings'){
@@ -2239,6 +2345,38 @@ const Admin = {
         </div>
       </div>
 
+      <!-- NVIDIA NIM Key -->
+      <div class="glass-card pad" style="margin-bottom:10px;background:linear-gradient(135deg,rgba(118,185,0,.08),rgba(100,160,0,.04));border:1px solid rgba(118,185,0,.2)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:1.3rem">🟢</span>
+          <div style="flex:1">
+            <div style="font-size:.85rem;font-weight:700;color:#76b900">NVIDIA NIM API Key</div>
+            <div style="font-size:.72rem;color:var(--text-3)">نماذج Nemotron + Llama قوية ومجانية — سجّل على <a href="https://build.nvidia.com" target="_blank" style="color:#76b900">build.nvidia.com</a> واحصل على مفتاحك</div>
+          </div>
+          <div id="nim-badge" style="font-size:.7rem;padding:3px 8px;border-radius:10px;background:${s.nvidia_nim_key?'rgba(118,185,0,.15)':'rgba(0,0,0,.25)'};color:${s.nvidia_nim_key?'#76b900':'var(--text-3)'}">${s.nvidia_nim_key?'✅ محفوظ':'⚠️ غير محدد'}</div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <input id="ai-nim-key" class="field-input" type="password" placeholder="nvapi-xxxxxxxxxxxxxxxxxxxx" value="${s.nvidia_nim_key?'••••••••':''}" style="flex:1;font-family:monospace;font-size:.82rem">
+          <button id="btn-nim-test" class="btn btn-sm" style="background:rgba(118,185,0,.2);border:1px solid rgba(118,185,0,.3);color:#76b900;font-size:.75rem;white-space:nowrap;padding:7px 12px">🔍 اختبار</button>
+        </div>
+        <div id="nim-test-result" style="font-size:.75rem;min-height:16px;margin-top:6px;padding:6px;border-radius:6px;display:none"></div>
+        <div style="font-size:.68rem;color:var(--text-3);margin-top:6px">النموذج المستخدم: <code style="background:rgba(118,185,0,.1);padding:1px 5px;border-radius:3px">meta/llama-3.1-nemotron-70b-instruct</code></div>
+      </div>
+
+      <!-- Video API Key -->
+      <div class="glass-card pad" style="margin-bottom:10px;background:linear-gradient(135deg,rgba(239,68,68,.07),rgba(220,38,38,.04));border:1px solid rgba(239,68,68,.2)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:1.3rem">🎬</span>
+          <div style="flex:1">
+            <div style="font-size:.85rem;font-weight:700;color:#f87171">مفتاح API الفيديو</div>
+            <div style="font-size:.72rem;color:var(--text-3)">للاتصال بخدمات الفيديو (YouTube API / Pika / RunwayML / أي خدمة فيديو أخرى)</div>
+          </div>
+          <div style="font-size:.7rem;padding:3px 8px;border-radius:10px;background:${s.video_api_key?'rgba(239,68,68,.15)':'rgba(0,0,0,.25)'};color:${s.video_api_key?'#f87171':'var(--text-3)'}">${s.video_api_key?'✅ محفوظ':'غير محدد'}</div>
+        </div>
+        <input id="ai-video-key" class="field-input" type="password" placeholder="أدخل مفتاح API الخاص بخدمة الفيديو" value="${s.video_api_key?'••••••••':''}" style="width:100%;font-family:monospace;font-size:.82rem">
+        <div style="font-size:.68rem;color:var(--text-3);margin-top:5px">يُخزَّن بأمان ويمكن استخدامه من Hermes في ميزات الفيديو المستقبلية</div>
+      </div>
+
       <!-- Custom Provider -->
       <div class="glass-card pad" style="margin-bottom:10px" id="ai-custom-block">
         <div style="font-size:.85rem;font-weight:700;margin-bottom:8px">🔑 المزوّد المخصص</div>
@@ -2260,15 +2398,26 @@ const Admin = {
 
       <!-- Save Button -->
       <div id="ai-save-status" style="min-height:20px;font-size:.78rem;text-align:center;margin-bottom:6px"></div>
-      <button class="btn btn-primary btn-full" id="btn-ai-save" style="background:linear-gradient(135deg,rgba(16,185,129,.8),rgba(52,211,153,.7));border:none">حفظ الإعدادات</button>
+      <button class="btn btn-primary btn-full" id="btn-ai-save" style="background:linear-gradient(135deg,rgba(16,185,129,.8),rgba(52,211,153,.7));border:none">💾 حفظ الإعدادات</button>
 
       <!-- Status cards -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">
-        ${['replit','pollinations','custom'].map(p=>`
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px">
+        ${['replit','pollinations','nvidia_nim','custom'].map(p=>`
         <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.06)" id="ai-status-${p}">
-          <div style="font-size:.75rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'Pollinations':'مخصص'}</div>
-          <div style="font-size:.85rem">—</div>
+          <div style="font-size:.73rem;color:var(--text-3);margin-bottom:4px">${p==='replit'?'Replit AI':p==='pollinations'?'🆓 Pollinations':p==='nvidia_nim'?'🟢 NVIDIA NIM':'🔑 مخصص'}</div>
+          <div style="font-size:.82rem">—</div>
         </div>`).join('')}
+      </div>
+
+      <!-- AI Provider Errors Log -->
+      <div style="margin-top:16px" id="ai-errors-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:.82rem;font-weight:700;color:var(--red)">🚨 سجل أخطاء الذكاء الاصطناعي</div>
+          <button id="btn-clear-ai-errors" class="btn btn-sm btn-ghost" style="font-size:.7rem;color:var(--red)">🗑️ مسح السجل</button>
+        </div>
+        <div id="ai-errors-list" style="max-height:200px;overflow-y:auto">
+          <div style="text-align:center;color:var(--text-3);font-size:.78rem;padding:16px">جارٍ تحميل سجل الأخطاء…</div>
+        </div>
       </div>
 
       <!-- GitHub Integration Card -->
@@ -2360,12 +2509,69 @@ const Admin = {
         // Only send key if user typed a new one (not placeholder dots)
         const keyField = document.getElementById('ai-custom-key');
         if(keyField && keyField.value && !keyField.value.includes('••')) payload.custom_api_key = keyField.value.trim();
+        // NVIDIA NIM key
+        const nimKeyField = document.getElementById('ai-nim-key');
+        if(nimKeyField && nimKeyField.value && !nimKeyField.value.includes('••')) payload.nvidia_nim_key = nimKeyField.value.trim();
+        // Video API key
+        const videoKeyField = document.getElementById('ai-video-key');
+        if(videoKeyField && videoKeyField.value && !videoKeyField.value.includes('••')) payload.video_api_key = videoKeyField.value.trim();
 
         const r3 = await Api.post('/admin/ai-settings', payload, true);
         if(statusEl) statusEl.textContent = r3.ok ? '✅ تم الحفظ بنجاح' : '❌ '+(r3.error||'فشل الحفظ');
         if(r3.ok){ toast('✅ تم حفظ إعدادات الذكاء الاصطناعي','success'); setTimeout(()=>Admin.loadTab('ai-settings'),500); }
         else toast('❌ '+(r3.error||'خطأ'),'error');
       };
+
+      /* ── NVIDIA NIM Test ── */
+      document.getElementById('btn-nim-test')?.addEventListener('click', async()=>{
+        const btn = document.getElementById('btn-nim-test');
+        const result = document.getElementById('nim-test-result');
+        const nimKey = document.getElementById('ai-nim-key');
+        btn.textContent='⏳'; btn.disabled=true;
+        const apiKey = (nimKey?.value && !nimKey.value.includes('••')) ? nimKey.value.trim() : undefined;
+        if(result){ result.style.display='block'; result.style.color='var(--text-3)'; result.textContent='⏳ جارٍ الاختبار…'; }
+        const r = await Api.post('/admin/nim-test', apiKey?{api_key:apiKey}:{}, true);
+        btn.textContent='🔍 اختبار'; btn.disabled=false;
+        if(result){
+          if(r.ok){ result.style.color='var(--mint)'; result.textContent=`✅ ${r.note||'NVIDIA NIM يعمل'} — ردّ: "${escapeHTML(r.reply?.slice(0,80)||'')}"`;
+            const badge = document.getElementById('nim-badge');
+            if(badge){ badge.textContent='✅ محفوظ ويعمل'; badge.style.background='rgba(118,185,0,.15)'; badge.style.color='#76b900'; }
+            toast('✅ NVIDIA NIM يعمل!','success');
+          } else { result.style.color='#f87171'; result.textContent=`❌ ${escapeHTML(r.error||'فشل')}${r.raw?` — ${escapeHTML(r.raw.slice(0,100))}`:''}`;
+            toast('❌ NIM: '+(r.error||'فشل'),'error');
+          }
+        }
+      });
+
+      /* ── AI Errors section ── */
+      async function loadAIErrors(){
+        const list = document.getElementById('ai-errors-list');
+        if(!list) return;
+        try {
+          const r = await Api.get('/admin/ai-provider-errors', true);
+          const errors = r.errors||[];
+          if(!errors.length){ list.innerHTML='<div style="text-align:center;color:var(--mint);font-size:.78rem;padding:16px">✅ لا توجد أخطاء مسجّلة — الذكاء الاصطناعي يعمل بشكل صحيح</div>'; return; }
+          list.innerHTML = errors.slice(0,20).map(e=>{
+            const d = new Date(e.ts); const timeStr = d.toLocaleTimeString('ar-SA')+' '+d.toLocaleDateString('ar-SA');
+            const provColor = e.provider==='pollinations'?'var(--gold)':e.provider==='nvidia_nim'?'#76b900':e.provider==='replit'?'var(--mint)':'#a78bfa';
+            return `<div style="padding:7px 10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:7px;margin-bottom:5px;font-size:.73rem">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                <span style="font-weight:700;color:${provColor}">${e.provider||'?'}</span>
+                ${e.model?`<span style="color:var(--text-3);background:rgba(0,0,0,.2);padding:1px 5px;border-radius:4px;font-size:.68rem">${escapeHTML(e.model)}</span>`:''}
+                <span style="margin-right:auto;color:var(--text-3)">${timeStr}</span>
+              </div>
+              <div style="color:#f87171">${escapeHTML(e.error||'خطأ غير محدد')}</div>
+              ${e.hint?`<div style="color:var(--text-3);margin-top:3px;word-break:break-all">${escapeHTML(e.hint.slice(0,200))}</div>`:''}
+            </div>`;
+          }).join('');
+        } catch(e){ if(list) list.innerHTML='<div style="color:var(--red);font-size:.78rem;padding:8px">❌ تعذّر تحميل السجل</div>'; }
+      }
+      loadAIErrors();
+
+      document.getElementById('btn-clear-ai-errors')?.addEventListener('click', async()=>{
+        const r = await fetch(API+'/admin/ai-provider-errors',{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(r=>r.json());
+        if(r.ok){ toast('✅ تم مسح سجل أخطاء الذكاء الاصطناعي','success'); loadAIErrors(); }
+      });
 
       /* Radio visual feedback */
       el.querySelectorAll('input[type="radio"]').forEach(radio=>{

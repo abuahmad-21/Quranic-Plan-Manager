@@ -43,6 +43,7 @@ if(!DB.admin.ai_settings.github) DB.admin.ai_settings.github = {
   branch: 'main'
 };
 if(!DB.admin.ai_settings.nvidia_nim_key) DB.admin.ai_settings.nvidia_nim_key = '';
+if(!DB.admin.ai_settings.video_api_key)   DB.admin.ai_settings.video_api_key   = '';
 if(!DB.admin.ai_settings.hermes_autopilot) DB.admin.ai_settings.hermes_autopilot = { enabled:false, interval_hours:6 };
 let writePending = false;
 function persist(){
@@ -851,7 +852,7 @@ R('GET','/qqc/admin/ai-settings', async (req,res)=>{
 R('POST','/qqc/admin/ai-settings', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
-  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model','nvidia_nim_key'];
+  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model','nvidia_nim_key','video_api_key'];
   allowed.forEach(k=>{ if(b[k] !== undefined) DB.admin.ai_settings[k] = String(b[k]).slice(0,500); });
   persist(); send(res,200,{ok:true, settings: DB.admin.ai_settings});
 });
@@ -1008,19 +1009,30 @@ async function callAI(systemPrompt, userMsg, maxTokens=300){
   const fallback = s.fallback_provider || 'pollinations';
   const providers = [primary];
   if(fallback && fallback !== 'none' && fallback !== primary) providers.push(fallback);
+  if(!providers.includes('pollinations')) providers.push('pollinations');
   for(const providerName of providers){
     const cfg = getAIProviderConfig(providerName);
-    if(!cfg) continue;
+    if(!cfg){ appendLog('ai_provider_errors.jsonl',{ts:Date.now(),provider:providerName,error:'no_config',hint:'مفتاح غير محفوظ أو المزوّد غير مدعوم'}); continue; }
     try {
       const resp = await fetch(`${cfg.baseUrl}/chat/completions`,{
         method:'POST',
         headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
-        body:JSON.stringify({ model:cfg.model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_completion_tokens:maxTokens })
+        body:JSON.stringify({ model:cfg.model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}], max_tokens:maxTokens }),
+        signal:AbortSignal.timeout(25000)
       });
+      if(!resp.ok){
+        const errText = await resp.text().catch(()=>'');
+        appendLog('ai_provider_errors.jsonl',{ts:Date.now(),provider:providerName,model:cfg.model,error:`HTTP ${resp.status}`,hint:errText.slice(0,300)});
+        continue;
+      }
       const data = await resp.json();
       const result = data.choices?.[0]?.message?.content || null;
       if(result) return result;
-    } catch(e){ console.error(`AI error (${providerName})`,e.message); }
+      appendLog('ai_provider_errors.jsonl',{ts:Date.now(),provider:providerName,model:cfg.model,error:'no_content',hint:JSON.stringify(data).slice(0,200)});
+    } catch(e){
+      console.error(`AI error (${providerName})`,e.message);
+      appendLog('ai_provider_errors.jsonl',{ts:Date.now(),provider:providerName,error:e.message,type:'exception'});
+    }
   }
   return null;
 }
@@ -2787,6 +2799,35 @@ R('POST','/qqc/admin/claude-proxy/stop', async(req,res)=>{
   catch(e){ send(res,200,{ok:false, error:e.message}); }
 });
 
+/* ══ AI Provider Errors — سجل أخطاء مزودي الذكاء الاصطناعي ══ */
+R('GET','/qqc/admin/ai-provider-errors', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const errors = readLogFile('ai_provider_errors.jsonl', 50);
+  send(res,200,{ errors: errors.reverse(), total: errors.length });
+});
+
+R('DELETE','/qqc/admin/ai-provider-errors', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  clearLogFile('ai_provider_errors.jsonl');
+  send(res,200,{ok:true});
+});
+
+/* ══ Claude/Hermes Direct Chat — محادثة مباشرة ══ */
+R('POST','/qqc/admin/ai-direct-chat', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const msg = String(b.message||'').slice(0,4000);
+  if(!msg) return send(res,400,{error:'no_message'});
+  const files = (b.files||[]).map(f=>({name:String(f.name||'file').slice(0,60), content:String(f.content||'').slice(0,8000)}));
+  const fileCtx = files.length
+    ? '\n\n--- الملفات المرفقة ---\n'+files.map(f=>`📄 [${f.name}]:\n${f.content}`).join('\n\n---\n')
+    : '';
+  const sysP = String(b.system||'أنت مساعد ذكي خبير. رد باللغة العربية بشكل مفيد ودقيق وموجز.').slice(0,1000);
+  const reply = await callAI(sysP, msg+fileCtx, 1200);
+  if(reply) send(res,200,{ok:true, reply});
+  else send(res,200,{ok:false, error:'لم يرد الذكاء الاصطناعي — تحقق من إعدادات المزوّد وسجل الأخطاء'});
+});
+
 /* ══ NVIDIA NIM — اختبار مباشر ══ */
 R('POST','/qqc/admin/nim-test', async(req,res)=>{
   if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
@@ -2935,9 +2976,15 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   const userMessage = String(b.message||'').slice(0,2000);
   if(!userMessage) return send(res,400,{error:'message مطلوب'});
   const history = Array.isArray(b.history) ? b.history.slice(-12) : [];
+  const fileCtx   = b.file_context ? '\n\n'+String(b.file_context).slice(0,15000) : '';
 
-  const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if(!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured'});
+  // Try Replit first (streaming-capable), then fallback to getActiveAIConfig
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const activeCfg = (!baseUrl||!apiKey) ? getActiveAIConfig() : null;
+  if(!baseUrl && !activeCfg) return send(res,503,{error:'ai_not_configured — أضف مزوّد ذكاء اصطناعي في إعدادات الذكاء الاصطناعي'});
+  const chatUrl  = baseUrl ? `${baseUrl}/chat/completions` : `${activeCfg.baseUrl}/chat/completions`;
+  const chatKey  = baseUrl ? apiKey : activeCfg.apiKey;
 
   // SSE headers
   res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','Access-Control-Allow-Origin':'*'});
@@ -2964,10 +3011,14 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
 - عند طلب صوت لأي آية: استخدم get_sheikh_audio_refs — توليد الصوت بالذكاء الاصطناعي معطّل تماماً
 - للتدريب الشامل استخدم train_on_all_data، ولتحسين نموذج التلاوة استخدم improve_recitation_model`;
 
+  const chatModel = baseUrl
+    ? (DB.admin.ai_settings?.replit_model || 'gpt-4o-mini')
+    : (activeCfg?.model || 'gpt-4o-mini');
+
   const messages = [
     {role:'system', content:systemPrompt},
     ...history.map(h=>({role:h.role, content:h.content})),
-    {role:'user', content:userMessage}
+    {role:'user', content:userMessage + fileCtx}
   ];
 
   let toolCallCount = 0;
@@ -2977,10 +3028,10 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
     while(toolCallCount < maxCalls){
       let resp;
       try {
-        resp = await fetch(`${baseUrl}/chat/completions`,{
+        resp = await fetch(chatUrl,{
           method:'POST', signal:AbortSignal.timeout(60000),
-          headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-          body:JSON.stringify({model:'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:'auto', max_completion_tokens:1500})
+          headers:{'Authorization':`Bearer ${chatKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:chatModel, messages, tools:HERMES_TOOLS, tool_choice:'auto', max_tokens:1500})
         });
       } catch(e){ sse('error',{message:'خطأ في الاتصال بالذكاء الاصطناعي: '+e.message}); break; }
 
