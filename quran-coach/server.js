@@ -4136,6 +4136,136 @@ R('GET','/qqc/admin/users-summary', async(req,res)=>{
   send(res,200,{ok:true, count:list.length, users:list});
 });
 
+/* ══════════════════════════════════════════════════════════
+   🛠️ DEVELOPER TOOLS — Terminal · Files · Logs
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Terminal exec ── */
+R('POST','/qqc/admin/terminal/exec', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const cmd = String(b.cmd||'').trim();
+  if(!cmd) return send(res,400,{error:'no_command'});
+  const cwd2 = path.join(ROOT, String(b.cwd||'').replace(/\.\.\//g,'').replace(/^\//,''));
+  const safeDir = cwd2.startsWith(ROOT) ? cwd2 : ROOT;
+  const {exec} = require('child_process');
+  exec(cmd, {cwd:safeDir, timeout:20000, maxBuffer:1024*512}, (err,stdout,stderr)=>{
+    send(res,200,{
+      stdout: stdout.slice(0,60000),
+      stderr: stderr.slice(0,10000),
+      exit_code: err ? (err.code||1) : 0,
+      signal: err?.signal||null,
+      cwd: safeDir.replace(ROOT,'').replace(/^\//,'')||'quran-coach'
+    });
+  });
+});
+
+/* ── Files: list directory ── */
+R('GET','/qqc/admin/files/tree', async(req,res,_,query)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const relPath = (query.path||'').replace(/\.\.\//g,'').replace(/^\//,'');
+  const target = relPath ? path.join(ROOT,relPath) : ROOT;
+  if(!target.startsWith(ROOT)) return send(res,403,{error:'forbidden'});
+  try {
+    const entries = fs.readdirSync(target,{withFileTypes:true});
+    const IGNORE = new Set(['node_modules','.git','.replit','__pycache__','.DS_Store']);
+    const items = entries
+      .filter(e=>!IGNORE.has(e.name)&&!e.name.startsWith('.cache'))
+      .map(e=>{
+        let size=0;
+        try{ if(e.isFile()) size=fs.statSync(path.join(target,e.name)).size; }catch{}
+        return {name:e.name, type:e.isDirectory()?'dir':'file', size};
+      })
+      .sort((a,b)=>a.type===b.type?a.name.localeCompare(b.name):(a.type==='dir'?-1:1));
+    send(res,200,{ok:true, path:relPath||'.', items});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── Files: read file content ── */
+R('GET','/qqc/admin/files/read', async(req,res,_,query)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const relPath = (query.path||'').replace(/\.\.\//g,'');
+  if(!relPath) return send(res,400,{error:'no_path'});
+  const target = path.join(ROOT,relPath);
+  if(!target.startsWith(ROOT)) return send(res,403,{error:'forbidden'});
+  try {
+    const stat = fs.statSync(target);
+    if(stat.size > 3*1024*1024) return send(res,413,{error:'file_too_large', size:stat.size});
+    const content = fs.readFileSync(target,'utf8');
+    send(res,200,{ok:true, path:relPath, content, size:stat.size, modified:stat.mtime.toISOString()});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── Files: write file ── */
+R('POST','/qqc/admin/files/write', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  let b;
+  try{ b = await readLargeBody(req,20); }catch(e){ return send(res,413,{error:'too_large'}); }
+  const relPath = String(b.path||'').replace(/\.\.\//g,'').replace(/^\//,'');
+  if(!relPath) return send(res,400,{error:'no_path'});
+  const target = path.join(ROOT,relPath);
+  if(!target.startsWith(ROOT)) return send(res,403,{error:'forbidden'});
+  try {
+    fs.mkdirSync(path.dirname(target),{recursive:true});
+    fs.writeFileSync(target,String(b.content||''),'utf8');
+    if(target===path.join(ROOT,'server.js')||target===path.join(ROOT,'db.json')){ try{ persist(); }catch{} }
+    send(res,200,{ok:true, path:relPath, size:Buffer.byteLength(String(b.content||''))});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── Files: delete file ── */
+R('DELETE','/qqc/admin/files/delete', async(req,res,_,query)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const relPath = (query.path||'').replace(/\.\.\//g,'');
+  if(!relPath) return send(res,400,{error:'no_path'});
+  const target = path.join(ROOT,relPath);
+  if(!target.startsWith(ROOT)) return send(res,403,{error:'forbidden'});
+  const PROTECTED = new Set(['server.js','db.json','hermes_memory.json','package.json']);
+  if(PROTECTED.has(path.basename(relPath))) return send(res,403,{error:'protected_file'});
+  try {
+    const stat = fs.statSync(target);
+    if(stat.isDirectory()) fs.rmdirSync(target,{recursive:true});
+    else fs.unlinkSync(target);
+    send(res,200,{ok:true});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── Logs: list log files ── */
+R('GET','/qqc/admin/logs/files', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  try {
+    const dirs = [path.join(ROOT,'logs'), path.join(ROOT)];
+    const result = [];
+    for(const dir of dirs){
+      if(!fs.existsSync(dir)) continue;
+      fs.readdirSync(dir)
+        .filter(f=>(f.endsWith('.jsonl')||f.endsWith('.log'))&&fs.statSync(path.join(dir,f)).isFile())
+        .forEach(f=>{
+          const st = fs.statSync(path.join(dir,f));
+          result.push({name:f, dir:dir===ROOT?'root':'logs', size:st.size, modified:st.mtime.toISOString()});
+        });
+    }
+    send(res,200,{ok:true, files:result});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── Logs: read log file ── */
+R('GET','/qqc/admin/logs/read', async(req,res,_,query)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const fname = path.basename(query.file||'errors.jsonl');
+  const subdir = query.dir==='root' ? ROOT : path.join(ROOT,'logs');
+  const target = path.join(subdir, fname);
+  if(!target.startsWith(ROOT)) return send(res,403,{error:'forbidden'});
+  const maxLines = Math.min(parseInt(query.lines||200),1000);
+  try {
+    if(!fs.existsSync(target)) return send(res,200,{ok:true, lines:[], total:0});
+    const content = fs.readFileSync(target,'utf8');
+    const all = content.split('\n').filter(Boolean);
+    const recent = all.slice(-maxLines);
+    send(res,200,{ok:true, file:fname, lines:recent, total:all.length});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
 /* ── 9. Daily Absence Notification Cron ── */
 function runDailyAbsenceCron(){
   try {

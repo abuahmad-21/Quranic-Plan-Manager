@@ -2740,6 +2740,322 @@ const Admin = {
         } else { toast('❌ '+(r.error||'فشل الحفظ'),'error'); }
       };
     }
+
+    /* ══════════════════════════════════════════════
+       🖥️ TERMINAL TAB
+    ══════════════════════════════════════════════ */
+    if (name==='terminal'){
+      const el = document.getElementById('atab-terminal');
+      let termCwd = 'quran-coach';
+      let cmdHistory = [], histIdx = -1;
+
+      el.innerHTML = `
+      <div style="background:#0d1117;border:1px solid rgba(100,220,100,.25);border-radius:10px;overflow:hidden;font-family:'Courier New',Courier,monospace">
+        <div style="background:#161b22;padding:7px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.07)">
+          <div style="display:flex;gap:5px">
+            <div style="width:10px;height:10px;border-radius:50%;background:#ff5f56"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#ffbd2e"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#27c93f"></div>
+          </div>
+          <span id="term-title" style="font-size:.76rem;color:#6e7681;flex:1">🖥️ Web Terminal — quran-coach/</span>
+          <button id="term-clear" style="font-size:.66rem;padding:2px 8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#8b949e;cursor:pointer">clear</button>
+        </div>
+        <div id="term-output" style="min-height:300px;max-height:520px;overflow-y:auto;padding:12px 14px;color:#e6edf3;font-size:.81rem;line-height:1.65"></div>
+        <div style="background:#161b22;padding:7px 12px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:6px">
+          <span id="term-prompt" style="color:#27c93f;font-size:.81rem;white-space:nowrap;flex-shrink:0;font-weight:700">quran-coach$</span>
+          <input id="term-input" type="text" style="flex:1;background:transparent;border:none;outline:none;color:#e6edf3;font-size:.81rem;font-family:'Courier New',Courier,monospace;caret-color:#27c93f" placeholder="اكتب أمراً…" dir="ltr" autocomplete="off" spellcheck="false">
+          <button id="term-run" style="background:#27c93f;color:#000;border:none;border-radius:5px;font-size:.74rem;font-weight:700;padding:5px 13px;cursor:pointer;flex-shrink:0">▶ تنفيذ</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
+        ${[['ls -la','ls -la'],['pwd','pwd'],['node -v','node -v'],['free -m','free -m'],['df -h .','df -h .'],['cat server.js | wc -l','wc -l server.js'],['ps aux | grep node','ps node'],['cat hermes_memory.json | head -30','head memory']].map(([cmd,lbl])=>`<button class="btn btn-sm btn-ghost term-quick" style="font-size:.67rem;font-family:monospace;padding:3px 8px" data-cmd="${escapeHTML(cmd)}">${escapeHTML(lbl)}</button>`).join('')}
+      </div>`;
+
+      const termOut = document.getElementById('term-output');
+      const termInp = document.getElementById('term-input');
+      const termPrompt = document.getElementById('term-prompt');
+      const termTitle = document.getElementById('term-title');
+
+      function termLine(text, color){
+        const el2 = document.createElement('div');
+        el2.style.cssText = `color:${color||'#e6edf3'};white-space:pre-wrap;word-break:break-all;margin:0;line-height:1.65`;
+        el2.textContent = text;
+        termOut.appendChild(el2);
+        termOut.scrollTop = termOut.scrollHeight;
+      }
+      termLine('مرحباً في Web Terminal — قرآن كوتش 🌙', '#27c93f');
+      termLine('اكتب أي أمر shell وسيُنفَّذ مباشرةً في مجلد المشروع\nاستخدم ↑↓ لتنقل التاريخ\n', '#6e7681');
+
+      async function termRun(){
+        const cmd = termInp.value.trim(); if(!cmd||!S.adminPw) return;
+        cmdHistory.unshift(cmd); if(cmdHistory.length>100) cmdHistory.pop(); histIdx=-1;
+        termInp.value='';
+        termLine(`${termPrompt.textContent} ${cmd}`, '#58a6ff');
+        try {
+          const r = await fetch(API+'/admin/terminal/exec',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},
+            body:JSON.stringify({cmd, cwd:termCwd})
+          }).then(x=>x.json());
+          if(r.error) { termLine('خطأ: '+r.error,'#f85149'); return; }
+          if(r.stdout&&r.stdout.trim()) termLine(r.stdout.trimEnd(), '#e6edf3');
+          if(r.stderr&&r.stderr.trim()) termLine(r.stderr.trimEnd(), '#f85149');
+          if(r.exit_code!==0) termLine(`[exit ${r.exit_code}${r.signal?' · signal:'+r.signal:''}]`, '#ffbd2e');
+          // Update cwd: run cd detection
+          if(/^\s*cd(\s|$)/.test(cmd)){
+            try{
+              const r2=await fetch(API+'/admin/terminal/exec',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},body:JSON.stringify({cmd:'pwd',cwd:r.cwd||termCwd})}).then(x=>x.json());
+              if(r2.stdout){
+                const newAbs = r2.stdout.trim();
+                const rootMark = 'quran-coach';
+                const idx2 = newAbs.lastIndexOf(rootMark);
+                termCwd = idx2>=0 ? newAbs.slice(idx2) : r.cwd||termCwd;
+                termPrompt.textContent = termCwd+'$';
+                termTitle.textContent = '🖥️ Web Terminal — '+termCwd+'/';
+              }
+            } catch{}
+          }
+        } catch(e){ termLine('خطأ في الاتصال: '+e.message, '#f85149'); }
+      }
+
+      document.getElementById('term-run').onclick = termRun;
+      document.getElementById('term-clear').onclick = ()=>{ termOut.innerHTML=''; };
+      termInp.addEventListener('keydown', e=>{
+        if(e.key==='Enter'){ e.preventDefault(); termRun(); }
+        if(e.key==='ArrowUp'){ e.preventDefault(); if(histIdx<cmdHistory.length-1){histIdx++;termInp.value=cmdHistory[histIdx]||'';} }
+        if(e.key==='ArrowDown'){ e.preventDefault(); if(histIdx>0){histIdx--;termInp.value=cmdHistory[histIdx]||'';}else{histIdx=-1;termInp.value='';} }
+      });
+      el.querySelectorAll('.term-quick').forEach(b=>{ b.onclick=()=>{ termInp.value=b.dataset.cmd; termInp.focus(); }; });
+      setTimeout(()=>termInp.focus(), 100);
+    }
+
+    /* ══════════════════════════════════════════════
+       📁 FILES TAB
+    ══════════════════════════════════════════════ */
+    if (name==='files'){
+      const el = document.getElementById('atab-files');
+      let fileCwd = '', openFilePath = '', fileChanged = false;
+
+      el.innerHTML = `
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:10px;height:600px">
+        <!-- Left: file tree -->
+        <div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">
+          <div style="padding:8px 10px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:6px">
+            <span style="font-size:.8rem;font-weight:600;color:var(--text-2);flex:1" id="file-path-crumb">📁 /</span>
+            <button id="btn-file-up" class="btn btn-sm btn-ghost" style="font-size:.68rem;padding:2px 7px" title="مجلد أعلى">↑</button>
+            <button id="btn-file-newfile" class="btn btn-sm btn-ghost" style="font-size:.68rem;padding:2px 7px" title="ملف جديد">+</button>
+          </div>
+          <div id="file-tree" style="flex:1;overflow-y:auto;padding:4px 0"></div>
+        </div>
+        <!-- Right: editor -->
+        <div style="display:flex;flex-direction:column;gap:0;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden">
+          <div style="padding:7px 12px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px">
+            <span id="file-editor-name" style="font-size:.8rem;color:var(--text-3);flex:1">لم يُفتح ملف</span>
+            <span id="file-size-info" style="font-size:.68rem;color:var(--text-3)"></span>
+            <button id="btn-file-save" class="btn btn-sm" style="background:rgba(52,211,153,.3);border:1px solid rgba(52,211,153,.4);color:var(--mint);font-size:.72rem;padding:3px 12px" disabled>💾 حفظ</button>
+            <button id="btn-file-delete" class="btn btn-sm btn-danger" style="font-size:.72rem;padding:3px 10px;display:none">🗑️ حذف</button>
+          </div>
+          <div id="file-editor-wrap" style="flex:1;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:.85rem" id="file-editor-placeholder">انقر على ملف لفتحه وتعديله</div>
+            <textarea id="file-editor" dir="ltr" spellcheck="false" style="display:none;position:absolute;inset:0;width:100%;height:100%;background:transparent;border:none;outline:none;color:#e6edf3;font-family:'Courier New',Courier,monospace;font-size:.8rem;line-height:1.6;padding:12px;resize:none;box-sizing:border-box;tab-size:2"></textarea>
+          </div>
+          <div style="padding:5px 12px;background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.06);display:flex;gap:8px;font-size:.68rem;color:var(--text-3)" id="file-status-bar">
+            <span>Ln 1, Col 1</span>
+            <span id="file-lang-badge"></span>
+            <span id="file-changed-badge" style="color:var(--gold);display:none">● غير محفوظ</span>
+          </div>
+        </div>
+      </div>`;
+
+      async function fileLoadTree(dirPath){
+        const tree = document.getElementById('file-tree');
+        const crumb = document.getElementById('file-path-crumb');
+        tree.innerHTML='<div style="padding:8px;font-size:.75rem;color:var(--text-3)">جارٍ التحميل…</div>';
+        try {
+          const r = await fetch(API+'/admin/files/tree?path='+encodeURIComponent(dirPath||''),{headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+          if(r.error){tree.innerHTML=`<div style="padding:8px;color:var(--red);font-size:.75rem">❌ ${escapeHTML(r.error)}</div>`;return;}
+          fileCwd=r.path;
+          crumb.textContent='📁 /'+(fileCwd==='.'?'':fileCwd);
+          tree.innerHTML='';
+          (r.items||[]).forEach(item=>{
+            const row=document.createElement('div');
+            const isDir=item.type==='dir';
+            const ext=(item.name.match(/\.([^.]+)$/)||['',''])[1].toLowerCase();
+            const icon=isDir?'📁':ext==='js'?'📜':ext==='json'?'📊':ext==='md'?'📝':ext==='html'?'🌐':ext==='css'?'🎨':ext==='jsonl'?'📋':'📄';
+            const kb=isDir?'':item.size>1024?(item.size/1024).toFixed(1)+'KB':item.size+'B';
+            row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;font-size:.78rem;color:var(--text-2);border-bottom:1px solid rgba(255,255,255,.03)';
+            row.innerHTML=`<span style="flex-shrink:0">${icon}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(item.name)}</span>${kb?`<span style="color:var(--text-3);font-size:.66rem;flex-shrink:0">${kb}</span>`:''}`;
+            row.onmouseover=()=>row.style.background='rgba(255,255,255,.05)';
+            row.onmouseleave=()=>row.style.background='transparent';
+            row.onclick=()=>{
+              if(isDir){ fileLoadTree(fileCwd==='.'?item.name:fileCwd+'/'+item.name); }
+              else { fileOpenFile(fileCwd==='.'?item.name:fileCwd+'/'+item.name); }
+            };
+            tree.appendChild(row);
+          });
+        } catch(e){tree.innerHTML=`<div style="padding:8px;color:var(--red);font-size:.75rem">❌ ${e.message}</div>`;}
+      }
+
+      async function fileOpenFile(relPath){
+        const edWrap=document.getElementById('file-editor');
+        const ph=document.getElementById('file-editor-placeholder');
+        const nameEl=document.getElementById('file-editor-name');
+        const sizeEl=document.getElementById('file-size-info');
+        const saveBtn=document.getElementById('btn-file-save');
+        const delBtn=document.getElementById('btn-file-delete');
+        const langBadge=document.getElementById('file-lang-badge');
+        nameEl.textContent='جارٍ التحميل…'; sizeEl.textContent='';
+        try {
+          const r=await fetch(API+'/admin/files/read?path='+encodeURIComponent(relPath),{headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+          if(r.error){ toast('❌ '+r.error,'error'); return; }
+          openFilePath=relPath;
+          ph.style.display='none'; edWrap.style.display='block';
+          edWrap.value=r.content||'';
+          fileChanged=false;
+          nameEl.textContent=relPath.split('/').pop();
+          sizeEl.textContent=(r.size>1024?(r.size/1024).toFixed(1)+'KB':r.size+'B')+' · '+new Date(r.modified).toLocaleTimeString('ar');
+          saveBtn.disabled=false; delBtn.style.display='inline-flex';
+          const ext=(relPath.match(/\.([^.]+)$/)||['',''])[1].toLowerCase();
+          const langs={js:'JavaScript',json:'JSON',html:'HTML',css:'CSS',md:'Markdown',jsonl:'JSONL',py:'Python',txt:'Text'};
+          langBadge.textContent=langs[ext]||ext.toUpperCase()||'Text';
+          document.getElementById('file-changed-badge').style.display='none';
+        } catch(e){ toast('❌ '+e.message,'error'); }
+      }
+
+      const edArea = document.getElementById('file-editor');
+      const statusBar = document.querySelector('#atab-files #file-status-bar span');
+      edArea.addEventListener('input',()=>{
+        fileChanged=true;
+        document.getElementById('file-changed-badge').style.display='inline';
+      });
+      edArea.addEventListener('keydown',e=>{
+        if(e.key==='Tab'){e.preventDefault();const s=edArea.selectionStart;edArea.value=edArea.value.slice(0,s)+'  '+edArea.value.slice(edArea.selectionEnd);edArea.selectionStart=edArea.selectionEnd=s+2;}
+        if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();document.getElementById('btn-file-save').click();}
+      });
+
+      document.getElementById('btn-file-up').onclick=()=>{
+        const parts=fileCwd.split('/').filter(Boolean); parts.pop();
+        fileLoadTree(parts.join('/'));
+      };
+      document.getElementById('btn-file-newfile').onclick=()=>{
+        const name=prompt('اسم الملف الجديد (مثال: test.js):'); if(!name||!name.trim()) return;
+        const relPath=(fileCwd==='.'?'':fileCwd+'/')+name.trim();
+        const edArea2=document.getElementById('file-editor');
+        const ph=document.getElementById('file-editor-placeholder');
+        openFilePath=relPath; ph.style.display='none'; edArea2.style.display='block';
+        edArea2.value=''; fileChanged=true;
+        document.getElementById('file-editor-name').textContent=name.trim();
+        document.getElementById('btn-file-save').disabled=false;
+        document.getElementById('file-changed-badge').style.display='inline';
+        edArea2.focus();
+      };
+      document.getElementById('btn-file-save').onclick=async()=>{
+        if(!openFilePath) return;
+        const content=document.getElementById('file-editor').value;
+        const btn=document.getElementById('btn-file-save');
+        btn.disabled=true; btn.textContent='⏳';
+        const r=await fetch(API+'/admin/files/write',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},body:JSON.stringify({path:openFilePath,content})}).then(x=>x.json());
+        btn.disabled=false; btn.textContent='💾 حفظ';
+        if(r.ok){fileChanged=false;document.getElementById('file-changed-badge').style.display='none';toast('✅ تم الحفظ: '+openFilePath,'success');}
+        else toast('❌ '+(r.error||'فشل الحفظ'),'error');
+      };
+      document.getElementById('btn-file-delete').onclick=async()=>{
+        if(!openFilePath||!confirm('حذف نهائي: '+openFilePath+'؟')) return;
+        const r=await fetch(API+'/admin/files/delete?path='+encodeURIComponent(openFilePath),{method:'DELETE',headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+        if(r.ok){toast('🗑️ تم الحذف','success');openFilePath='';document.getElementById('file-editor').style.display='none';document.getElementById('file-editor-placeholder').style.display='flex';fileLoadTree(fileCwd);}
+        else toast('❌ '+(r.error||'فشل الحذف'),'error');
+      };
+      fileLoadTree('');
+    }
+
+    /* ══════════════════════════════════════════════
+       📋 LOGS TAB
+    ══════════════════════════════════════════════ */
+    if (name==='logs'){
+      const el = document.getElementById('atab-logs');
+      el.innerHTML=`
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="font-size:.85rem;font-weight:600;color:var(--text-2)">📋 سجلات النظام</div>
+        <button id="btn-logs-refresh" class="btn btn-sm btn-ghost" style="font-size:.72rem">↻ تحديث</button>
+        <select id="logs-lines-sel" class="field-input" style="font-size:.75rem;padding:3px 8px;width:auto;border-radius:6px">
+          <option value="50">50 سطر</option>
+          <option value="100" selected>100 سطر</option>
+          <option value="200">200 سطر</option>
+          <option value="500">500 سطر</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:4px;font-size:.75rem;cursor:pointer">
+          <input type="checkbox" id="logs-auto-refresh" style="accent-color:#6366f1"> تحديث تلقائي (5ث)
+        </label>
+      </div>
+      <div id="logs-files-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="logs-viewer" style="background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:10px;min-height:300px;max-height:520px;overflow-y:auto;padding:12px 14px;font-family:'Courier New',Courier,monospace;font-size:.76rem;line-height:1.7"></div>
+      <div id="logs-meta" style="margin-top:6px;font-size:.7rem;color:var(--text-3)"></div>`;
+
+      let logsInterval=null, activeLogFile=null, activeLogDir=null;
+
+      async function logsLoad(fname, dir){
+        const viewer=document.getElementById('logs-viewer');
+        const meta=document.getElementById('logs-meta');
+        const lines=document.getElementById('logs-lines-sel')?.value||100;
+        activeLogFile=fname; activeLogDir=dir;
+        viewer.innerHTML='<div style="color:#6e7681;padding:10px">جارٍ التحميل…</div>';
+        try{
+          const r=await fetch(API+'/admin/logs/read?file='+encodeURIComponent(fname)+'&dir='+encodeURIComponent(dir||'logs')+'&lines='+lines,{headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+          if(r.error){viewer.innerHTML=`<div style="color:#f85149">${escapeHTML(r.error)}</div>`;return;}
+          if(!r.lines||!r.lines.length){viewer.innerHTML='<div style="color:#6e7681;padding:20px;text-align:center">السجل فارغ</div>';return;}
+          const isJsonl = fname.endsWith('.jsonl');
+          viewer.innerHTML=r.lines.map(line=>{
+            if(!isJsonl) return `<div style="color:#e6edf3;border-bottom:1px solid rgba(255,255,255,.04);padding:1px 0">${escapeHTML(line)}</div>`;
+            try{
+              const obj=JSON.parse(line);
+              const ts=obj.timestamp||obj.ts||obj.at||obj.time||'';
+              const lvl=String(obj.level||obj.type||'').toUpperCase();
+              const msg=escapeHTML(String(obj.message||obj.msg||obj.error||obj.event||JSON.stringify(obj)).slice(0,300));
+              const user=obj.username||obj.user||'';
+              const lvlColor=lvl==='ERROR'||lvl==='ERR'?'#f85149':lvl==='WARN'||lvl==='WARNING'?'#ffbd2e':lvl==='INFO'?'#58a6ff':'#8b949e';
+              return `<div style="display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,.04);padding:2px 0;align-items:flex-start">
+                <span style="color:#6e7681;flex-shrink:0;font-size:.7rem">${ts?new Date(ts).toLocaleTimeString('ar'):''}</span>
+                ${lvl?`<span style="color:${lvlColor};flex-shrink:0;font-size:.7rem;font-weight:700;min-width:40px">${lvl}</span>`:''}
+                ${user?`<span style="color:#a78bfa;flex-shrink:0;font-size:.7rem">@${escapeHTML(user)}</span>`:''}
+                <span style="color:#e6edf3">${msg}</span>
+              </div>`;
+            } catch{
+              return `<div style="color:#8b949e;border-bottom:1px solid rgba(255,255,255,.04);padding:1px 0">${escapeHTML(line.slice(0,300))}</div>`;
+            }
+          }).join('');
+          viewer.scrollTop=viewer.scrollHeight;
+          meta.textContent=`عرض ${r.lines.length} من ${r.total} سطر إجمالاً — ${fname}`;
+        } catch(e){viewer.innerHTML=`<div style="color:#f85149">${escapeHTML(e.message)}</div>`;}
+      }
+
+      async function logsLoadFiles(){
+        const listEl=document.getElementById('logs-files-list');
+        listEl.innerHTML='<div style="font-size:.75rem;color:var(--text-3)">جارٍ تحميل قائمة السجلات…</div>';
+        try{
+          const r=await fetch(API+'/admin/logs/files',{headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+          const files=r.files||[];
+          if(!files.length){listEl.innerHTML='<div style="font-size:.78rem;color:var(--text-3)">لا توجد ملفات سجل</div>';return;}
+          listEl.innerHTML=files.map(f=>{
+            const kb=f.size>1024?(f.size/1024).toFixed(1)+'KB':f.size+'B';
+            const isActive=f.name===activeLogFile;
+            return `<button class="btn btn-sm log-file-btn ${isActive?'btn-primary':'btn-ghost'}" style="font-size:.72rem" data-file="${escapeHTML(f.name)}" data-dir="${escapeHTML(f.dir||'logs')}">📋 ${escapeHTML(f.name)} <span style="opacity:.6">${kb}</span></button>`;
+          }).join('');
+          listEl.querySelectorAll('.log-file-btn').forEach(b=>{
+            b.onclick=()=>{ listEl.querySelectorAll('.log-file-btn').forEach(x=>x.className='btn btn-sm log-file-btn btn-ghost'); b.className='btn btn-sm log-file-btn btn-primary'; logsLoad(b.dataset.file, b.dataset.dir); };
+          });
+          if(!activeLogFile && files.length){ const first=listEl.querySelector('.log-file-btn'); if(first) first.click(); }
+        } catch(e){listEl.innerHTML=`<div style="color:var(--red);font-size:.75rem">${escapeHTML(e.message)}</div>`;}
+      }
+
+      document.getElementById('btn-logs-refresh').onclick=logsLoadFiles;
+      document.getElementById('logs-lines-sel').addEventListener('change',()=>{ if(activeLogFile) logsLoad(activeLogFile,activeLogDir); });
+      document.getElementById('logs-auto-refresh').addEventListener('change',function(){
+        if(logsInterval){clearInterval(logsInterval);logsInterval=null;}
+        if(this.checked) logsInterval=setInterval(()=>{ if(activeLogFile) logsLoad(activeLogFile,activeLogDir); },5000);
+      });
+      logsLoadFiles();
+    }
+
   }
 };
 

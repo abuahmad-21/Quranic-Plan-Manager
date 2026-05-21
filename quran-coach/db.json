@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 6.69,
-      "erratic_penalty_per_count": 1.64,
-      "focus_bonus_per_minute": 5.46,
-      "afi_skip_penalty": 4.21,
-      "afi_complete_bonus": 4.12,
+      "hesitation_penalty_per_second": 6.02,
+      "erratic_penalty_per_count": 1.73,
+      "focus_bonus_per_minute": 5.93,
+      "afi_skip_penalty": 4.51,
+      "afi_complete_bonus": 4.28,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.85,
-      "procrastination_threshold": 73,
-      "plan_decay_factor": 0.83,
-      "plan_growth_factor": 1.36
+      "energy_ema_weight": 0.81,
+      "procrastination_threshold": 75,
+      "plan_decay_factor": 0.79,
+      "plan_growth_factor": 1.41
     },
     "broadcast_messages": [
       {
@@ -151,7 +151,7 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-21T13:59:28.533Z",
+    "ai_last_optimization": "2026-05-21T14:12:08.953Z",
     "ai_opt_user_count": 45
   },
   "users": {
@@ -377,6 +377,14 @@
           "ref": "https://quran.com",
           "read": false,
           "created_at": "2026-05-21T14:03:56.140Z"
+        },
+        {
+          "id": "7989573f02d46ab1",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -593,6 +601,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "8bb307aecf9616d7",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -794,6 +810,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "9bbed549e6c6a61a",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -1002,6 +1026,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "9dd3f93a128373bf",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -1210,6 +1242,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "6e15f53a8dcdf6fc",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -1421,6 +1461,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "66e18faeed15818f",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -1629,6 +1677,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "ba0786949ecc1ecf",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -2004,6 +2060,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "7f4c07b66b52b277",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -2425,6 +2489,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "686f074756a1698a",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -2651,6 +2723,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "2163b45f34018888",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -2916,6 +2996,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "6b105b0d4462438b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -3190,6 +3278,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "2d942cf357fc8220",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -3397,6 +3493,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "99e48c6d83979623",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -3607,6 +3711,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "5a65eea8258ded32",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -3807,6 +3919,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "2386b6588f47467e",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -4033,6 +4153,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "07f6828ef5a45a33",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -4247,6 +4375,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "f6a131c1b38b8f05",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -4449,6 +4585,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "4443058ded15b274",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [
@@ -4671,6 +4815,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "b368cc14d163eb97",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -4873,6 +5025,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "df7460f2245733a2",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -5066,6 +5226,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "3870809e79e78f7f",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -5272,6 +5440,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "ca46e93f67a44cd3",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -5435,6 +5611,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "ec3a2a37bde19ab9",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -5596,6 +5780,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "6bfbcdac83ec2a8c",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": []
@@ -5742,6 +5934,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "77e1f111b08b701a",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -5925,6 +6125,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "e9ab8c951899ed00",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6056,6 +6264,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "4e2cd5cc339683a9",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6208,6 +6424,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "28c9b0d5ac4378f1",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6344,6 +6568,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "9f58903475c32850",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6467,6 +6699,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "6d74bcc791d9fa74",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6628,6 +6868,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "40a2f86b66a1ad2b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -6988,6 +7236,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "e41b982ed4606d82",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -7117,6 +7373,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "daafed6266d08d38",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -7303,6 +7567,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "7310d2049e497932",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -7500,6 +7772,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "8d2cba696516d9be",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -7696,6 +7976,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "b46e85ea333bf10b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -7957,6 +8245,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "665e504970b789f3",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8181,6 +8477,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "129a77f92e7facde",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8353,6 +8657,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "060fc243e8d6100d",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8462,6 +8774,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "fea2f92390447056",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8520,6 +8840,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "63797e69280b37e3",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8621,6 +8949,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:44:29.849Z"
+        },
+        {
+          "id": "22ed23622b6cb723",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
         }
       ],
       "posts": [],
@@ -8714,7 +9050,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "0c0afcf634235199",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -8806,7 +9151,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "d9a34b08977f22ce",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -8890,7 +9244,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "db3678f37d95be3d",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:13:12.122Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     }
