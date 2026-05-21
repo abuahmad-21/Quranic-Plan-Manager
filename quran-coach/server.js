@@ -2116,8 +2116,6 @@ async function executeHermesTool(toolName, args, mem){
 
     case 'generate_recitation_coaching': {
       const u=DB.users[args.username]; if(!u) return {error:'not_found'};
-      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
       // اجمع أخطاء المستخدم من السجلات
       const userRecords = readLogFile('recitation_errors.jsonl', 200).filter(r=>r.username===args.username);
       const wordErr = {};
@@ -2253,8 +2251,6 @@ async function executeHermesTool(toolName, args, mem){
 
     case 'analyze_and_improve_algorithm': {
       const focus = String(args.focus||'all');
-      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
       // اقرأ الكود ذي الصلة حسب الفوكس
       let codeContext = '';
       try {
@@ -2734,13 +2730,16 @@ ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه ال�
       : 'auto';
     let resp;
     try {
+      const supportsTools = !['pollinations','claude_free'].includes(getActiveAIProviderName());
+      const reqBody = { model:hermesModel||'gpt-4o-mini', messages, max_tokens:1200 };
+      if(supportsTools){ reqBody.tools=HERMES_TOOLS; reqBody.tool_choice=forcedTool; }
       resp = await fetch(`${baseUrl}/chat/completions`,{
         method:'POST',
         headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
-        body:JSON.stringify({ model:hermesModel||'gpt-4o-mini', messages, tools:HERMES_TOOLS, tool_choice:forcedTool, max_completion_tokens:1200 })
+        body:JSON.stringify(reqBody)
       });
     } catch(e){ console.error('[Hermes] API fetch error',e.message); break; }
-    if(!resp.ok){ console.error('[Hermes] API HTTP',resp.status); break; }
+    if(!resp.ok){ const errTxt=await resp.text().catch(()=>''); console.error('[Hermes] API HTTP',resp.status, errTxt.slice(0,200)); break; }
     const data = await resp.json();
     const msg = data.choices?.[0]?.message;
     if(!msg) break;
@@ -3041,13 +3040,10 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   const history = Array.isArray(b.history) ? b.history.slice(-12) : [];
   const fileCtx   = b.file_context ? '\n\n'+String(b.file_context).slice(0,15000) : '';
 
-  // Try Replit first (streaming-capable), then fallback to getActiveAIConfig
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  const activeCfg = (!baseUrl||!apiKey) ? getActiveAIConfig() : null;
-  if(!baseUrl && !activeCfg) return send(res,503,{error:'ai_not_configured — أضف مزوّد ذكاء اصطناعي في إعدادات الذكاء الاصطناعي'});
-  const chatUrl  = baseUrl ? `${baseUrl}/chat/completions` : `${activeCfg.baseUrl}/chat/completions`;
-  const chatKey  = baseUrl ? apiKey : activeCfg.apiKey;
+  const activeCfg = getActiveAIConfig();
+  if(!activeCfg) return send(res,503,{error:'ai_not_configured — أضف مزوّد ذكاء اصطناعي في إعدادات الذكاء الاصطناعي'});
+  const chatUrl  = `${activeCfg.baseUrl}/chat/completions`;
+  const chatKey  = activeCfg.apiKey;
 
   // SSE headers
   res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','Access-Control-Allow-Origin':'*'});
@@ -3074,9 +3070,7 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
 - عند طلب صوت لأي آية: استخدم get_sheikh_audio_refs — توليد الصوت بالذكاء الاصطناعي معطّل تماماً
 - للتدريب الشامل استخدم train_on_all_data، ولتحسين نموذج التلاوة استخدم improve_recitation_model`;
 
-  const chatModel = baseUrl
-    ? (DB.admin.ai_settings?.replit_model || 'gpt-4o-mini')
-    : (activeCfg?.model || 'gpt-4o-mini');
+  const chatModel = activeCfg.model || 'gpt-4o-mini';
 
   const messages = [
     {role:'system', content:systemPrompt},
@@ -3091,10 +3085,13 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
     while(toolCallCount < maxCalls){
       let resp;
       try {
+        const supportsToolsChat = !['pollinations','claude_free'].includes(getActiveAIProviderName());
+        const chatReqBody = {model:chatModel, messages, max_tokens:1500};
+        if(supportsToolsChat){ chatReqBody.tools=HERMES_TOOLS; chatReqBody.tool_choice='auto'; }
         resp = await fetch(chatUrl,{
           method:'POST', signal:AbortSignal.timeout(60000),
           headers:{'Authorization':`Bearer ${chatKey}`,'Content-Type':'application/json'},
-          body:JSON.stringify({model:chatModel, messages, tools:HERMES_TOOLS, tool_choice:'auto', max_tokens:1500})
+          body:JSON.stringify(chatReqBody)
         });
       } catch(e){ sse('error',{message:'خطأ في الاتصال بالذكاء الاصطناعي: '+e.message}); break; }
 
@@ -3176,10 +3173,10 @@ server.listen(PORT, ()=>{
       const prompt = `أنت نظام تحسين خوارزميات لتطبيق حفظ القرآن الكريم. وظيفتك تحليل بيانات المستخدمين وتحسين معاملات الخوارزمية.\n\nبيانات المستخدمين (${n} مستخدم):\n- متوسط الطاقة: ${avgEnergy.toFixed(1)}/100\n- متوسط سلسلة الأيام: ${avgStreak.toFixed(1)} يوم\n- متوسط الصفحات المحفوظة: ${avgPages.toFixed(2)}\n- إجمالي الجلسات: ${totalSess}\n- منقطعون عن التطبيق: ${dropping}\n- توزيع أنواع الخطط: ${JSON.stringify(modeDistrib)}\n\nالمعاملات الحالية:\n${JSON.stringify(DB.admin.algorithm_weights,null,2)}\n\nأعطني JSON فقط (بدون شرح) بنفس المفاتيح مع قيم محسّنة. القاعدة: لا تتجاوز تغيير 15% في أي قيمة. ابدأ مباشرة بـ {`;
       const reply = await callAI(prompt, 'حلّل البيانات وحسّن المعاملات');
       if(!reply) return;
-      const raw = (reply.includes('{') ? '{' : '') + reply.split('{').slice(1).join('{');
-      const match = ('{'+raw).match(/\{[\s\S]*?\}/);
-      if(!match) return;
-      const suggested = JSON.parse(match[0]);
+      const jsonStart = reply.indexOf('{');
+      const jsonEnd = reply.lastIndexOf('}');
+      if(jsonStart === -1 || jsonEnd <= jsonStart) return;
+      const suggested = JSON.parse(reply.slice(jsonStart, jsonEnd+1));
       const cur = DB.admin.algorithm_weights;
       let changed = 0;
       for(const [k,v] of Object.entries(suggested)){
@@ -3653,9 +3650,8 @@ R('POST','/qqc/ai/coach', async(req,res)=>{
   const question = String(b.question||b.message||'').slice(0,1500);
   if (!question) return send(res,400,{error:'no_question'});
 
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-  if (!baseUrl||!apiKey) return send(res,503,{error:'ai_not_configured', reply:'عذراً، الذكاء الاصطناعي غير متاح حالياً.'});
+  const coachCfg = getActiveAIConfig();
+  if (!coachCfg) return send(res,503,{error:'ai_not_configured', reply:'عذراً، الذكاء الاصطناعي غير متاح حالياً.'});
 
   const mem = readAiMemory();
   const userContext = buildUserContext(u);
@@ -3691,13 +3687,13 @@ TOOL:{"action":"update_plan","params":{"daily_pages":2}}
 لا تخترع معلومات غير موجودة في البيانات أعلاه.`;
 
   try {
-    const resp = await fetch(`${baseUrl}/chat/completions`,{
+    const resp = await fetch(`${coachCfg.baseUrl}/chat/completions`,{
       method:'POST',
-      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+      headers:{'Authorization':`Bearer ${coachCfg.apiKey}`,'Content-Type':'application/json'},
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: coachCfg.model || 'gpt-4o-mini',
         messages:[{role:'system',content:systemPrompt},{role:'user',content:question}],
-        max_completion_tokens: 600,
+        max_tokens: 600,
         temperature: 0.7
       })
     });
