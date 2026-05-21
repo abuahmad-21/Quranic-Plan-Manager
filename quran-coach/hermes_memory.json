@@ -59,6 +59,24 @@
       "category": "user_behavior",
       "impact": "high",
       "at": "2026-05-21T14:13:20.498Z"
+    },
+    {
+      "text": "There are no active users currently. We need to encourage them to recite.",
+      "category": "high/user_behavior",
+      "impact": "high",
+      "at": "2026-05-21T14:19:50.649Z"
+    },
+    {
+      "text": "لا يوجد مستخدمون نشطون حالياً. يجب تشجيعهم على التلاوة",
+      "category": "user_behavior",
+      "impact": "high",
+      "at": "2026-05-21T15:55:26.119Z"
+    },
+    {
+      "text": "لا يوجد مستخدمون نشطون حالياً. يجب تشجيعهم على التلاوة",
+      "category": "user_behavior",
+      "impact": "high",
+      "at": "2026-05-21T15:56:51.131Z"
     }
   ],
   "runs": [
@@ -585,16 +603,61 @@
       "actions": [],
       "next_run_focus": "تحليل سلوك المستخدمين وتحسين الخوارزمية",
       "duration_ms": 15633
+    },
+    {
+      "id": "927aa6ec3d685a58",
+      "at": "2026-05-21T14:19:52.586Z",
+      "tool_calls": 7,
+      "summary": "There are no active users currently. We need to encourage them to recite.",
+      "actions": [],
+      "next_run_focus": "encouraging inactive users to recite",
+      "duration_ms": 10859
+    },
+    {
+      "id": "71eee68858bf9e63",
+      "at": "2026-05-21T15:55:42.292Z",
+      "tool_calls": 7,
+      "summary": "تمت الدورة بنجاح",
+      "actions": [],
+      "next_run_focus": "encouraging inactive users to recite",
+      "duration_ms": 33987
+    },
+    {
+      "id": "14a6de09b084b29f",
+      "at": "2026-05-21T15:56:52.822Z",
+      "tool_calls": 6,
+      "summary": "تمت الدورة 36. تم تحليل المستخدمين. لا يوجد مستخدمون نشطون حالياً. يجب تشجيعهم على التلاوة",
+      "actions": [],
+      "next_run_focus": "encouraging inactive users to recite",
+      "duration_ms": 7391
+    },
+    {
+      "id": "287105fc70965928",
+      "at": "2026-05-21T16:07:32.331Z",
+      "tool_calls": 2,
+      "summary": "",
+      "actions": [],
+      "next_run_focus": "",
+      "duration_ms": 6193
+    },
+    {
+      "id": "85002f6dee7e17a4",
+      "at": "2026-05-21T16:10:14.574Z",
+      "tool_calls": 2,
+      "summary": "",
+      "actions": [],
+      "next_run_focus": "",
+      "duration_ms": 24441
     }
   ],
-  "last_run": "2026-05-21T14:13:22.810Z",
+  "last_run": "2026-05-21T16:10:14.574Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 33,
-    "total_tool_calls": 408,
-    "users_helped": 433,
+    "total_runs": 38,
+    "total_tool_calls": 432,
+    "users_helped": 523,
     "weights_updated": 8,
     "plans_adjusted": 122
   },
@@ -609,7 +672,7 @@
       "ar.sudais": "Abdurrahmaan_As-Sudais_192kbps",
       "ar.basfar": "Abdullah_Basfar_192kbps"
     },
-    "last_analyzed": "2026-05-21T14:00:40.683Z"
+    "last_analyzed": "2026-05-21T15:58:31.351Z"
   },
   "algorithm_analyses": [
     {
@@ -647,5 +710,32 @@
       "at": "2026-05-21T13:06:15.261Z",
       "chars_changed": 650
     }
-  ]
+  ],
+  "recitation_training": {
+    "top_error_words": [],
+    "avg_accuracy": 0,
+    "total_sessions": 0,
+    "updated_at": "2026-05-21T15:58:31.964Z"
+  },
+  "session_training": {
+    "total_sessions": 52,
+    "difficulty_distribution": {
+      "easy": 31,
+      "medium": 5,
+      "hard": 16
+    },
+    "avg_pages": 0.29,
+    "updated_at": "2026-05-21T15:58:31.964Z"
+  },
+  "message_training": {
+    "total_messages": 1,
+    "top_keywords": [],
+    "updated_at": "2026-05-21T15:58:31.964Z"
+  },
+  "error_training": {
+    "total_errors": 6,
+    "ai_errors": 0,
+    "updated_at": "2026-05-21T15:58:31.965Z"
+  },
+  "last_training": "2026-05-21T15:58:31.965Z"
 }

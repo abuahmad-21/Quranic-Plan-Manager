@@ -2059,7 +2059,10 @@ async function executeHermesTool(toolName, args, mem){
     }
 
     case 'done': {
-      return {finished:true, summary:String(args.summary||'').slice(0,600), actions_taken:args.actions_taken||[], next_run_focus:args.next_run_focus||''};
+      let _at = args.actions_taken;
+      if(typeof _at === 'string'){ try{ _at=JSON.parse(_at); }catch{ _at=[]; } }
+      if(!Array.isArray(_at)) _at = _at ? [String(_at)] : [];
+      return {finished:true, summary:String(args.summary||'').slice(0,600), actions_taken:_at, next_run_focus:args.next_run_focus||''};
     }
 
     case 'get_recitation_skill_data': {
@@ -2756,7 +2759,9 @@ ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه ال�
       try{ result=await executeHermesTool(toolName,args,mem); }catch(e){ result={error:e.message}; }
       if(toolName==='done'){
         runSummary=result.summary||''; nextRunFocus=result.next_run_focus||'';
-        actionsTaken=Array.isArray(result.actions_taken)?result.actions_taken:[]; finished=true;
+        let _rAt=result.actions_taken;
+        if(typeof _rAt==='string'){try{_rAt=JSON.parse(_rAt);}catch{_rAt=[];}}
+        actionsTaken=Array.isArray(_rAt)?_rAt:[]; finished=true;
       } else if(result?.ok) {
         actionsTaken.push(`${toolName}: ${JSON.stringify(result).slice(0,80)}`);
       }
@@ -2842,9 +2847,9 @@ R('POST','/qqc/admin/claude-proxy/start', async(req,res)=>{
   if(_claudeProxyProcess && !_claudeProxyProcess.exitCode) return send(res,200,{ok:true, already_running:true, port:8082, note:'البروكسي يعمل بالفعل على port 8082'});
   try {
     const {spawn} = await import('child_process');
-    const proxyDir = path.join(ROOT,'free-claude-code');
-    _claudeProxyProcess = spawn('uv',['run','uvicorn','server:app','--host','0.0.0.0','--port','8082','--timeout-graceful-shutdown','5'],
-      {cwd:proxyDir, stdio:'pipe', detached:false});
+    const proxyScript = path.join(ROOT,'claude-proxy.js');
+    _claudeProxyProcess = spawn('node',[proxyScript],
+      {cwd:ROOT, stdio:'pipe', detached:false, env:{...process.env, PROXY_PORT:'8082'}});
     _claudeProxyProcess.stdout?.on('data',d=>console.log('[ClaudeProxy]',d.toString().trim()));
     _claudeProxyProcess.stderr?.on('data',d=>console.error('[ClaudeProxy]',d.toString().trim()));
     _claudeProxyProcess.on('exit',code=>{console.log('[ClaudeProxy] exited',code); _claudeProxyProcess=null;});

@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 6.02,
-      "erratic_penalty_per_count": 1.73,
-      "focus_bonus_per_minute": 5.93,
-      "afi_skip_penalty": 4.51,
-      "afi_complete_bonus": 4.28,
-      "absence_intervention_days": 3,
-      "energy_ema_weight": 0.81,
-      "procrastination_threshold": 75,
+      "hesitation_penalty_per_second": 5.07,
+      "erratic_penalty_per_count": 1.74,
+      "focus_bonus_per_minute": 7.19,
+      "afi_skip_penalty": 4.63,
+      "afi_complete_bonus": 5.21,
+      "absence_intervention_days": 3.42,
+      "energy_ema_weight": 0.84,
+      "procrastination_threshold": 80.51,
       "plan_decay_factor": 0.79,
-      "plan_growth_factor": 1.41
+      "plan_growth_factor": 1.61
     },
     "broadcast_messages": [
       {
@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 45,
+      "total_users": 46,
       "total_sessions_today": 52,
       "total_pages_memorized_alltime": 10.2
     },
@@ -151,8 +151,8 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-21T14:12:08.953Z",
-    "ai_opt_user_count": 45
+    "ai_last_optimization": "2026-05-21T16:08:52.310Z",
+    "ai_opt_user_count": 46
   },
   "users": {
     "455": {
@@ -385,6 +385,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "5c1cb4a3bf4d3cdb",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "2a82e6d57cf1be7f",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -609,6 +625,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "571eb25711655a51",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "490ebac4190fe466",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -818,6 +850,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "7c40e73ef9c69761",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "89f6e6128c74add5",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -1034,6 +1082,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "c17628343094c641",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "a02057d7f86dfba9",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -1250,6 +1314,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "8cec36a741718768",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "f68db04e1c44b0aa",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -1469,6 +1549,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "f69db8c6b05f618c",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "718f99c8d4ee0845",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -1685,6 +1781,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "a912d609ef6f3188",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "3c341423375cceac",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -2068,6 +2180,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "fb786b970f4cf22f",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "7dc7f867fdc0f817",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -2497,6 +2625,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "e29f588def0fcb4b",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "6c72e3ebb6236d09",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.669Z"
         }
       ],
       "posts": []
@@ -2731,6 +2875,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "ba081b3adb4abe1f",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "6debfe31badc9c75",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -3004,6 +3164,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "30444060a8656520",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "8016bcc788f95b86",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -3286,6 +3462,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "3cb449995f64edb9",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "1401984915d0929f",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -3501,6 +3693,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "229e4c5f6b1b04e4",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "995fe7d781dfbd27",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -3719,6 +3927,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "b5be2bcc832a7b72",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "0a50b4b0a4da5a47",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -3927,6 +4151,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "8068b0cb1b4a8ede",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "b844a515b822eec3",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -4161,6 +4401,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "cabb7a5eca4e71db",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "cb710c6da9a9d8ec",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -4383,6 +4639,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "e6f000fd3754deb1",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "de3c7f06944e6dc5",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -4593,6 +4865,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "62b25f6d08c14fb5",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "fea9095a202e6e80",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [
@@ -4823,6 +5111,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "6a9ad574f772d8ab",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "f209e3b1827f9a6a",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -5033,6 +5337,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "fef131922b150c14",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "4069b603b241d127",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -5234,6 +5554,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "9ddff24f3ff31cb1",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "9d7877195713b2fb",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -5448,6 +5784,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "0fb1e92ca730d88f",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "437f247000fafa57",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -5619,6 +5971,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "c28ec5badce8e178",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "687b026a7f7edadc",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -5788,6 +6156,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "ae4f7238b42febb9",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "a99fb5517624758b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": []
@@ -5942,6 +6326,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "b300d9ab0fba5e3a",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "53992c0c400e3918",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6133,6 +6533,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "8dc26fcba00b74ee",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "74ff4f597ac6f1ab",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6272,6 +6688,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "f53f8a42e331b349",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "f2e1c82cdd84caa8",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6432,6 +6864,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "9b3d12e3b11b5a2e",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "e1da7c7601580ccf",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6576,6 +7024,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "644e0d692bd18ab0",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "776870920bdc961c",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6707,6 +7171,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "e3b52e94800e8d63",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "bce0b39be205abc6",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -6876,6 +7356,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "5cb97b4e16a80904",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "d8a6e1c8614e6a7e",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -7244,6 +7740,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "b4256b7d67da36a4",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "5493b6f21090161a",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -7381,6 +7893,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "967b98cab7049f8d",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "915963d3a3dbf9ca",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -7575,6 +8103,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "4f27c769dcbe4aef",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "625a20464aa90767",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -7780,6 +8324,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "b94372a3d4ff7521",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "ea67b4ef5d28b866",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -7984,6 +8544,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "39aac5c6fe8f6a7a",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "d2f345bac3922e6c",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8253,6 +8829,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "cd9d0ee36c80c6f6",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "030e66c6666eb3a7",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8485,6 +9077,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "be5f3b1903268a69",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "f91f91d5d75c1053",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8665,6 +9273,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "60222978056466c2",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "e34437a95e690907",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8782,6 +9406,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "47faf2f6d52514ef",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "a4dcd14baa09820b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8848,6 +9488,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "6e43dfc67febe813",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "e1fc63d45c117896",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -8957,6 +9613,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "e9b9ee1d9df4a7c9",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "adb1e6ad43cc9808",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -9058,6 +9730,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "95450672c12b47eb",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "4efbdecf63aa594b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -9159,6 +9847,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "4313d0e208cc71f2",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.574Z"
+        },
+        {
+          "id": "bdc06665937e7b5d",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
       "posts": [],
@@ -9169,7 +9873,7 @@
       "password_hash": "08d2aed3500544b2052268b633517a59fd513812d3bd12b9b47e2ed2b25aa6f1",
       "display_name": "Hddhxh",
       "created_at": "2026-05-21T13:56:29.061Z",
-      "last_active": "2026-05-21T13:56:30.908Z",
+      "last_active": "2026-05-21T15:57:05.905Z",
       "avatar_color": "#0c155c",
       "bio": "",
       "is_banned": false,
@@ -9214,12 +9918,20 @@
         "active": false
       },
       "energy": {
-        "score": 81,
-        "friction": 1.48,
-        "afi": 66,
+        "score": 100,
+        "friction": 8.39,
+        "afi": 46,
         "history": [
-          75,
-          81
+          81,
+          97,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
         ]
       },
       "sr_state": {},
@@ -9252,8 +9964,116 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T14:13:12.122Z"
+        },
+        {
+          "id": "f6008c3833fedfa8",
+          "type": "motivation",
+          "text": "Come back to the app and start reciting again!",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T14:19:51.575Z"
+        },
+        {
+          "id": "7817b6180d7bdf8b",
+          "type": "motivation",
+          "text": "تحفيز المستخدمين غير النشطين",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-21T15:55:39.670Z"
         }
       ],
+      "posts": [],
+      "login_history": []
+    },
+    "ffgfgg": {
+      "username": "ffgfgg",
+      "password_hash": "cb67632204967ffe37d430c5a26572d25a87f558b1941eeafe9221a839530ab9",
+      "display_name": "دددددددد",
+      "created_at": "2026-05-21T15:57:45.773Z",
+      "last_active": "2026-05-21T16:10:44.769Z",
+      "avatar_color": "#0c533a",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-21T15:57:48.009Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-21T15:57:48.009Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 6.57,
+        "afi": 17,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
       "posts": [],
       "login_history": []
     }
@@ -9496,10 +10316,10 @@
       "expires": 1781960794716,
       "created_at": "2026-05-21T13:06:34.716Z"
     },
-    "5507aa58d23dbd114d6df0052274c35507592e992e5bcca3": {
-      "username": "dhxxh",
-      "expires": 1781963789061,
-      "created_at": "2026-05-21T13:56:29.061Z"
+    "1b22d9ed6aa4d91f0113341847bd3b6692a1212d67077a86": {
+      "username": "ffgfgg",
+      "expires": 1781971065773,
+      "created_at": "2026-05-21T15:57:45.773Z"
     }
   }
 }

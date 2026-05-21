@@ -1859,84 +1859,93 @@ const Admin = {
         </div>
       </div>
 
-      <!-- Claude AI Proxy tab -->
+      <!-- Claude AI tab — rewritten (Node.js proxy, no Python) -->
       <div id="h-claude" style="display:none">
-        <div style="background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(99,102,241,.08));border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-            <span style="font-size:1.5rem">🤖</span>
+
+        <!-- ── Direct AI Chat (always works) ── -->
+        <div style="background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(167,139,250,.07));border:1px solid rgba(167,139,250,.25);border-radius:12px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.4rem">💬</span>
             <div style="flex:1">
-              <div style="font-weight:700;font-size:.92rem;color:#a78bfa">Claude AI مجاني — free-claude-code</div>
-              <div style="font-size:.72rem;color:var(--text-3)">بروكسي محلي يوجّه Hermes إلى NVIDIA NIM / Kimi / OpenRouter مجاناً</div>
+              <div style="font-weight:700;font-size:.9rem;color:#a78bfa">محادثة مباشرة مع الذكاء الاصطناعي</div>
+              <div style="font-size:.7rem;color:var(--text-3)">يستخدم المزوّد الفعّال تلقائياً — NVIDIA NIM / Pollinations</div>
             </div>
-            <div id="claude-status-badge" style="font-size:.72rem;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,.3);color:var(--text-3)">⏳ جارٍ الفحص…</div>
+            <div id="direct-ai-badge" style="font-size:.68rem;padding:3px 9px;border-radius:20px;background:rgba(52,211,153,.15);color:var(--mint);border:1px solid rgba(52,211,153,.2)">✅ جاهز</div>
+          </div>
+          <div id="claude-chat-msgs" style="min-height:160px;max-height:320px;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+            <div style="text-align:center;color:var(--text-3);font-size:.78rem;padding:20px 0">
+              🤖 اكتب سؤالك — يمكنك إرفاق ملفات للتحليل
+            </div>
+          </div>
+          <div id="claude-chat-status" style="font-size:.7rem;color:#a78bfa;min-height:14px;padding:2px 4px"></div>
+          <!-- Quick prompts -->
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+            ${['ما حالة التطبيق؟','حلّل أخطاء التلاوة','اقترح تحسينات للخوارزمية','اشرح كيف يعمل Hermes'].map(q=>
+              `<button class="btn btn-sm btn-ghost claude-quick" data-q="${q}" style="font-size:.67rem;padding:3px 8px">${q}</button>`).join('')}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <label for="claude-file-input" title="إرفاق ملف" style="cursor:pointer;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:.95rem;line-height:1;flex-shrink:0">📎</label>
+            <input id="claude-file-input" type="file" multiple accept=".txt,.json,.js,.py,.md,.csv,.log,.jsonl,.html,.css,.xml" style="display:none">
+            <input id="claude-chat-input" type="text" placeholder="اسأل الذكاء الاصطناعي…" style="flex:1;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.84rem;font-family:inherit" dir="auto">
+            <button id="claude-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;padding:9px 18px;white-space:nowrap">إرسال ↵</button>
+          </div>
+        </div>
+
+        <!-- ── Claude Proxy (Node.js, port 8082) ── -->
+        <div style="background:linear-gradient(135deg,rgba(124,58,237,.10),rgba(99,102,241,.06));border:1px solid rgba(124,58,237,.22);border-radius:12px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:1.4rem">🔌</span>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:.9rem;color:#a78bfa">Claude AI Proxy — Node.js</div>
+              <div style="font-size:.7rem;color:var(--text-3)">بروكسي على port 8082 متوافق مع OpenAI API</div>
+            </div>
+            <div id="claude-status-badge" style="font-size:.68rem;padding:3px 9px;border-radius:20px;background:rgba(0,0,0,.3);color:var(--text-3)">⏳ جارٍ الفحص…</div>
           </div>
 
-          <!-- Provider & API Key -->
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+          <!-- Provider & Key -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
             <div>
-              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🔌 مزوّد الخدمة المجانية</label>
-              <select id="claude-provider" class="field-input" style="width:100%;padding:7px">
-                <option value="nvidia_nim">🟢 NVIDIA NIM (مجاني — يحتاج حساب NVIDIA)</option>
-                <option value="openrouter">🔵 OpenRouter (مجاني جزئياً — Claude 3.5 Haiku)</option>
-                <option value="kimi">🟡 Kimi AI (مجاني — Claude-compatible)</option>
-                <option value="deepseek">🟠 DeepSeek (مجاني — نماذج مفتوحة)</option>
+              <label style="font-size:.72rem;color:var(--text-2);display:block;margin-bottom:3px">🔌 المزوّد</label>
+              <select id="claude-provider" class="field-input" style="width:100%;padding:6px;font-size:.78rem">
+                <option value="nvidia_nim">🟢 NVIDIA NIM</option>
+                <option value="openrouter">🔵 OpenRouter</option>
+                <option value="deepseek">🟠 DeepSeek</option>
+                <option value="kimi">🟡 Kimi AI</option>
+                <option value="pollinations">🆓 Pollinations</option>
               </select>
             </div>
             <div>
-              <label style="font-size:.75rem;color:var(--text-2);display:block;margin-bottom:3px">🔑 API Key للمزوّد</label>
-              <input id="claude-apikey" class="field-input" type="password" placeholder="أدخل API Key الخاص بالمزوّد المختار" style="width:100%">
-              <div style="font-size:.68rem;color:var(--text-3);margin-top:3px">
-                NVIDIA: <a href="https://build.nvidia.com" target="_blank" style="color:#818cf8">build.nvidia.com</a> |
-                OpenRouter: <a href="https://openrouter.ai/keys" target="_blank" style="color:#818cf8">openrouter.ai/keys</a> |
-                Kimi: <a href="https://kimi.moonshot.cn" target="_blank" style="color:#818cf8">kimi.moonshot.cn</a>
-              </div>
+              <label style="font-size:.72rem;color:var(--text-2);display:block;margin-bottom:3px">🔑 API Key</label>
+              <input id="claude-apikey" class="field-input" type="password" placeholder="أدخل API Key…" style="width:100%;padding:6px;font-size:.78rem">
             </div>
           </div>
 
-          <div id="claude-proxy-result" style="font-size:.75rem;min-height:16px;margin-bottom:10px"></div>
+          <div id="claude-proxy-result" style="font-size:.73rem;min-height:14px;margin-bottom:8px;padding:0 2px"></div>
 
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button id="btn-claude-save" class="btn btn-ghost" style="font-size:.78rem;flex:1">💾 حفظ الإعدادات</button>
-            <button id="btn-claude-start" class="btn btn-primary" style="font-size:.78rem;flex:1;background:linear-gradient(135deg,rgba(124,58,237,.8),rgba(99,102,241,.7));border:none">▶ تشغيل البروكسي</button>
-            <button id="btn-claude-stop" class="btn btn-danger" style="font-size:.78rem;flex:1">⏹ إيقاف</button>
-            <button id="btn-claude-test" class="btn btn-ghost" style="font-size:.78rem;flex:1">🔍 اختبار</button>
+            <button id="btn-claude-save"  class="btn btn-ghost"   style="font-size:.76rem;flex:1">💾 حفظ</button>
+            <button id="btn-claude-start" class="btn btn-primary" style="font-size:.76rem;flex:1;background:linear-gradient(135deg,rgba(124,58,237,.8),rgba(99,102,241,.7));border:none">▶ تشغيل</button>
+            <button id="btn-claude-stop"  class="btn btn-danger"  style="font-size:.76rem;flex:1">⏹ إيقاف</button>
+            <button id="btn-claude-test"  class="btn btn-ghost"   style="font-size:.76rem;flex:1">🔍 اختبار</button>
+          </div>
+
+          <!-- How to connect -->
+          <div style="margin-top:10px;padding:9px 11px;background:rgba(0,0,0,.18);border-radius:8px;border:1px solid rgba(255,255,255,.05)">
+            <div style="font-size:.72rem;font-weight:600;color:#a78bfa;margin-bottom:5px">🔗 للربط مع أي أداة خارجية (Claude Code / Continue):</div>
+            <div style="font-size:.7rem;color:var(--text-2);line-height:1.8;font-family:monospace;direction:ltr;text-align:left">
+              Base URL: <span style="color:var(--mint)">http://localhost:8082/v1</span><br>
+              API Key: <span style="color:var(--mint)">dummy</span><br>
+              Model: <span style="color:var(--mint)">claude-sonnet-4-5</span>
+            </div>
           </div>
         </div>
 
-        <!-- Integration info -->
-        <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,.06)">
-          <div style="font-size:.78rem;font-weight:600;color:#a78bfa;margin-bottom:8px">🔗 كيفية الربط مع Hermes</div>
-          <div style="font-size:.73rem;color:var(--text-2);line-height:1.7">
-            1. اختر المزوّد وأدخل الـ API Key ← اضغط <b>حفظ</b><br>
-            2. اضغط <b>تشغيل البروكسي</b> (يشتغل على port 8082 محلياً)<br>
-            3. اضغط <b>اختبار</b> للتأكد من عمله<br>
-            4. اذهب لـ <b>⚡ إعدادات الذكاء الاصطناعي</b> ← اختر <b>مخصص</b> ← اكتب:<br>
-            &nbsp;&nbsp;• URL: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">http://localhost:8082/v1</code><br>
-            &nbsp;&nbsp;• API Key: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">dummy</code><br>
-            &nbsp;&nbsp;• Model: <code style="background:rgba(99,102,241,.15);padding:1px 5px;border-radius:3px">claude-sonnet-4-5</code>
-          </div>
-        </div>
-
-        <!-- GitHub + Claude integration note -->
-        <div style="margin-top:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:8px;padding:10px">
-          <div style="font-size:.75rem;color:var(--mint);font-weight:600;margin-bottom:4px">⚡ التكامل الكامل</div>
-          <div style="font-size:.72rem;color:var(--text-2);line-height:1.6">
-            عند تشغيل البروكسي + ربط GitHub: Hermes سيستخدم Claude مجاناً لتحليل الكود، ثم يحفظ ما تعلّمه كمهارة تلقائية، ويرفع التعديلات لـ GitHub — كل ذلك بدون أي تكلفة.
-          </div>
-        </div>
-
-        <!-- Claude Direct Chat -->
-        <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:12px">
-          <div style="font-size:.82rem;font-weight:700;color:#a78bfa;margin-bottom:8px">💬 محادثة مباشرة مع الذكاء الاصطناعي</div>
-          <div id="claude-chat-msgs" style="min-height:140px;max-height:300px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:7px">
-            <div style="text-align:center;color:var(--text-3);font-size:.78rem;padding:16px 0">أرسل رسالة أو ارفع ملفاً — يستخدم نفس مزوّد الذكاء الاصطناعي الفعّال</div>
-          </div>
-          <div id="claude-chat-status" style="font-size:.7rem;color:#a78bfa;min-height:14px;padding:3px 4px"></div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
-            <label for="claude-file-input" title="إرفاق ملف" style="cursor:pointer;padding:8px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:1rem;line-height:1;flex-shrink:0">📎</label>
-            <input id="claude-file-input" type="file" multiple accept=".txt,.json,.js,.py,.md,.csv,.log,.jsonl,.html,.css,.xml" style="display:none">
-            <input id="claude-chat-input" type="text" placeholder="اسأل الذكاء الاصطناعي أو ارفع ملفاً…" style="flex:1;padding:8px 11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:.83rem;font-family:inherit" dir="auto">
-            <button id="claude-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;border:none;padding:8px 14px;white-space:nowrap">إرسال ↵</button>
+        <!-- ── Integration note ── -->
+        <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.12);border-radius:9px;padding:10px">
+          <div style="font-size:.75rem;color:var(--mint);font-weight:600;margin-bottom:4px">⚡ عند تشغيل البروكسي</div>
+          <div style="font-size:.71rem;color:var(--text-2);line-height:1.65">
+            اذهب إلى <b>إعدادات الذكاء الاصطناعي</b> → اختر <b>مخصص</b> → Base URL: <code style="background:rgba(99,102,241,.15);padding:1px 4px;border-radius:3px">http://localhost:8082/v1</code>
+            وستحصل على نفس قوة NVIDIA NIM عبر واجهة متوافقة مع Claude.
           </div>
         </div>
       </div>`;
@@ -1999,55 +2008,58 @@ const Admin = {
 
       /* ── Claude Proxy Tab Handlers ── */
       async function loadClaudeProxyStatus(){
-        const badge = document.getElementById('claude-status-badge');
+        const badge  = document.getElementById('claude-status-badge');
         const result = document.getElementById('claude-proxy-result');
         try {
           const s = await Api.get('/admin/claude-proxy/status', true);
           if(badge){
             if(s.reachable){
-              badge.textContent='✅ يعمل على port 8082';
-              badge.style.background='rgba(16,185,129,.2)'; badge.style.color='var(--mint)';
+              badge.textContent='✅ يعمل — port 8082';
+              badge.style.cssText='font-size:.68rem;padding:3px 9px;border-radius:20px;background:rgba(16,185,129,.2);color:var(--mint);border:1px solid rgba(16,185,129,.25)';
             } else if(s.running){
               badge.textContent='⏳ جارٍ التشغيل…';
-              badge.style.background='rgba(250,204,21,.15)'; badge.style.color='var(--gold)';
+              badge.style.cssText='font-size:.68rem;padding:3px 9px;border-radius:20px;background:rgba(250,204,21,.15);color:var(--gold);border:1px solid rgba(250,204,21,.2)';
             } else {
               badge.textContent='❌ متوقف';
-              badge.style.background='rgba(239,68,68,.15)'; badge.style.color='#f87171';
+              badge.style.cssText='font-size:.68rem;padding:3px 9px;border-radius:20px;background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2)';
             }
           }
-          const provSel = document.getElementById('claude-provider');
+          const provSel  = document.getElementById('claude-provider');
           const apiKeyEl = document.getElementById('claude-apikey');
           if(provSel && s.provider) provSel.value = s.provider;
-          if(apiKeyEl && s.api_key_set) apiKeyEl.placeholder = '••••••••••••••••••••••• (محفوظ)';
-          if(result && s.pid){ result.style.color='var(--mint)'; result.textContent=`PID: ${s.pid}`; }
-        } catch(e){ if(badge) badge.textContent='⚠️ تعذّر الفحص'; }
+          if(apiKeyEl && s.api_key_set) apiKeyEl.placeholder = '••••••••••••••••••• (محفوظ)';
+          if(result && s.pid){ result.style.color='var(--mint)'; result.textContent=`✅ PID: ${s.pid} — port 8082`; }
+          if(result && !s.running){ result.style.color='var(--text-3)'; result.textContent='اضغط تشغيل لبدء البروكسي على port 8082'; }
+        } catch(e){ if(badge){ badge.textContent='⚠️ تعذّر الفحص'; } }
       }
 
       document.getElementById('btn-claude-save')?.addEventListener('click', async()=>{
         const provider = document.getElementById('claude-provider')?.value||'nvidia_nim';
-        const apiKey = document.getElementById('claude-apikey')?.value?.trim()||'';
-        const result = document.getElementById('claude-proxy-result');
+        const apiKey   = document.getElementById('claude-apikey')?.value?.trim()||'';
+        const result   = document.getElementById('claude-proxy-result');
         const r = await Api.post('/admin/claude-proxy/save-config', {provider, api_key:apiKey||undefined}, true);
-        if(r.ok){ if(result){ result.style.color='var(--mint)'; result.textContent=`✅ تم الحفظ — سيستخدم متغيّر: ${r.env_key}`; } toast('✅ تم حفظ إعدادات البروكسي','success'); }
-        else toast('❌ '+(r.error||'خطأ'),'error');
+        if(r.ok){
+          if(result){ result.style.color='var(--mint)'; result.textContent=`✅ تم الحفظ — مزوّد: ${r.provider||provider}`; }
+          toast('✅ تم حفظ إعدادات البروكسي','success');
+        } else toast('❌ '+(r.error||'خطأ في الحفظ'),'error');
       });
 
       document.getElementById('btn-claude-start')?.addEventListener('click', async()=>{
-        const btn = document.getElementById('btn-claude-start');
+        const btn    = document.getElementById('btn-claude-start');
         const result = document.getElementById('claude-proxy-result');
-        btn.textContent='⏳ جارٍ التشغيل…'; btn.disabled=true;
+        btn.textContent='⏳…'; btn.disabled=true;
         const r = await Api.post('/admin/claude-proxy/start', {}, true);
-        btn.textContent='▶ تشغيل البروكسي'; btn.disabled=false;
+        btn.textContent='▶ تشغيل'; btn.disabled=false;
         if(result){
           result.style.color = r.ok?'var(--mint)':'#f87171';
-          result.textContent = r.ok ? `✅ ${r.note||'يعمل'} (PID:${r.pid||'?'})` : `❌ ${r.error||'فشل'}`;
+          result.textContent = r.ok ? `✅ يعمل على port 8082 (PID:${r.pid||'?'})` : `❌ ${r.error||'فشل التشغيل'}`;
         }
-        if(r.ok){ toast('✅ Claude Proxy يعمل الآن على port 8082!','success'); setTimeout(loadClaudeProxyStatus, 3000); }
-        else toast('❌ '+(r.error||'فشل'),'error');
+        if(r.ok){ toast('✅ Claude Proxy (Node.js) يعمل على port 8082!','success'); setTimeout(loadClaudeProxyStatus, 2500); }
+        else toast('❌ '+(r.error||'فشل التشغيل'),'error');
       });
 
       document.getElementById('btn-claude-stop')?.addEventListener('click', async()=>{
-        const r = await Api.post('/admin/claude-proxy/stop', {}, true);
+        const r      = await Api.post('/admin/claude-proxy/stop', {}, true);
         const result = document.getElementById('claude-proxy-result');
         if(result){ result.style.color=r.ok?'var(--text-3)':'#f87171'; result.textContent=r.ok?'⏹ تم إيقاف البروكسي':`❌ ${r.error||''}`; }
         if(r.ok){ toast('⏹ تم إيقاف البروكسي','success'); loadClaudeProxyStatus(); }
@@ -2055,15 +2067,23 @@ const Admin = {
       });
 
       document.getElementById('btn-claude-test')?.addEventListener('click', async()=>{
-        const btn = document.getElementById('btn-claude-test');
+        const btn    = document.getElementById('btn-claude-test');
         const result = document.getElementById('claude-proxy-result');
         btn.textContent='⏳'; btn.disabled=true;
         try {
           const r = await Api.post('/admin/ai-test', {provider:'custom', base_url:'http://localhost:8082/v1', api_key:'dummy', model:'claude-sonnet-4-5'}, true);
           btn.textContent='🔍 اختبار'; btn.disabled=false;
-          if(r.ok){ if(result){ result.style.color='var(--mint)'; result.textContent=`✅ Claude يرد: "${escapeHTML(r.reply||'')}"`;} toast('✅ Claude يعمل مجاناً!','success'); }
-          else { if(result){ result.style.color='#f87171'; result.textContent=`❌ ${escapeHTML(r.error||'لم يرد البروكسي')}`; } toast('❌ '+(r.error||'البروكسي لا يعمل'),'error'); }
-        } catch(e){ btn.textContent='🔍 اختبار'; btn.disabled=false; if(result){ result.style.color='#f87171'; result.textContent='❌ البروكسي لا يعمل أو غير مشغّل'; } }
+          if(r.ok){
+            if(result){ result.style.color='var(--mint)'; result.textContent=`✅ البروكسي يرد: "${escapeHTML((r.reply||'').slice(0,60))}"`; }
+            toast('✅ Claude Proxy يعمل بنجاح!','success');
+          } else {
+            if(result){ result.style.color='#f87171'; result.textContent=`❌ ${escapeHTML(r.error||'لم يرد البروكسي — شغّله أولاً')}`; }
+            toast('❌ '+(r.error||'البروكسي لا يرد'),'error');
+          }
+        } catch(e){
+          btn.textContent='🔍 اختبار'; btn.disabled=false;
+          if(result){ result.style.color='#f87171'; result.textContent='❌ البروكسي غير مشغّل — اضغط تشغيل أولاً'; }
+        }
       });
 
       /* ── Auto-Pilot: load settings + save ── */
@@ -2277,37 +2297,54 @@ const Admin = {
       document.getElementById('h-file-input')?.addEventListener('change', function(){ handleFileInputChange(this); });
 
       /* ── Claude direct chat ── */
-      const claudeMsgs = document.getElementById('claude-chat-msgs');
+      const claudeMsgs  = document.getElementById('claude-chat-msgs');
       const claudeInput = document.getElementById('claude-chat-input');
-      const claudeStatus = document.getElementById('claude-chat-status');
+      const claudeStatus= document.getElementById('claude-chat-status');
 
       document.getElementById('claude-file-input')?.addEventListener('change', function(){ handleFileInputChange(this); renderAttachments(); });
 
       function claudeChatAppend(role, text){
         if(!claudeMsgs) return;
         const isUser = role==='user';
+        const isErr  = role==='error';
         const div = document.createElement('div');
-        div.style.cssText = `display:flex;flex-direction:column;gap:2px;align-items:${isUser?'flex-end':'flex-start'}`;
-        div.innerHTML = `<div style="max-width:88%;padding:7px 11px;border-radius:${isUser?'12px 12px 4px 12px':'12px 12px 12px 4px'};background:${isUser?'rgba(99,102,241,.3)':'rgba(255,255,255,.06)'};font-size:.82rem;line-height:1.55;color:${isUser?'#e0e7ff':'var(--text-1)'};direction:auto">${escapeHTML(text)}</div>`;
+        div.style.cssText=`display:flex;flex-direction:column;gap:2px;align-items:${isUser?'flex-end':'flex-start'}`;
+        const bubble = document.createElement('div');
+        bubble.style.cssText=`max-width:90%;padding:9px 13px;border-radius:${isUser?'12px 12px 4px 12px':'12px 12px 12px 4px'};font-size:.83rem;line-height:1.6;word-break:break-word;direction:auto;white-space:pre-wrap;background:${isUser?'linear-gradient(135deg,#6366f1,#a78bfa)':isErr?'rgba(239,68,68,.12)':'rgba(255,255,255,.07)'};border:1px solid ${isUser?'transparent':isErr?'rgba(239,68,68,.25)':'rgba(255,255,255,.1)'};color:${isUser?'#fff':isErr?'#fca5a5':'var(--text-1)'}`;
+        bubble.textContent = text;
+        div.appendChild(bubble);
         claudeMsgs.appendChild(div);
-        claudeMsgs.scrollTop = claudeMsgs.scrollHeight;
+        claudeMsgs.scrollTop=claudeMsgs.scrollHeight;
       }
 
       async function claudeChatSend(){
-        const msg = claudeInput?.value?.trim(); if(!msg) return;
-        claudeChatAppend('user', msg + (window._sharedAttachments.length?` 📎×${window._sharedAttachments.length}`:''));
+        const msg=(claudeInput?.value||'').trim(); if(!msg||!S.adminPw) return;
+        if(claudeMsgs?.children.length===1&&claudeMsgs.children[0].style.textAlign==='center') claudeMsgs.innerHTML='';
+        claudeChatAppend('user', msg+(window._sharedAttachments?.length?` [📎 ${window._sharedAttachments.length} ملفات]`:''));
         claudeInput.value='';
+        const sendBtn=document.getElementById('claude-chat-send');
+        if(sendBtn){ sendBtn.disabled=true; sendBtn.textContent='⏳'; }
         if(claudeStatus) claudeStatus.textContent='⏳ الذكاء الاصطناعي يفكر…';
         try {
-          const r = await Api.post('/admin/ai-direct-chat', { message:msg, files:window._sharedAttachments.slice(0,5) }, true);
+          const r = await Api.post('/admin/ai-direct-chat',{
+            message: msg,
+            files: (window._sharedAttachments||[]).slice(0,5),
+            system: 'أنت مساعد ذكي متخصص في تطبيق Quantum Quran Coach. أجب بالعربية بشكل مفيد ومختصر.'
+          }, true);
           if(claudeStatus) claudeStatus.textContent='';
           if(r.ok) claudeChatAppend('ai', r.reply||'—');
-          else claudeChatAppend('ai','❌ '+escapeHTML(r.error||'لم يرد الذكاء الاصطناعي'));
-        } catch(e){ if(claudeStatus) claudeStatus.textContent=''; claudeChatAppend('ai','❌ خطأ في الاتصال: '+e.message); }
+          else claudeChatAppend('error','❌ '+escapeHTML(r.error||'لم يرد الذكاء الاصطناعي'));
+        } catch(e){
+          if(claudeStatus) claudeStatus.textContent='';
+          claudeChatAppend('error','❌ خطأ في الاتصال: '+e.message);
+        } finally {
+          if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='إرسال ↵'; }
+        }
       }
 
       document.getElementById('claude-chat-send')?.addEventListener('click', claudeChatSend);
       document.getElementById('claude-chat-input')?.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); claudeChatSend(); } });
+      el.querySelectorAll('.claude-quick').forEach(btn=>{ btn.onclick=()=>{ if(claudeInput) claudeInput.value=btn.dataset.q; claudeChatSend(); }; });
 
     }
     if (name==='ai-settings'){
