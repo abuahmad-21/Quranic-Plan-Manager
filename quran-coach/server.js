@@ -2756,7 +2756,7 @@ ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه ال�
       try{ result=await executeHermesTool(toolName,args,mem); }catch(e){ result={error:e.message}; }
       if(toolName==='done'){
         runSummary=result.summary||''; nextRunFocus=result.next_run_focus||'';
-        actionsTaken=result.actions_taken||[]; finished=true;
+        actionsTaken=Array.isArray(result.actions_taken)?result.actions_taken:[]; finished=true;
       } else if(result?.ok) {
         actionsTaken.push(`${toolName}: ${JSON.stringify(result).slice(0,80)}`);
       }

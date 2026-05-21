@@ -1697,7 +1697,7 @@ const Admin = {
               <div style="flex:1;min-width:0">
                 <div style="font-size:.78rem;color:#a78bfa;font-weight:600">دورة #${run.id?.slice(0,8)||'—'} · ${fmtTime(run.at)}</div>
                 <div style="font-size:.82rem;margin-top:4px;line-height:1.5">${escapeHTML(run.summary||'—')}</div>
-                ${(run.actions||[]).length?`<div style="margin-top:6px">${run.actions.map(a=>`<div style="font-size:.7rem;color:var(--text-3);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">• ${escapeHTML(a)}</div>`).join('')}</div>`:''}
+                ${(Array.isArray(run.actions)&&run.actions.length)?`<div style="margin-top:6px">${run.actions.map(a=>`<div style="font-size:.7rem;color:var(--text-3);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)">• ${escapeHTML(a)}</div>`).join('')}</div>`:''}
               </div>
               <div style="text-align:left;flex-shrink:0">
                 <div style="font-size:.7rem;color:var(--text-3)">${run.tool_calls||0} أداة</div>

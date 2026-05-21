@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 6.9,
-      "erratic_penalty_per_count": 1.7,
-      "focus_bonus_per_minute": 4.6,
-      "afi_skip_penalty": 4.3,
-      "afi_complete_bonus": 3.4,
+      "hesitation_penalty_per_second": 6.69,
+      "erratic_penalty_per_count": 1.64,
+      "focus_bonus_per_minute": 5.46,
+      "afi_skip_penalty": 4.21,
+      "afi_complete_bonus": 4.12,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.76,
-      "procrastination_threshold": 65,
-      "plan_decay_factor": 0.82,
-      "plan_growth_factor": 1.24
+      "energy_ema_weight": 0.85,
+      "procrastination_threshold": 73,
+      "plan_decay_factor": 0.83,
+      "plan_growth_factor": 1.36
     },
     "broadcast_messages": [
       {
@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 44,
+      "total_users": 45,
       "total_sessions_today": 52,
       "total_pages_memorized_alltime": 10.2
     },
@@ -151,8 +151,8 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-21T13:03:47.024Z",
-    "ai_opt_user_count": 43
+    "ai_last_optimization": "2026-05-21T13:59:28.533Z",
+    "ai_opt_user_count": 45
   },
   "users": {
     "455": {
@@ -369,6 +369,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-19T17:53:34.039Z"
+        },
+        {
+          "id": "fdd8b72ce44d6af6",
+          "type": "motivation",
+          "text": "مرحبا، قم بتلاوة القرآن اليوم!",
+          "ref": "https://quran.com",
+          "read": false,
+          "created_at": "2026-05-21T14:03:56.140Z"
         }
       ],
       "posts": []
@@ -8801,6 +8809,90 @@
       "notifications": [],
       "posts": [],
       "login_history": []
+    },
+    "dhxxh": {
+      "username": "dhxxh",
+      "password_hash": "08d2aed3500544b2052268b633517a59fd513812d3bd12b9b47e2ed2b25aa6f1",
+      "display_name": "Hddhxh",
+      "created_at": "2026-05-21T13:56:29.061Z",
+      "last_active": "2026-05-21T13:56:30.908Z",
+      "avatar_color": "#0c155c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-21T13:56:30.706Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-21T13:56:30.706Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 81,
+        "friction": 1.48,
+        "afi": 66,
+        "history": [
+          75,
+          81
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -9040,6 +9132,11 @@
       "username": "jdjdid",
       "expires": 1781960794716,
       "created_at": "2026-05-21T13:06:34.716Z"
+    },
+    "5507aa58d23dbd114d6df0052274c35507592e992e5bcca3": {
+      "username": "dhxxh",
+      "expires": 1781963789061,
+      "created_at": "2026-05-21T13:56:29.061Z"
     }
   }
 }
