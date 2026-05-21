@@ -1,0 +1,38 @@
+{
+  "name": "Quantum Quran Coach",
+  "short_name": "QQC",
+  "description": "منصة تحفيظ القرآن الكريم بالذكاء الاصطناعي",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%236366f1'/><text y='130' x='96' text-anchor='middle' font-size='120' font-family='serif'>📿</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "التسميع",
+      "short_name": "تسميع",
+      "description": "ابدأ جلسة تسميع",
+      "url": "/?view=view-tarteel",
+      "icons": []
+    },
+    {
+      "name": "الختمة",
+      "short_name": "ختمة",
+      "description": "تتبع الختمة",
+      "url": "/?view=view-khatma",
+      "icons": []
+    }
+  ]
+}

@@ -852,7 +852,7 @@ R('GET','/qqc/admin/ai-settings', async (req,res)=>{
 R('POST','/qqc/admin/ai-settings', async (req,res)=>{
   if (!isAdmin(req)) return send(res,401,{error:'admin_auth'});
   const b = await readBody(req);
-  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model','nvidia_nim_key','video_api_key'];
+  const allowed = ['primary_provider','fallback_provider','replit_model','custom_base_url','custom_api_key','custom_model','nvidia_nim_key','nvidia_nim_model','video_api_key'];
   allowed.forEach(k=>{ if(b[k] !== undefined) DB.admin.ai_settings[k] = String(b[k]).slice(0,500); });
   persist(); send(res,200,{ok:true, settings: DB.admin.ai_settings});
 });
@@ -873,7 +873,7 @@ R('POST','/qqc/admin/ai-test', async (req,res)=>{
     const resp = await fetch(`${cfg.baseUrl}/chat/completions`,{
       method:'POST',
       headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify({ model:cfg.model, messages:[{role:'user',content:'قل: جاهز — كلمة واحدة فقط'}], max_completion_tokens:20 }),
+      body:JSON.stringify({ model:cfg.model, messages:[{role:'user',content:'قل: جاهز — كلمة واحدة فقط'}], max_tokens:20 }),
       signal: AbortSignal.timeout(15000)
     });
     const data = await resp.json();
@@ -974,7 +974,8 @@ function getAIProviderConfig(providerName){
   if(providerName === 'nvidia_nim'){
     const key = s.nvidia_nim_key || process.env.NVIDIA_NIM_API_KEY;
     if(!key) return null;
-    return { baseUrl: 'https://integrate.api.nvidia.com/v1', apiKey: key, model: 'meta/llama-3.1-nemotron-70b-instruct' };
+    const nimModel = DB.admin.ai_settings?.nvidia_nim_model || 'meta/llama-3.3-70b-instruct';
+    return { baseUrl: 'https://integrate.api.nvidia.com/v1', apiKey: key, model: nimModel };
   }
   if(providerName === 'custom'){
     if(!s.custom_base_url || !s.custom_api_key) return null;
@@ -2006,8 +2007,6 @@ async function executeHermesTool(toolName, args, mem){
 
     case 'generate_deep_coaching': {
       const u=DB.users[args.username]; if(!u) return {error:'not_found'};
-      const baseUrl=process.env.AI_INTEGRATIONS_OPENAI_BASE_URL, apiKey=process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-      if(!baseUrl||!apiKey) return {error:'ai_not_configured'};
       const sysP=`أنت مدرب قرآن خبير ومتخصص. بناءً على بيانات المستخدم المرسلة إليك، قدم تحليلاً عميقاً وخطة علاجية مخصصة. الإجابة بالعربية، منظمة ومباشرة، 5-8 أسطر.`;
       const userP=`المستخدم: ${u.display_name||u.username}
 الطاقة: ${u.energy?.score||75}/100 | سلسلة: ${u.progress?.current_streak_days||0} يوم | غياب: ${u.progress?.consecutive_absences||0}
@@ -2898,7 +2897,7 @@ R('POST','/qqc/admin/nim-test', async(req,res)=>{
   if(!key) return send(res,200,{ok:false, error:'أدخل NVIDIA NIM API Key أولاً'});
   // Save key if provided
   if(b.api_key) { DB.admin.ai_settings.nvidia_nim_key = key; persist(); }
-  const model = 'meta/llama-3.1-nemotron-70b-instruct';
+  const model = DB.admin.ai_settings?.nvidia_nim_model || 'meta/llama-3.3-70b-instruct';
   try {
     const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions',{
       method:'POST',
@@ -3365,8 +3364,9 @@ R('POST','/qqc/tarteel/ai-check', async(req,res)=>{
   const to_ayah       = +body.to_ayah||1;
   const mime_type     = String(body.mime_type||'audio/webm');
   if(!audio_base64) return send(res,400,{transcript:'',error:'no audio'});
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+  const activeCfgAI = getActiveAIConfig();
+  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || activeCfgAI?.baseUrl;
+  const apiKey  = process.env.AI_INTEGRATIONS_OPENAI_API_KEY  || activeCfgAI?.apiKey;
   if(!baseUrl||!apiKey) return send(res,200,{transcript:'',feedback:null,error:'ai_not_configured'});
   try{
     // 1. Whisper STT
@@ -3930,6 +3930,240 @@ R('DELETE','/qqc/admin/hermes/video-train/:id', async(req,res,p)=>{
   writeHermesMemory(mem);
   send(res,200,{ok:true, removed:before-mem.recitation_videos.length, total:mem.recitation_videos.length});
 });
+
+/* ════════════════════════════════════════════════════════════════
+   MISSING ESSENTIAL FEATURES — Added in gap-analysis pass
+════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Admin DB Backup Download / Restore ── */
+R('GET','/qqc/admin/backup/download', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  try {
+    const raw = fs.readFileSync(DB_PATH,'utf8');
+    const ts  = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    res.writeHead(200,{
+      'Content-Type':'application/json; charset=utf-8',
+      'Content-Disposition':`attachment; filename="qqc-backup-${ts}.json"`,
+      'Content-Length': Buffer.byteLength(raw,'utf8'),
+      'Access-Control-Allow-Origin':'*'
+    });
+    res.end(raw);
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+R('POST','/qqc/admin/backup/restore', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  try {
+    const b = await readLargeBody(req, 50);
+    if(!b || typeof b !== 'object') return send(res,400,{error:'invalid_json'});
+    if(!b.admin || !b.users) return send(res,400,{error:'invalid_db_structure'});
+    const backupPath = DB_PATH + '.restore_backup_' + Date.now();
+    fs.writeFileSync(backupPath, fs.readFileSync(DB_PATH,'utf8'));
+    Object.keys(DB).forEach(k=>{ delete DB[k]; });
+    Object.assign(DB, b);
+    persist();
+    send(res,200,{ok:true, backup_saved:backupPath, note:'قاعدة البيانات استُعيدت بنجاح. النسخة القديمة محفوظة.'});
+  } catch(e){ send(res,500,{error:e.message}); }
+});
+
+/* ── 2. User Password Change ── */
+R('POST','/qqc/me/password', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const b = await readBody(req);
+  const current = String(b.current_password||'');
+  const newPw   = String(b.new_password||'');
+  if(!current || !newPw) return send(res,400,{error:'current_password و new_password مطلوبان'});
+  if(newPw.length < 6) return send(res,400,{error:'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'});
+  const crypto = await import('crypto');
+  const currentHash = crypto.createHash('sha256').update(current).digest('hex');
+  if(currentHash !== u.password_hash) return send(res,403,{error:'كلمة المرور الحالية غير صحيحة'});
+  u.password_hash = crypto.createHash('sha256').update(newPw).digest('hex');
+  persist();
+  send(res,200,{ok:true, message:'تم تغيير كلمة المرور بنجاح'});
+});
+
+/* ── 3. Admin Password Reset for any user ── */
+R('POST','/qqc/admin/users/:username/reset-password', async(req,res,p)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const u = DB.users[p.username]; if(!u) return send(res,404,{error:'user_not_found'});
+  const b = await readBody(req);
+  const newPw = String(b.new_password||'').trim();
+  if(!newPw || newPw.length<4) return send(res,400,{error:'new_password يجب أن يكون 4 أحرف على الأقل'});
+  const crypto = await import('crypto');
+  u.password_hash = crypto.createHash('sha256').update(newPw).digest('hex');
+  persist();
+  send(res,200,{ok:true, username:p.username, message:'تم إعادة تعيين كلمة المرور'});
+});
+
+/* ── 4. Quran Text Search ── */
+R('GET','/qqc/quran/search', async(req,res,_p,query)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const q = String(query?.q||'').trim();
+  if(!q || q.length<2) return send(res,400,{error:'q مطلوب (2 أحرف على الأقل)'});
+  const limit = Math.min(50, +(query?.limit||20));
+  const results = [];
+  for(const [key,cached] of Object.entries(QURAN_CACHE)){
+    if(key==='list'||!cached?.data) continue;
+    const ayahs = Array.isArray(cached.data) ? cached.data : (cached.data.ayahs||[]);
+    for(const ayah of ayahs){
+      if(ayah.text && ayah.text.includes(q)){
+        results.push({
+          surah_num: ayah.surah?.number || cached.data?.number,
+          surah_name: ayah.surah?.name || cached.data?.name,
+          ayah_num: ayah.numberInSurah,
+          text: ayah.text,
+          global_num: ayah.number
+        });
+        if(results.length>=limit) break;
+      }
+    }
+    if(results.length>=limit) break;
+  }
+  send(res,200,{ok:true, query:q, count:results.length, results, note: results.length===0?'لا نتائج في الكاش المحلي — افتح السور أولاً لتُحمَّل في الكاش':''}); 
+});
+
+/* ── 5. User Progress Report ── */
+R('GET','/qqc/me/progress-report', async(req,res)=>{
+  const u = authUser(req); if(!u) return send(res,401,{error:'auth'});
+  const p   = u.progress||{};
+  const plan= u.plan||{};
+  const sessions = (u.sessions||[]).slice(-30);
+  const avgDifficulty = sessions.length
+    ? +(sessions.reduce((s,ss)=>s+(ss.difficulty||3),0)/sessions.length).toFixed(1) : 0;
+  const avgPages = sessions.length
+    ? +(sessions.reduce((s,ss)=>s+(ss.pages_done||0),0)/sessions.length).toFixed(2) : 0;
+  const tarteel = (u.tarteel_history||[]).slice(-20);
+  const avgTarteel = tarteel.length
+    ? Math.round(tarteel.reduce((s,t)=>s+(t.score||0),0)/tarteel.length) : 0;
+  const khatma = u.khatma||null;
+  const report = {
+    username: u.username,
+    display_name: u.display_name||u.username,
+    generated_at: now(),
+    summary: {
+      pages_memorized: +(p.total_pages_memorized||0).toFixed(2),
+      current_streak: p.current_streak_days||0,
+      longest_streak: p.longest_streak_days||0,
+      total_sessions: p.total_sessions_completed||0,
+      consecutive_absences: p.consecutive_absences||0,
+      last_session: p.last_session_date||null,
+    },
+    plan: {
+      phase: plan.phase||'غير محدد',
+      daily_target: plan.current_daily_pages||0,
+      target_surah: plan.target_surah||'',
+      mode: u.plan_mode||'auto',
+    },
+    recitation: {
+      sessions_30: tarteel.length,
+      avg_accuracy_pct: avgTarteel,
+      top_surah: tarteel.length ? (tarteel.slice(-5).map(t=>t.surah_name).filter(Boolean)[0]||'') : '',
+    },
+    sessions_30: {
+      count: sessions.length,
+      avg_difficulty: avgDifficulty,
+      avg_pages_per_session: avgPages,
+    },
+    khatma: khatma ? {
+      completions: khatma.completions||0,
+      pages_read: khatma.total_pages_read||0,
+      target_days: khatma.target_days||30,
+    } : null,
+    energy: u.energy?.score||75,
+  };
+  send(res,200,{ok:true, report});
+});
+
+/* ── 6. Hermes Special Instruction Endpoint ── */
+R('POST','/qqc/admin/hermes/special-instruction', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const instruction = String(b.instruction||'').trim().slice(0,1000);
+  if(!instruction) return send(res,400,{error:'instruction مطلوبة'});
+  const mem = readHermesMemory();
+  if(!mem.cfg_patches) mem.cfg_patches={};
+  mem.cfg_patches.special_instruction = instruction;
+  mem.cfg_patches.focus_mode = 'code_analysis';
+  writeHermesMemory(mem);
+  send(res,200,{ok:true, instruction, note:'سيُنفَّذ في دورة Hermes القادمة. يمكنك تشغيله الآن عبر run-now.'});
+});
+
+/* ── 7. Admin: Get Server Stats (enhanced) ── */
+R('GET','/qqc/admin/server-stats', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const userList = Object.values(DB.users||{});
+  const now7days = Date.now()-7*86400000;
+  const now1day  = Date.now()-86400000;
+  const active7d = userList.filter(u=>u.progress?.last_session_date && new Date(u.progress.last_session_date).getTime()>now7days).length;
+  const active1d = userList.filter(u=>u.progress?.last_session_date && new Date(u.progress.last_session_date).getTime()>now1day).length;
+  const hermMem  = readHermesMemory();
+  const logDir   = path.join(ROOT,'logs');
+  let logFiles = [];
+  try { logFiles = fs.readdirSync(logDir).map(f=>{ try{ const st=fs.statSync(path.join(logDir,f)); return {name:f,size_kb:+(st.size/1024).toFixed(1)}; }catch{return null;} }).filter(Boolean); } catch{}
+  send(res,200,{
+    total_users: userList.length,
+    active_last_24h: active1d,
+    active_last_7d: active7d,
+    total_sessions_all: userList.reduce((s,u)=>s+(u.progress?.total_sessions_completed||0),0),
+    hermes_runs: hermMem.stats?.total_runs||0,
+    hermes_last_run: hermMem.last_run||null,
+    ai_provider: getActiveAIProviderName(),
+    log_files: logFiles,
+    uptime_s: Math.floor(process.uptime()),
+    node_version: process.version,
+    memory_mb: +(process.memoryUsage().rss/1048576).toFixed(1),
+  });
+});
+
+/* ── 8. Admin: List all users with key stats ── */
+R('GET','/qqc/admin/users-summary', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const list = Object.values(DB.users||{}).map(u=>({
+    username: u.username,
+    display_name: u.display_name||u.username,
+    role: u.role||'student',
+    pages: +(u.progress?.total_pages_memorized||0).toFixed(2),
+    streak: u.progress?.current_streak_days||0,
+    absences: u.progress?.consecutive_absences||0,
+    sessions: u.progress?.total_sessions_completed||0,
+    last_session: u.progress?.last_session_date||null,
+    energy: u.energy?.score||75,
+    plan_phase: u.plan?.phase||'',
+    joined: u.created_at||'',
+    khatma_completions: u.khatma?.completions||0,
+  }));
+  list.sort((a,b)=>b.sessions-a.sessions);
+  send(res,200,{ok:true, count:list.length, users:list});
+});
+
+/* ── 9. Daily Absence Notification Cron ── */
+function runDailyAbsenceCron(){
+  try {
+    const users = Object.values(DB.users||{});
+    const now3d = Date.now()-3*86400000;
+    const now7d = Date.now()-7*86400000;
+    let notified=0;
+    users.forEach(u=>{
+      const last = u.progress?.last_session_date;
+      if(!last) return;
+      const lastMs = new Date(last).getTime();
+      const absences = u.progress?.consecutive_absences||0;
+      if(lastMs < now7d && absences>=7){
+        addNotif(u.username,'absence_alert','⚠️ أسبوع بدون حفظ! الانتظام مفتاح الإتقان — عُد اليوم ولو لدقائق.','view-tarteel');
+        notified++;
+      } else if(lastMs < now3d && absences>=3){
+        addNotif(u.username,'absence_alert','🌙 لم تتدرب منذ أيام — خطتك تنتظرك. خُطوة صغيرة تُفرق كثيراً.','view-plan');
+        notified++;
+      }
+    });
+    if(notified>0){ persist(); console.log(`[DailyCron] Sent absence alerts to ${notified} users`); }
+  } catch(e){ console.error('[DailyCron] Error:',e.message); }
+}
+const _dailyCronMs = 6*60*60*1000;
+setInterval(runDailyAbsenceCron, _dailyCronMs);
+setTimeout(runDailyAbsenceCron, 30000);
+
+/* ═══════════════════════════════════════════════════════════════ */
 
 /* ══ Boot: start auto-pilot if previously enabled ══ */
 setupAutoPilot();

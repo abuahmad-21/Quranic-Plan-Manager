@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 7.6,
-      "erratic_penalty_per_count": 1.9,
-      "focus_bonus_per_minute": 4.2,
-      "afi_skip_penalty": 4.75,
-      "afi_complete_bonus": 3.15,
-      "absence_intervention_days": 3.2,
-      "energy_ema_weight": 0.72,
-      "procrastination_threshold": 63,
-      "plan_decay_factor": 0.85,
-      "plan_growth_factor": 1.21
+      "hesitation_penalty_per_second": 6.9,
+      "erratic_penalty_per_count": 1.7,
+      "focus_bonus_per_minute": 4.6,
+      "afi_skip_penalty": 4.3,
+      "afi_complete_bonus": 3.4,
+      "absence_intervention_days": 3,
+      "energy_ema_weight": 0.76,
+      "procrastination_threshold": 65,
+      "plan_decay_factor": 0.82,
+      "plan_growth_factor": 1.24
     },
     "broadcast_messages": [
       {
@@ -129,7 +129,7 @@
     "hermes_weights_updated_at": "2026-05-19T17:44:29.849Z",
     "ai_settings": {
       "primary_provider": "nvidia_nim",
-      "fallback_provider": "nvidia_nim",
+      "fallback_provider": "pollinations",
       "replit_model": "gpt-5-mini",
       "custom_base_url": "",
       "custom_api_key": "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",
@@ -151,7 +151,7 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-21T12:49:35.919Z",
+    "ai_last_optimization": "2026-05-21T13:03:47.024Z",
     "ai_opt_user_count": 43
   },
   "users": {
