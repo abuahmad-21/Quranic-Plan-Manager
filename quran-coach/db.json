@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 43,
+      "total_users": 44,
       "total_sessions_today": 52,
       "total_pages_memorized_alltime": 10.2
     },
@@ -8709,6 +8709,98 @@
       "notifications": [],
       "posts": [],
       "login_history": []
+    },
+    "jdjdid": {
+      "username": "jdjdid",
+      "password_hash": "c8394310a2c56e2fe4a795e37cd1f97fd8c9140619ef6b6d387165f4b3360603",
+      "display_name": "Udjdjd",
+      "created_at": "2026-05-21T13:06:34.716Z",
+      "last_active": "2026-05-21T13:12:07.420Z",
+      "avatar_color": "#0ccef6",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-21T13:06:36.829Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-21T13:06:36.829Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 5.8,
+        "afi": 71,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
     }
   },
   "chats": {},
@@ -8943,6 +9035,11 @@
       "username": "jdjdjdjd",
       "expires": 1781805096481,
       "created_at": "2026-05-19T17:51:36.481Z"
+    },
+    "cc6758321abb66ceb7a7e2e9d224d4fed5812ef57b054cd1": {
+      "username": "jdjdid",
+      "expires": 1781960794716,
+      "created_at": "2026-05-21T13:06:34.716Z"
     }
   }
 }
