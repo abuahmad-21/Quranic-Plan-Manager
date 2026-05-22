@@ -648,14 +648,23 @@
       "actions": [],
       "next_run_focus": "",
       "duration_ms": 24441
+    },
+    {
+      "id": "829f8c9c78d05770",
+      "at": "2026-05-22T09:18:38.389Z",
+      "tool_calls": 0,
+      "summary": "",
+      "actions": [],
+      "next_run_focus": "",
+      "duration_ms": 21
     }
   ],
-  "last_run": "2026-05-21T16:10:14.574Z",
+  "last_run": "2026-05-22T09:18:38.389Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 38,
+    "total_runs": 39,
     "total_tool_calls": 432,
     "users_helped": 523,
     "weights_updated": 8,
@@ -737,5 +746,6 @@
     "ai_errors": 0,
     "updated_at": "2026-05-21T15:58:31.965Z"
   },
-  "last_training": "2026-05-21T15:58:31.965Z"
+  "last_training": "2026-05-21T15:58:31.965Z",
+  "_running": true
 }

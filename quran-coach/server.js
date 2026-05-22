@@ -4142,6 +4142,181 @@ R('GET','/qqc/admin/users-summary', async(req,res)=>{
 });
 
 /* ══════════════════════════════════════════════════════════
+   🤖 CLAUDE CODE — AI Coding Assistant (SSE streaming)
+   ══════════════════════════════════════════════════════════ */
+
+const CLAUDE_CODE_TOOLS = [
+  { type:'function', function:{ name:'read_file', description:'اقرأ محتوى أي ملف من المشروع بالكامل',
+    parameters:{ type:'object', properties:{ path:{type:'string',description:'مسار الملف النسبي من جذر المشروع'} }, required:['path'] } } },
+  { type:'function', function:{ name:'write_file', description:'اكتب أو عدّل ملفاً في المشروع — يستبدل المحتوى كاملاً',
+    parameters:{ type:'object', properties:{ path:{type:'string'}, content:{type:'string'}, reason:{type:'string',description:'سبب التعديل'} }, required:['path','content'] } } },
+  { type:'function', function:{ name:'patch_file', description:'عدّل جزءاً محدداً من ملف — استبدل نصاً معيناً بنص جديد (أسرع من write_file للتعديلات الصغيرة)',
+    parameters:{ type:'object', properties:{ path:{type:'string'}, old_text:{type:'string',description:'النص الحالي المراد استبداله (يجب أن يتطابق حرفياً)'}, new_text:{type:'string',description:'النص الجديد البديل'}, reason:{type:'string'} }, required:['path','old_text','new_text'] } } },
+  { type:'function', function:{ name:'run_command', description:'نفّذ أمر shell في مجلد المشروع',
+    parameters:{ type:'object', properties:{ cmd:{type:'string'}, cwd:{type:'string',description:'المجلد النسبي (اختياري)'} }, required:['cmd'] } } },
+  { type:'function', function:{ name:'list_files', description:'قائمة الملفات والمجلدات في مسار معين',
+    parameters:{ type:'object', properties:{ path:{type:'string',description:'المسار النسبي (اتركه فارغاً للجذر)'} }, required:[] } } },
+  { type:'function', function:{ name:'search_code', description:'ابحث عن نص أو دالة في ملفات المشروع',
+    parameters:{ type:'object', properties:{ query:{type:'string'}, path:{type:'string',description:'مجلد البحث (اختياري)'} }, required:['query'] } } },
+  { type:'function', function:{ name:'get_server_status', description:'تحقق من حالة السيرفر — هل يعمل؟ ما الـ port؟',
+    parameters:{ type:'object', properties:{}, required:[] } } },
+];
+
+async function executeClaudeCodeTool(toolName, args){
+  switch(toolName){
+    case 'read_file': {
+      const fp = path.join(ROOT, String(args.path||'').replace(/\.\.\//g,''));
+      if(!fp.startsWith(ROOT)) return {error:'forbidden'};
+      if(!fs.existsSync(fp)) return {error:`الملف غير موجود: ${args.path}`};
+      const content = fs.readFileSync(fp,'utf8');
+      return {ok:true, path:args.path, content:content.slice(0,40000), lines:content.split('\n').length, truncated:content.length>40000};
+    }
+    case 'write_file': {
+      const fp = path.join(ROOT, String(args.path||'').replace(/\.\.\//g,''));
+      if(!fp.startsWith(ROOT)) return {error:'forbidden'};
+      const dir2 = path.dirname(fp);
+      if(!fs.existsSync(dir2)) fs.mkdirSync(dir2,{recursive:true});
+      fs.writeFileSync(fp, String(args.content||''), 'utf8');
+      return {ok:true, path:args.path, bytes:args.content.length, lines:String(args.content).split('\n').length, reason:args.reason||''};
+    }
+    case 'patch_file': {
+      const fp = path.join(ROOT, String(args.path||'').replace(/\.\.\//g,''));
+      if(!fp.startsWith(ROOT)) return {error:'forbidden'};
+      if(!fs.existsSync(fp)) return {error:`الملف غير موجود: ${args.path}`};
+      let content = fs.readFileSync(fp,'utf8');
+      const oldTxt = String(args.old_text||'');
+      const newTxt = String(args.new_text||'');
+      if(!content.includes(oldTxt)) return {ok:false, error:'النص القديم غير موجود في الملف — تحقق من المطابقة الحرفية', path:args.path};
+      content = content.replace(oldTxt, newTxt);
+      fs.writeFileSync(fp, content, 'utf8');
+      return {ok:true, path:args.path, chars_removed:oldTxt.length, chars_added:newTxt.length, reason:args.reason||''};
+    }
+    case 'run_command': {
+      const {exec} = require('child_process');
+      const cwd2 = args.cwd ? path.join(ROOT, String(args.cwd).replace(/\.\.\//g,'')) : ROOT;
+      const safeDir = cwd2.startsWith(ROOT)?cwd2:ROOT;
+      return new Promise(resolve=>{
+        exec(String(args.cmd||''), {cwd:safeDir, timeout:20000, maxBuffer:512*1024}, (err,stdout,stderr)=>{
+          resolve({ok:!err, cmd:args.cmd, stdout:stdout.slice(0,8000), stderr:stderr.slice(0,3000), exit_code:err?(err.code||1):0});
+        });
+      });
+    }
+    case 'list_files': {
+      const fp = args.path ? path.join(ROOT, String(args.path).replace(/\.\.\//g,'')) : ROOT;
+      if(!fp.startsWith(ROOT)) return {error:'forbidden'};
+      if(!fs.existsSync(fp)) return {error:`المسار غير موجود: ${args.path}`};
+      const IGNORE = new Set(['node_modules','.git','__pycache__','.DS_Store','.cache','dist','build']);
+      const entries = fs.readdirSync(fp,{withFileTypes:true}).filter(e=>!IGNORE.has(e.name)&&!e.name.startsWith('.cache'));
+      return {ok:true, path:args.path||'.', entries:entries.map(e=>({name:e.name, type:e.isDirectory()?'dir':'file', size:e.isFile()?fs.statSync(path.join(fp,e.name)).size:0}))};
+    }
+    case 'search_code': {
+      const {exec} = require('child_process');
+      const searchDir = args.path ? path.join(ROOT, String(args.path).replace(/\.\.\//g,'')) : ROOT;
+      const q = String(args.query||'').replace(/"/g,'\\"');
+      return new Promise(resolve=>{
+        exec(`grep -rn "${q}" --include="*.js" --include="*.json" --include="*.html" --include="*.css" --include="*.md" -m 5`, {cwd:searchDir, timeout:10000, maxBuffer:512*1024}, (err,stdout)=>{
+          const lines = stdout.split('\n').filter(Boolean).slice(0,40);
+          resolve({ok:true, query:args.query, results:lines, count:lines.length});
+        });
+      });
+    }
+    case 'get_server_status': {
+      const {exec} = require('child_process');
+      return new Promise(resolve=>{
+        exec('curl -s http://localhost:5000/qqc/health 2>&1 | head -5; echo "---"; ps aux | grep "node server" | grep -v grep | head -3', {cwd:ROOT, timeout:5000}, (err,stdout)=>{
+          resolve({ok:true, output:stdout.slice(0,1000), port:5000, uptime:process.uptime().toFixed(0)+'s'});
+        });
+      });
+    }
+    default: return {error:`أداة غير معروفة: ${toolName}`};
+  }
+}
+
+R('POST','/qqc/admin/claude-code/chat', async(req,res)=>{
+  if(!isAdmin(req)) return send(res,401,{error:'admin_auth'});
+  const b = await readBody(req);
+  const userMsg = String(b.message||'').slice(0,10000);
+  if(!userMsg) return send(res,400,{error:'message required'});
+  const history = Array.isArray(b.history) ? b.history.slice(-24) : [];
+
+  const activeCfg = getActiveAIConfig();
+  if(!activeCfg) return send(res,503,{error:'ai_not_configured — أضف API key في إعدادات الذكاء الاصطناعي'});
+
+  res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','Access-Control-Allow-Origin':'*'});
+  const sse=(type,data)=>{ try{ res.write(`data: ${JSON.stringify({type,...data})}\n\n`); }catch{} };
+
+  const systemPrompt = `أنت Claude Code — مساعد برمجة ذكاء اصطناعي متخصص في مشروع Quantum Quran Coach.
+
+هيكل المشروع:
+- quran-coach/server.js — الخادم الرئيسي Node.js (~4300 سطر)
+- quran-coach/public/app.js — الواجهة الأمامية (~6400 سطر)
+- quran-coach/public/index.html — HTML الرئيسي (~1250 سطر)
+- quran-coach/db.json — قاعدة البيانات JSON
+- quran-coach/hermes_memory.json — ذاكرة وكيل Hermes
+- quran-coach/claude-proxy.js — Claude AI Proxy (Node.js, port 8082)
+
+قواعد عملك:
+1. اقرأ الملف أولاً (read_file) قبل أي تعديل
+2. استخدم patch_file للتعديلات الصغيرة — أسرع وأأمن
+3. استخدم write_file فقط للملفات الجديدة أو التغييرات الكبيرة
+4. بعد كل تعديل: نفّذ أمر للتحقق من عمل السيرفر (run_command: curl http://localhost:5000/qqc/health)
+5. أخبر المستخدم بما فعلته بالتفصيل بالعربية
+6. إذا فشل أمر: اقرأ الخطأ وأصلحه تلقائياً
+7. يمكنك تعديل أي ملف في المشروع
+
+الرد بالعربية دائماً. كن مباشراً واعمل فعلياً — لا تكتفِ بالوصف.`;
+
+  const messages = [
+    {role:'system', content:systemPrompt},
+    ...history.map(h=>({role:h.role, content:String(h.content||'').slice(0,4000)})),
+    {role:'user', content:userMsg}
+  ];
+
+  let toolCallCount=0;
+  const maxCalls=15;
+  try {
+    while(toolCallCount<maxCalls){
+      let resp;
+      try {
+        resp = await fetch(`${activeCfg.baseUrl}/chat/completions`,{
+          method:'POST', signal:AbortSignal.timeout(60000),
+          headers:{'Authorization':`Bearer ${activeCfg.apiKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:activeCfg.model, messages, tools:CLAUDE_CODE_TOOLS, tool_choice:'auto', max_tokens:2500})
+        });
+      } catch(e){ sse('error',{message:'خطأ في الاتصال بالذكاء الاصطناعي: '+e.message}); break; }
+
+      if(!resp.ok){
+        const et=await resp.text().catch(()=>'');
+        sse('error',{message:`API error ${resp.status} — ${et.slice(0,200)}`}); break;
+      }
+      const data = await resp.json();
+      const msg = data.choices?.[0]?.message;
+      if(!msg) break;
+      messages.push(msg);
+      if(msg.content) sse('message',{content:msg.content});
+      if(!msg.tool_calls||!msg.tool_calls.length) break;
+
+      for(const tc of msg.tool_calls){
+        toolCallCount++;
+        const toolName=tc.function?.name;
+        let args={};
+        try{ args=JSON.parse(tc.function?.arguments||'{}'); }catch{}
+        sse('tool_call',{name:toolName, args, id:tc.id});
+        let result;
+        try{ result=await executeClaudeCodeTool(toolName,args); }catch(e){ result={error:e.message}; }
+        if(result?.ok && (toolName==='write_file'||toolName==='patch_file')){
+          sse('file_changed',{path:args.path, reason:args.reason||'', bytes:result.bytes||result.chars_added||0});
+        }
+        sse('tool_result',{name:toolName, result:JSON.stringify(result).slice(0,3000), ok:result?.ok});
+        messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(result).slice(0,8000)});
+      }
+    }
+  } catch(e){ sse('error',{message:e.message}); }
+  sse('done',{tool_calls:toolCallCount});
+  res.end();
+});
+
+/* ══════════════════════════════════════════════════════════
    🛠️ DEVELOPER TOOLS — Terminal · Files · Logs
    ══════════════════════════════════════════════════════════ */
 

@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 5.07,
-      "erratic_penalty_per_count": 1.74,
-      "focus_bonus_per_minute": 7.19,
-      "afi_skip_penalty": 4.63,
-      "afi_complete_bonus": 5.21,
-      "absence_intervention_days": 3.42,
-      "energy_ema_weight": 0.84,
-      "procrastination_threshold": 80.51,
-      "plan_decay_factor": 0.79,
-      "plan_growth_factor": 1.61
+      "hesitation_penalty_per_second": 5.43,
+      "erratic_penalty_per_count": 1.83,
+      "focus_bonus_per_minute": 7.71,
+      "afi_skip_penalty": 4.93,
+      "afi_complete_bonus": 5.58,
+      "absence_intervention_days": 3.69,
+      "energy_ema_weight": 0.88,
+      "procrastination_threshold": 84.68,
+      "plan_decay_factor": 0.83,
+      "plan_growth_factor": 1.69
     },
     "broadcast_messages": [
       {
@@ -151,7 +151,7 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-21T16:08:52.310Z",
+    "ai_last_optimization": "2026-05-22T09:17:41.897Z",
     "ai_opt_user_count": 46
   },
   "users": {
@@ -401,6 +401,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "a0c00fb85176f73d",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -641,6 +649,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "4cafb7c0579beff5",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -866,6 +882,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "f68847f73937c941",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -1098,6 +1122,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "32c8acc92d58b851",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -1330,6 +1362,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "391f7bac9c958141",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -1565,6 +1605,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "135f9d6f1d1ce7c7",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -1797,6 +1845,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "65716620d20918c6",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -2196,6 +2252,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "04540befb4c6370b",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -2641,6 +2705,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.669Z"
+        },
+        {
+          "id": "058995eaae7ff40a",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -2891,6 +2963,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "3a845602941f26ff",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -3180,6 +3260,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "c69da5ee846d30e2",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -3478,6 +3566,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "6b741b9bb0b78e5b",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -3709,6 +3805,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "a6767ea5b3460f8b",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -3943,6 +4047,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "43d4e997d2450e69",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -4167,6 +4279,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "088d7e90bd1ddea5",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -4417,6 +4537,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "830f4fe709137c41",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -4655,6 +4783,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "769490bfa5ec6692",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -4881,6 +5017,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "48ac2a011f677ba1",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [
@@ -5127,6 +5271,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "50f9d3278bfc9163",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -5353,6 +5505,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "86e18a7e78813ec4",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -5570,6 +5730,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "7b19797f45429a2b",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -5800,6 +5968,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "a2cfd33272279c54",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -5987,6 +6163,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "320d00bc69faf3fa",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -6172,6 +6356,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "745f225a963031c1",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": []
@@ -6342,6 +6534,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "c53a0d372fac1bfa",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -6549,6 +6749,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "0afdf3a6bd7187ca",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -6704,6 +6912,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "5349ae8d62e5886a",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -6880,6 +7096,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "ac59794802e78256",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -7040,6 +7264,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "7ea629cad87464f0",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -7187,6 +7419,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "bca98894f4cb8609",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -7372,6 +7612,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "c9a7a178b0ea3b5a",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -7756,6 +8004,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "6b05d05671bc79ae",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -7909,6 +8165,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "5e376f9046dfedac",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -8119,6 +8383,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "f99e8ec0b2338c4c",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -8340,6 +8612,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "49802ab547143759",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -8560,6 +8840,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "eafc1d5829b42e19",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -8845,6 +9133,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "e95b43667312bf46",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9093,6 +9389,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "d9c1d209ab6f9ff8",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9289,6 +9593,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "66d9d976599baa53",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9422,6 +9734,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "ae6cba0ef0120577",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9504,6 +9824,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "b05fa493b5577d80",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9629,6 +9957,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "18205b2526234192",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9746,6 +10082,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "db0f91eb71047289",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9863,6 +10207,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "5e85dbac50dcfaf8",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9980,6 +10332,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-21T15:55:39.670Z"
+        },
+        {
+          "id": "3adb3bf20f9898be",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T09:16:35.813Z"
         }
       ],
       "posts": [],
@@ -9990,7 +10350,7 @@
       "password_hash": "cb67632204967ffe37d430c5a26572d25a87f558b1941eeafe9221a839530ab9",
       "display_name": "دددددددد",
       "created_at": "2026-05-21T15:57:45.773Z",
-      "last_active": "2026-05-21T16:10:44.769Z",
+      "last_active": "2026-05-22T09:22:05.958Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -10036,8 +10396,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 6.57,
-        "afi": 17,
+        "friction": 6.95,
+        "afi": 65,
         "history": [
           100,
           100,
@@ -10073,7 +10433,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "f9b08a5402f62079",
+          "type": "motivation",
+          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
+          "ref": "view-dashboard",
+          "read": true,
+          "created_at": "2026-05-22T09:16:35.813Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     }

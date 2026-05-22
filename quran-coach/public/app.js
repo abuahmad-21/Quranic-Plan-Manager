@@ -3093,6 +3093,307 @@ const Admin = {
       logsLoadFiles();
     }
 
+    if (name==='claude-code'){
+      const el = document.getElementById('atab-claude-code');
+      const ccHistory = window._ccHistory || (window._ccHistory = []);
+      const ccChangedFiles = window._ccChangedFiles || (window._ccChangedFiles = []);
+
+      el.innerHTML = `
+      <!-- ═══ CLAUDE CODE — Header ═══ -->
+      <div style="background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(99,102,241,.1));border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:14px 16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px">
+            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#6366f1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">⚡</div>
+            <div>
+              <div style="font-weight:800;font-size:.95rem;color:#c4b5fd;letter-spacing:.3px">Claude Code</div>
+              <div style="font-size:.7rem;color:var(--text-3)">وكيل برمجة ذكي — يقرأ ويعدّل الكود مباشرةً</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <div id="cc-ai-badge" style="font-size:.68rem;padding:3px 10px;border-radius:20px;background:rgba(52,211,153,.12);color:var(--mint);border:1px solid rgba(52,211,153,.2)">⏳ جارٍ الفحص…</div>
+            <button id="cc-clear-btn" class="btn btn-sm btn-ghost" style="font-size:.72rem">🗑️ مسح</button>
+            <button id="cc-restart-btn" class="btn btn-sm" style="font-size:.72rem;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);color:#f87171">🔄 إعادة تشغيل السيرفر</button>
+          </div>
+        </div>
+
+        <!-- Quick Tasks -->
+        <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap">
+          ${[
+            ['🔍 فحص الكود','افحص server.js وapp.js وابحث عن أي أخطاء أو مشاكل وأصلحها'],
+            ['⚡ تحسين الأداء','حلّل الكود وأضف تحسينات للأداء — سرعة استجابة السيرفر والواجهة'],
+            ['🐛 إصلاح الأخطاء','ابحث في سجلات الأخطاء ثم أصلح كل مشكلة في الكود'],
+            ['✨ ميزة جديدة','اقترح وطوّر ميزة جديدة مفيدة لتطبيق حفظ القرآن'],
+            ['📊 تحليل البيانات','اقرأ db.json وحلّل بيانات المستخدمين والإحصائيات'],
+            ['🔒 أمان','افحص الكود أمنياً وأصلح أي ثغرات محتملة'],
+          ].map(([l,q])=>`<button class="btn btn-sm btn-ghost cc-quick" data-q="${q}" style="font-size:.68rem;padding:3px 9px;border-radius:6px">${l}</button>`).join('')}
+        </div>
+      </div>
+
+      <!-- ═══ Layout: Sidebar + Chat ═══ -->
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:start">
+
+        <!-- Left: File Tree -->
+        <div style="background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px;min-height:500px;max-height:680px;overflow-y:auto">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:.72rem;font-weight:700;color:var(--text-2)">📁 الملفات</span>
+            <button id="cc-tree-refresh" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.75rem;padding:0">↻</button>
+          </div>
+          <div id="cc-file-tree" style="font-size:.72rem;line-height:1.8"></div>
+        </div>
+
+        <!-- Right: Chat Panel -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <!-- Changed Files -->
+          <div id="cc-changed-files" style="display:none;padding:7px 10px;background:rgba(250,204,21,.06);border:1px solid rgba(250,204,21,.15);border-radius:8px">
+            <div style="font-size:.7rem;font-weight:600;color:var(--gold);margin-bottom:4px">📝 ملفات معدّلة في هذه الجلسة:</div>
+            <div id="cc-changed-list" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+          </div>
+
+          <!-- Messages -->
+          <div id="cc-messages" style="min-height:360px;max-height:480px;overflow-y:auto;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:30px 0">
+              <div style="font-size:2rem;margin-bottom:8px">⚡</div>
+              <div style="color:#c4b5fd;font-weight:600;margin-bottom:6px">Claude Code جاهز</div>
+              <div style="font-size:.75rem;line-height:1.7">أخبره بما تريد تطويره — سيقرأ الكود ويعدّله ويختبره</div>
+            </div>
+          </div>
+
+          <!-- Status bar -->
+          <div id="cc-status" style="font-size:.72rem;color:#a78bfa;min-height:18px;padding:2px 6px;display:flex;align-items:center;gap:6px"></div>
+
+          <!-- Input -->
+          <div style="display:flex;gap:6px;align-items:flex-end">
+            <textarea id="cc-input" rows="3" placeholder="اكتب للـ AI ما تريد تطويره أو تعديله… (Ctrl+Enter للإرسال)" dir="auto"
+              style="flex:1;padding:10px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(139,92,246,.3);border-radius:10px;color:#fff;font-size:.84rem;font-family:inherit;resize:vertical;line-height:1.5;min-height:60px"></textarea>
+            <button id="cc-send-btn" class="btn" style="background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:.85rem;align-self:flex-end;white-space:nowrap;font-weight:600">إرسال ↵</button>
+          </div>
+          <div style="font-size:.68rem;color:var(--text-3);padding:0 2px">
+            💡 يمكنه: قراءة وتعديل الملفات • تشغيل الأوامر • البحث في الكود • إصلاح الأخطاء تلقائياً
+          </div>
+        </div>
+      </div>`;
+
+      /* ── Load AI badge ── */
+      (async()=>{
+        const badge = document.getElementById('cc-ai-badge');
+        try{
+          const ap = await Api.get('/admin/hermes/autopilot', true);
+          const names={'replit':'⚡ Replit AI','pollinations':'🆓 Pollinations','nvidia_nim':'🟢 NVIDIA NIM','custom':'🔑 مخصص'};
+          if(badge){ badge.textContent=(names[ap.active_provider]||ap.active_provider||'AI')+'  ✅'; }
+        }catch(e){ if(badge) badge.textContent='AI ✅'; }
+      })();
+
+      /* ── Load file tree ── */
+      async function ccLoadTree(relPath=''){
+        const treeEl = document.getElementById('cc-file-tree');
+        if(!treeEl) return;
+        try{
+          const r = await fetch(API+'/admin/files/tree'+(relPath?'?path='+encodeURIComponent(relPath):''), {headers:{'x-admin-password':S.adminPw}}).then(x=>x.json());
+          const items = r.items||[];
+          const SHOW_EXT = new Set(['.js','.json','.html','.css','.md','.txt','.sh','.jsonl']);
+          const filtered = items.filter(i=>i.type==='dir'||SHOW_EXT.has((i.name.match(/\.[^.]+$/)||[''])[0]));
+          treeEl.innerHTML = filtered.map(i=>{
+            const isDir=i.type==='dir';
+            const icon = isDir ? '📁' : i.name.endsWith('.js')?'📄':i.name.endsWith('.json')?'🗃️':i.name.endsWith('.html')?'🌐':'📝';
+            const fpath = relPath ? relPath+'/'+i.name : i.name;
+            return `<div class="cc-tree-item" data-path="${escapeHTML(fpath)}" data-type="${i.type}"
+              style="cursor:pointer;padding:2px 4px;border-radius:4px;display:flex;align-items:center;gap:4px;color:${isDir?'#a78bfa':'var(--text-2)'};transition:background .15s"
+              onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''"
+            >${icon} <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(i.name)}</span></div>`;
+          }).join('') || '<div style="color:var(--text-3)">فارغ</div>';
+
+          treeEl.querySelectorAll('.cc-tree-item').forEach(item=>{
+            item.onclick=()=>{
+              const p=item.dataset.path, t=item.dataset.type;
+              if(t==='dir'){ ccLoadTree(p); }
+              else {
+                // Set file in input
+                const inp=document.getElementById('cc-input');
+                if(inp) inp.value=`اقرأ الملف ${p} وأخبرني بمحتواه`;
+              }
+            };
+          });
+        }catch(e){ if(treeEl) treeEl.textContent='خطأ في التحميل'; }
+      }
+      ccLoadTree('quran-coach');
+      document.getElementById('cc-tree-refresh')?.addEventListener('click',()=>ccLoadTree('quran-coach'));
+
+      /* ── Append message to chat ── */
+      function ccAppend(role, content, extra={}){
+        const msgsEl=document.getElementById('cc-messages');
+        if(!msgsEl) return null;
+        if(msgsEl.children.length===1&&msgsEl.children[0].style.textAlign==='center') msgsEl.innerHTML='';
+        const isUser=role==='user';
+        const isError=role==='error';
+        const isSystem=role==='system';
+        const div=document.createElement('div');
+        div.style.cssText=`display:flex;flex-direction:column;gap:4px;align-items:${isUser?'flex-end':'flex-start'}`;
+        const bubble=document.createElement('div');
+        const bgColor = isUser?'linear-gradient(135deg,#7c3aed,#6366f1)':isError?'rgba(239,68,68,.12)':isSystem?'rgba(250,204,21,.07)':'rgba(255,255,255,.07)';
+        const borderColor = isUser?'transparent':isError?'rgba(239,68,68,.25)':isSystem?'rgba(250,204,21,.15)':'rgba(255,255,255,.1)';
+        const textColor = isUser?'#fff':isError?'#fca5a5':isSystem?'var(--gold)':'var(--text-1)';
+        bubble.style.cssText=`max-width:92%;padding:10px 14px;border-radius:${isUser?'14px 14px 4px 14px':'4px 14px 14px 14px'};font-size:.83rem;line-height:1.65;word-break:break-word;direction:auto;white-space:pre-wrap;background:${bgColor};border:1px solid ${borderColor};color:${textColor}`;
+        bubble.textContent=content;
+        div.appendChild(bubble);
+        if(extra.tool_calls_count){
+          const meta=document.createElement('div');
+          meta.style.cssText='font-size:.65rem;color:var(--text-3);padding:0 4px';
+          meta.textContent=`🔧 ${extra.tool_calls_count} أداة مستخدمة`;
+          div.appendChild(meta);
+        }
+        msgsEl.appendChild(div);
+        msgsEl.scrollTop=msgsEl.scrollHeight;
+        return bubble;
+      }
+
+      /* ── Tool call bubble ── */
+      function ccShowTool(name, args, done=false, ok=true){
+        const msgsEl=document.getElementById('cc-messages');
+        if(!msgsEl) return null;
+        const toolEmoji={'read_file':'📖','write_file':'✏️','patch_file':'🔧','run_command':'⚡','list_files':'📁','search_code':'🔍','get_server_status':'🌐'};
+        const toolLabel={'read_file':'يقرأ ملف','write_file':'يكتب ملف','patch_file':'يعدّل ملف','run_command':'ينفّذ أمر','list_files':'يتصفح الملفات','search_code':'يبحث في الكود','get_server_status':'يفحص السيرفر'};
+        const emoji=toolEmoji[name]||'🔧';
+        const label=toolLabel[name]||name;
+        const detail=name==='run_command'?` — \`${escapeHTML(String(args.cmd||'').slice(0,50))}\``:
+                     name==='read_file'||name==='write_file'||name==='patch_file'?` — ${escapeHTML(String(args.path||'').slice(0,40))}`:
+                     args.query?` — "${escapeHTML(String(args.query||'').slice(0,40))}"`:
+                     args.path?` — ${escapeHTML(String(args.path||'').slice(0,40))}` : '';
+        const div=document.createElement('div');
+        div.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:8px;font-size:.75rem;color:#a78bfa;align-self:flex-start';
+        div.innerHTML=`<span>${emoji}</span><span>${label}</span><code style="font-size:.7rem;color:var(--text-3);direction:ltr">${detail}</code><span style="margin-right:auto">${done?(ok?'✅':'❌'):'⏳'}</span>`;
+        msgsEl.appendChild(div);
+        msgsEl.scrollTop=msgsEl.scrollHeight;
+        return div;
+      }
+
+      /* ── Update changed files panel ── */
+      function ccUpdateChangedFiles(filePath){
+        if(!ccChangedFiles.includes(filePath)) ccChangedFiles.push(filePath);
+        const panel=document.getElementById('cc-changed-files');
+        const list=document.getElementById('cc-changed-list');
+        if(!panel||!list) return;
+        panel.style.display='block';
+        list.innerHTML=ccChangedFiles.map(f=>`
+          <button class="btn btn-sm btn-ghost" onclick="document.getElementById('cc-input').value='اقرأ الملف ${escapeHTML(f)} وأخبرني بالتعديلات الأخيرة'" style="font-size:.68rem;padding:2px 8px;color:var(--gold);border-color:rgba(250,204,21,.2)">📄 ${escapeHTML(f.replace('quran-coach/',''))}</button>`).join('');
+      }
+
+      /* ── Send message ── */
+      async function ccSend(){
+        const inp=document.getElementById('cc-input');
+        const msg=(inp?.value||'').trim();
+        if(!msg||!S.adminPw) return;
+        inp.value='';
+        ccAppend('user',msg);
+        ccHistory.push({role:'user',content:msg});
+        const sendBtn=document.getElementById('cc-send-btn');
+        const statusEl=document.getElementById('cc-status');
+        if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='⏳';}
+        if(statusEl) statusEl.innerHTML='<span style="animation:pulse 1s infinite">⚡ Claude Code يعمل…</span>';
+
+        let aiTextBubble=null, aiText='', toolCallCount=0;
+        const toolDivs={};
+        try{
+          const resp=await fetch(API+'/admin/claude-code/chat',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},
+            body:JSON.stringify({message:msg, history:ccHistory.slice(-20)})
+          });
+          if(!resp.ok){ ccAppend('error','❌ خطأ في الاتصال: '+resp.status); return; }
+
+          const reader=resp.body.getReader();
+          const decoder=new TextDecoder();
+          let buf='';
+
+          while(true){
+            const {done,value}=await reader.read();
+            if(done) break;
+            buf+=decoder.decode(value,{stream:true});
+            const lines=buf.split('\n');
+            buf=lines.pop()||'';
+            for(const line of lines){
+              if(!line.startsWith('data: ')) continue;
+              let ev;
+              try{ ev=JSON.parse(line.slice(6)); }catch{ continue; }
+
+              if(ev.type==='message'&&ev.content){
+                aiText+=ev.content;
+                if(!aiTextBubble) aiTextBubble=ccAppend('ai',aiText);
+                else aiTextBubble.textContent=aiText;
+                document.getElementById('cc-messages')?.scrollTo({top:999999,behavior:'smooth'});
+              }
+              else if(ev.type==='tool_call'){
+                toolCallCount++;
+                const key=ev.id||ev.name+toolCallCount;
+                toolDivs[key]=ccShowTool(ev.name,ev.args||{},false,true);
+                if(statusEl) statusEl.textContent={'read_file':'📖 يقرأ '+((ev.args?.path||'').slice(0,35)),'write_file':'✏️ يكتب '+((ev.args?.path||'').slice(0,35)),'patch_file':'🔧 يعدّل '+((ev.args?.path||'').slice(0,35)),'run_command':'⚡ ينفّذ: '+((ev.args?.cmd||'').slice(0,40)),'search_code':'🔍 يبحث: '+((ev.args?.query||'').slice(0,35)),'list_files':'📁 يتصفح الملفات','get_server_status':'🌐 يفحص السيرفر'}[ev.name]||('🔧 '+ev.name);
+              }
+              else if(ev.type==='tool_result'){
+                const key=Object.keys(toolDivs).find(k=>k.includes(ev.name))||Object.keys(toolDivs).pop();
+                if(toolDivs[key]){
+                  const ok=ev.ok!==false;
+                  const spans=toolDivs[key].querySelectorAll('span');
+                  if(spans.length) spans[spans.length-1].textContent=ok?'✅':'❌';
+                }
+              }
+              else if(ev.type==='file_changed'){
+                ccUpdateChangedFiles(ev.path||'');
+                const msgsEl=document.getElementById('cc-messages');
+                if(msgsEl){
+                  const chip=document.createElement('div');
+                  chip.style.cssText='display:flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:6px;font-size:.72rem;color:var(--mint);align-self:flex-start';
+                  chip.innerHTML=`✏️ تم تعديل: <code style="color:#4ade80;direction:ltr">${escapeHTML(ev.path||'')}</code>`;
+                  msgsEl.appendChild(chip);
+                  msgsEl.scrollTop=msgsEl.scrollHeight;
+                }
+              }
+              else if(ev.type==='error'){
+                ccAppend('error','❌ '+escapeHTML(ev.message||'خطأ غير محدد'));
+              }
+              else if(ev.type==='done'){
+                if(statusEl) statusEl.textContent='';
+                if(aiText) ccHistory.push({role:'assistant',content:aiText});
+              }
+            }
+          }
+        }catch(e){
+          ccAppend('error','❌ خطأ في الاتصال: '+e.message);
+        }finally{
+          if(sendBtn){sendBtn.disabled=false;sendBtn.textContent='إرسال ↵';}
+          if(statusEl) statusEl.textContent='';
+        }
+      }
+
+      /* ── Event listeners ── */
+      document.getElementById('cc-send-btn')?.addEventListener('click',ccSend);
+      document.getElementById('cc-input')?.addEventListener('keydown',e=>{
+        if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); ccSend(); }
+      });
+      document.getElementById('cc-clear-btn')?.addEventListener('click',()=>{
+        window._ccHistory=[]; window._ccChangedFiles=[];
+        const msgsEl=document.getElementById('cc-messages');
+        if(msgsEl) msgsEl.innerHTML='<div style="text-align:center;color:var(--text-3);font-size:.82rem;padding:30px 0"><div style="font-size:2rem;margin-bottom:8px">⚡</div><div style="color:#c4b5fd;font-weight:600;margin-bottom:6px">Claude Code جاهز</div><div style="font-size:.75rem;line-height:1.7">أخبره بما تريد تطويره — سيقرأ الكود ويعدّله ويختبره</div></div>';
+        const panel=document.getElementById('cc-changed-files');
+        if(panel) panel.style.display='none';
+        toast('تم مسح المحادثة','success');
+      });
+      document.getElementById('cc-restart-btn')?.addEventListener('click',async()=>{
+        const btn=document.getElementById('cc-restart-btn');
+        btn.disabled=true; btn.textContent='⏳ جارٍ الإعادة…';
+        try{
+          const r=await fetch(API+'/admin/terminal/exec',{method:'POST',headers:{'Content-Type':'application/json','x-admin-password':S.adminPw},body:JSON.stringify({cmd:'kill -HUP $(cat /tmp/qqc.pid 2>/dev/null) 2>/dev/null; echo restarted'})}).then(x=>x.json());
+          toast('🔄 تم إرسال أمر الإعادة — انتظر بضع ثوانٍ','success');
+        }catch(e){ toast('❌ '+e.message,'error'); }
+        btn.disabled=false; btn.textContent='🔄 إعادة تشغيل السيرفر';
+      });
+      el.querySelectorAll('.cc-quick').forEach(btn=>{
+        btn.onclick=()=>{
+          const inp=document.getElementById('cc-input');
+          if(inp){ inp.value=btn.dataset.q; inp.focus(); }
+        };
+      });
+    }
+
   }
 };
 
