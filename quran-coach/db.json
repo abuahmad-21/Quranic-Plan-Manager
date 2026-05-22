@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 3.26,
-      "erratic_penalty_per_count": 1.37,
-      "focus_bonus_per_minute": 15.29,
-      "afi_skip_penalty": 2.99,
-      "afi_complete_bonus": 11.05,
+      "hesitation_penalty_per_second": 2.96,
+      "erratic_penalty_per_count": 1.24,
+      "focus_bonus_per_minute": 16.51,
+      "afi_skip_penalty": 2.69,
+      "afi_complete_bonus": 12.13,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.92,
-      "procrastination_threshold": 84,
-      "plan_decay_factor": 0.63,
-      "plan_growth_factor": 2.93
+      "energy_ema_weight": 0.89,
+      "procrastination_threshold": 80,
+      "plan_decay_factor": 0.61,
+      "plan_growth_factor": 3.07
     },
     "broadcast_messages": [
       {
@@ -151,8 +151,8 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-22T10:27:07.582Z",
-    "ai_opt_user_count": 51
+    "ai_last_optimization": "2026-05-22T10:33:18.583Z",
+    "ai_opt_user_count": 53
   },
   "users": {
     "455": {
@@ -8288,165 +8288,6 @@
         }
       ]
     },
-    "migrationtest": {
-      "username": "migrationtest",
-      "password_hash": "7e6e0c3079a08c5cc6036789b57e951f65f82383913ba1a49ae992544f1b4b6e",
-      "display_name": "Migration Test",
-      "created_at": "2026-05-13T11:02:22.439Z",
-      "last_active": "2026-05-13T11:02:23.328Z",
-      "avatar_color": "#0d2bc3",
-      "bio": "",
-      "is_banned": false,
-      "sheikh_verified": false,
-      "sheikh_requested": false,
-      "onboarding": {
-        "completed": false
-      },
-      "plan": null,
-      "progress": {
-        "total_pages_memorized": 0,
-        "total_sessions_completed": 0,
-        "current_streak_days": 0,
-        "longest_streak_days": 0,
-        "last_session_date": null,
-        "juz_completed": [],
-        "current_juz": 1,
-        "current_page_in_juz": 1,
-        "total_absences": 0,
-        "consecutive_absences": 0
-      },
-      "sessions": [],
-      "review_system": {
-        "active": false
-      },
-      "energy": {
-        "score": 75,
-        "friction": 0,
-        "afi": 100,
-        "history": [
-          75
-        ]
-      },
-      "sr_state": {},
-      "ml_state": null,
-      "friends": [],
-      "friend_requests_sent": [],
-      "friend_requests_received": [],
-      "voice_permissions_granted": [],
-      "notifications": [
-        {
-          "id": "6bcb22f8415c9b09",
-          "type": "motivation",
-          "text": "مرحبًا! نلاحظ أنك لم تواصل التلاوة مؤخرًا. نحن هنا لدعمك! دعنا نسترجع نشاطك ونبدأ خطة جديدة.",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-15T19:34:55.696Z"
-        },
-        {
-          "id": "03de3f3dd2a1bd69",
-          "type": "motivation",
-          "text": "نحن هنا لمساعدتكم في العودة إلى التلاوة! ابدأوا اليوم ولا تدعوا الفرصة تفوتكم.",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-16T11:45:33.975Z"
-        },
-        {
-          "id": "d082c21474dc3c69",
-          "type": "motivation",
-          "text": "نحن نشتاق إليك! عُد إلى التلاوة وابدأ من جديد. لدينا خطط مرنة تناسبك.",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-16T11:59:28.817Z"
-        },
-        {
-          "id": "fd78a4359cef3b24",
-          "type": "motivation",
-          "text": "مرحبًا، لقد لاحظنا أنك لم تتفاعل مؤخرًا مع التطبيق. نحن هنا لدعمك في رحلة التلاوة. ابدأ مجددًا اليوم وحقق تقدمًا ملحوظًا!",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-16T12:33:51.612Z"
-        },
-        {
-          "id": "4aba6f82d6b2969e",
-          "type": "motivation",
-          "text": "مرحباً! لقد لاحظنا عدم نشاطكم في الفترة الأخيرة. نريد أن نساعدكم في العودة إلى تلاوتكم. هل لديكم أي أسئلة أو تحتاجون إلى دعم؟ يمكنكم بدء جلسة التلاوة الآن! نحن معكم!",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-16T12:43:29.564Z"
-        },
-        {
-          "id": "f0833d878b6775e4",
-          "type": "motivation",
-          "text": "مرحبًا! لقد لاحظنا أنك لم تتفاعل معنا لفترة. نريد منك فقط الالتزام بتلاوة جزء صغير يوميًا، فكل خطوة مهمة. دعنا نعيدك للبدء!",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-16T12:55:54.160Z"
-        },
-        {
-          "id": "88f4252642f2a272",
-          "type": "motivation",
-          "text": "مرحباً! لقد لاحظنا أنك لم تكن نشطًا مؤخرًا. نحن هنا لدعمك في قضاء وقت معنا في التلاوة. ابدأ اليوم! كل خطوة صغيرة تحدث فرقًا!",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-17T16:18:50.932Z"
-        },
-        {
-          "id": "160505847de3cb64",
-          "type": "motivation",
-          "text": "مرحبًا! نلاحظ أنك لم تتفاعل معنا مؤخرًا. نحن هنا لدعمك! هل تحتاج إلى تغيير في خطة التدريب أو أي مساعدة؟",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-19T17:44:29.849Z"
-        },
-        {
-          "id": "daafed6266d08d38",
-          "type": "motivation",
-          "text": "تحفيز المستخدمين غير النشطين",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-21T14:13:12.122Z"
-        },
-        {
-          "id": "967b98cab7049f8d",
-          "type": "motivation",
-          "text": "Come back to the app and start reciting again!",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-21T14:19:51.574Z"
-        },
-        {
-          "id": "915963d3a3dbf9ca",
-          "type": "motivation",
-          "text": "تحفيز المستخدمين غير النشطين",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-21T15:55:39.670Z"
-        },
-        {
-          "id": "5e376f9046dfedac",
-          "type": "motivation",
-          "text": "Let's get back to reciting! You have 0 pages left to complete your daily goal.",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-22T09:16:35.813Z"
-        },
-        {
-          "id": "838158ebfe5e916c",
-          "type": "motivation",
-          "text": "Come back to Quran Coach! We miss you.",
-          "ref": "view-dashboard",
-          "read": false,
-          "created_at": "2026-05-22T10:21:29.720Z"
-        }
-      ],
-      "posts": [],
-      "login_history": [
-        {
-          "at": "2026-05-13T11:02:23.328Z",
-          "remember_me": false
-        }
-      ]
-    },
     "suudud": {
       "username": "suudud",
       "password_hash": "672fbedd977b0aff1cbc9162eda282c8da95c8e469db5a9bf729b5c30f8b7964",
@@ -10943,6 +10784,22 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T10:21:29.720Z"
+        },
+        {
+          "id": "cec50041358e7f85",
+          "type": "hermes_insight",
+          "text": "🤖 هرمز أعدّ تحديك اليومي! 🎯 تسميع حر 95%+ — الهدف: دقة 95%+ · مكافأة: 40 XP",
+          "ref": "view-smart-tarteel",
+          "read": false,
+          "created_at": "2026-05-22T10:35:01.129Z"
+        },
+        {
+          "id": "6fe1681622f64106",
+          "type": "hermes_insight",
+          "text": "🤖 هرمز: keep it up!",
+          "ref": "view-smart-tarteel",
+          "read": false,
+          "created_at": "2026-05-22T10:35:03.457Z"
         }
       ],
       "posts": [],
@@ -11006,6 +10863,30 @@
           "wrong": 0,
           "missing": 0,
           "ts": "2026-05-22T10:16:09.885Z"
+        }
+      ],
+      "tarteel_challenges": [
+        {
+          "id": "57fb1c2d160e717e",
+          "date": "2026-05-22",
+          "type": "general_recitation",
+          "title": "🎯 تسميع حر 95%+",
+          "description": "الهدف: دقة 95%+",
+          "target_accuracy": 95,
+          "focus_words": [],
+          "focus_surah": "",
+          "xp_reward": 40,
+          "hermes_note": "هرمز حلّل 3 جلسة ودقتك الأخيرة 97%",
+          "created_by": "hermes",
+          "completed": false,
+          "assigned_at": "2026-05-22T10:35:01.129Z"
+        }
+      ],
+      "hermes_tarteel_feedback": [
+        {
+          "text": "keep it up!",
+          "xp": 0,
+          "at": "2026-05-22T10:35:03.457Z"
         }
       ]
     },
@@ -11155,7 +11036,7 @@
       "password_hash": "93d6a213a6a881b87e17d0ed9d52d940ba7413471d66f8f43fe5d520b19c03e5",
       "display_name": "Dhdhdhd",
       "created_at": "2026-05-22T10:18:44.245Z",
-      "last_active": "2026-05-22T10:22:19.016Z",
+      "last_active": "2026-05-22T10:47:46.725Z",
       "avatar_color": "#0ccef6",
       "bio": "",
       "is_banned": false,
@@ -11201,8 +11082,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 1.09,
-        "afi": 83,
+        "friction": 6.89,
+        "afi": 16,
         "history": [
           100,
           100,
@@ -11244,7 +11125,7 @@
           "type": "motivation",
           "text": "Come back to Quran Coach! We miss you.",
           "ref": "view-dashboard",
-          "read": false,
+          "read": true,
           "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
@@ -11260,6 +11141,15 @@
           "wrong": 0,
           "missing": 0,
           "ts": "2026-05-22T10:19:38.238Z"
+        }
+      ],
+      "hermes_tarteel_feedback": [
+        {
+          "text": "لتحسين أدائك في التسميع، أهم شيء هو الاستمرار في التدريب بانتظام. حاول أن تقرأ القرآن يوميًا وتسجل تقدمك لتحديد المجالات التي تحتاج إلى تحسين. بالإضافة إلى ذلك، قم بمراجعة الكلمات التي تفتقر إلى الدقة في نطقها وتكرارها عدة مرات حتى تتقنها. لا تنسى أن تتبع أدائك وتحليله باستمرار لضمان التقدم في دقة التسميع.",
+          "xp": 0,
+          "at": "2026-05-22T10:34:04.724Z",
+          "type": "user_question",
+          "question": ""
         }
       ]
     },

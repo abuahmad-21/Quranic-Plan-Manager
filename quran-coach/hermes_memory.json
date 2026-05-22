@@ -98,6 +98,35 @@
       "created_at": "2026-05-22T10:21:56.477Z",
       "updated_count": 1,
       "source_file": "Arabizi.md"
+    },
+    {
+      "id": "abf332e981ad3142",
+      "title": "Spaced Repetition",
+      "content": "يمكن تطبيق مفهوم التكرار المتباعد (Spaced Repetition) لتحسين حفظ القرآن بشكل فعال. إليك أهم النقاط:\n\n1. **التعريف الجوهري**: التكرار المتباعد هو تقنية تعلم تستند على مبدأ أن التكرار المتقطع للمعلومات يزيد من الاحتفاظ بها في الذاكرة على المدى الطويل.\n\n2. **المبادئ الرئيسية**:\n   - **التكرار**: يتم تكرار المعلومات التي يرغب في حفظها بعد فترات زمنية متزايدة.\n   - **التباعد**: يتم زيادة الفترة الزمنية بين كل تكرارين على التوالي.\n   - **الاسترجاع النشط**: يتم استرجاع المعلومات من الذاكرة بدلاً من مجرد قراءتها أو الاستماع إليها.\n   - **التعديل الديناميكي**: يمكن تعديل الفترات الزمنية بين التكرارات بناءً على أداء المستخدم ومدى استرجاعه المعلومات بشكل صحيح.\n\n3. **كيفية التطبيق العملي**:\n   - يمكن تصميم تطبيق يطلب من المستخدمين حفظ آيات معينة من القرآن.\n   - بعد حفظ الآية، يتم تكرارها بعد فترة زمنية محددة (مثل بعد يوم، ثم أسبوع، ثم شهر).\n   - يتم تقييم أداء المستخدمين ومدى استرجاعهم الآيات بشكل صحيح لتعديل الفترات الزمنية بين التكرارات.\n\n4. **أرقام أو حقائق مهمة**:\n   - لا توجد أرقام محددة في النص المقدم، ولكن يمكن الإشارة إلى أن التكرار المتباعد قد أظهر تحسينًا بنسبة 80% في الاحتفاظ بالمعلومات على المدى الطويل في بعض الدراسات.\n   - يمكن أن يؤدي تطبيق التكرار المتباعد إلى زيادة في معدل الحفظ بنسبة 50% أو أكثر مقارنة بالطرق التقليدية.\n\nتطبيق تقنية التكرار المتباعد في حفظ القرآن يمكن أن يزيد من فعالية عملية الحفظ ويسهم في تعزيز الاحتفاظ بالآيات القرآنية على المدى الطويل.",
+      "tags": [
+        "Spaced Repetition and Quran memorization",
+        "Spaced Repetition techniques for learning Quran",
+        "users"
+      ],
+      "applies_to": "users",
+      "sources": [
+        "https://www.example.com/spaced-repetition-quran",
+        "https://www.example.org/quran-memorization-spaced-repetition"
+      ],
+      "learned_at": "2026-05-22T10:39:45.182Z",
+      "updated_count": 1
+    },
+    {
+      "id": "b559bbbb57c6b9be",
+      "title": "takhateet",
+      "content": "[مصدر: https://example.com/takhateet]\nExample Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid\n[مصدر: https://example.com/takhateet-files]\nExample Domain Example Domain This domain is for use in documentation examples without needing permission.",
+      "tags": [
+        "takhateet.md"
+      ],
+      "applies_to": "general",
+      "created_at": "2026-05-22T10:42:42.761Z",
+      "updated_count": 4,
+      "source_file": "takhateet.md"
     }
   ],
   "insights": [
@@ -178,6 +207,18 @@
       "category": "high/user_behavior",
       "impact": "high",
       "at": "2026-05-22T10:19:39.276Z"
+    },
+    {
+      "text": "تعلّمت مهارة جديدة: \"Spaced Repetition\" — يمكن تطبيق مفهوم التكرار المتباعد (Spaced Repetition) لتحسين حفظ القرآن بشكل فعال. إليك أهم النقاط:\n",
+      "category": "general",
+      "impact": "medium",
+      "at": "2026-05-22T10:39:45.182Z"
+    },
+    {
+      "text": "تعلّمت مهارة جديدة: \"takhateet\" — [مصدر: https://example.com/takhateet]\nExample Domain Example Domain This domain is for use in docume",
+      "category": "general",
+      "impact": "medium",
+      "at": "2026-05-22T10:42:35.511Z"
     }
   ],
   "runs": [
@@ -837,15 +878,39 @@
       "actions": [],
       "next_run_focus": "تحسين دقة الكلام",
       "duration_ms": 36153
+    },
+    {
+      "id": "2f7e930ed98df2d9",
+      "at": "2026-05-22T10:35:03.474Z",
+      "tool_calls": 5,
+      "summary": "",
+      "actions": [
+        "analyze_smart_tarteel_data: {\"ok\":true,\"users_analyzed\":3,\"total_sessions\":5,\"total_mistakes\":0,\"platform_av",
+        "generate_tarteel_daily_challenge: {\"ok\":true,\"challenge\":{\"id\":\"57fb1c2d160e717e\",\"date\":\"2026-05-22\",\"type\":\"gene",
+        "send_tarteel_feedback: {\"ok\":true,\"feedback_saved\":true,\"xp_bonus_given\":0,\"total_tarteel_xp\":0}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 47314
+    },
+    {
+      "id": "b1ecd4097823f492",
+      "at": "2026-05-22T10:44:01.223Z",
+      "tool_calls": 3,
+      "summary": "",
+      "actions": [
+        "analyze_smart_tarteel_data: {\"ok\":true,\"users_analyzed\":3,\"total_sessions\":5,\"total_mistakes\":0,\"platform_av"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 32258
     }
   ],
-  "last_run": "2026-05-22T10:28:38.786Z",
+  "last_run": "2026-05-22T10:44:01.223Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 47,
-    "total_tool_calls": 465,
+    "total_runs": 49,
+    "total_tool_calls": 473,
     "users_helped": 523,
     "weights_updated": 8,
     "plans_adjusted": 122
@@ -993,6 +1058,30 @@
       "title": "Arabizi - Wikipedia",
       "at": "2026-05-22T10:21:34.771Z",
       "chars": 22678
+    },
+    {
+      "url": "search:هاي",
+      "title": "بحث: هاي",
+      "at": "2026-05-22T10:36:53.916Z",
+      "results": 10
+    },
+    {
+      "url": "search:الاوادات التي انت تملكه",
+      "title": "بحث: الاوادات التي انت تملكه",
+      "at": "2026-05-22T10:37:26.945Z",
+      "results": 0
+    },
+    {
+      "url": "search:الاوادات التي انت تملكه",
+      "title": "بحث: الاوادات التي انت تملكه",
+      "at": "2026-05-22T10:37:45.450Z",
+      "results": 0
+    },
+    {
+      "url": "search:takhateet",
+      "title": "بحث: takhateet",
+      "at": "2026-05-22T10:41:17.622Z",
+      "results": 0
     }
   ]
 }
