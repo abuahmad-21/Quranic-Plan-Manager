@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 4.25,
-      "erratic_penalty_per_count": 1.43,
-      "focus_bonus_per_minute": 10.56,
-      "afi_skip_penalty": 3.89,
-      "afi_complete_bonus": 7.64,
+      "hesitation_penalty_per_second": 4.06,
+      "erratic_penalty_per_count": 1.37,
+      "focus_bonus_per_minute": 10.93,
+      "afi_skip_penalty": 3.73,
+      "afi_complete_bonus": 7.83,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.93,
+      "energy_ema_weight": 0.92,
       "procrastination_threshold": 80,
-      "plan_decay_factor": 0.8,
-      "plan_growth_factor": 2.2
+      "plan_decay_factor": 0.79,
+      "plan_growth_factor": 2.24
     },
     "broadcast_messages": [
       {
@@ -147,11 +147,11 @@
       "nvidia_nim_key": "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",
       "video_api_key": "",
       "hermes_autopilot": {
-        "enabled": false,
+        "enabled": true,
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-22T09:39:27.828Z",
+    "ai_last_optimization": "2026-05-22T09:46:16.644Z",
     "ai_opt_user_count": 46
   },
   "users": {
@@ -10350,7 +10350,7 @@
       "password_hash": "cb67632204967ffe37d430c5a26572d25a87f558b1941eeafe9221a839530ab9",
       "display_name": "دددددددد",
       "created_at": "2026-05-21T15:57:45.773Z",
-      "last_active": "2026-05-22T09:30:24.761Z",
+      "last_active": "2026-05-22T09:54:36.586Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -10396,8 +10396,8 @@
       },
       "energy": {
         "score": 100,
-        "friction": 3.97,
-        "afi": 80,
+        "friction": 8.16,
+        "afi": 9,
         "history": [
           100,
           100,
