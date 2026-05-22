@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 3.89,
-      "erratic_penalty_per_count": 1.32,
-      "focus_bonus_per_minute": 11.37,
-      "afi_skip_penalty": 3.55,
-      "afi_complete_bonus": 8.12,
+      "hesitation_penalty_per_second": 3.33,
+      "erratic_penalty_per_count": 1.41,
+      "focus_bonus_per_minute": 12.92,
+      "afi_skip_penalty": 3.01,
+      "afi_complete_bonus": 9.33,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.91,
-      "procrastination_threshold": 80,
-      "plan_decay_factor": 0.78,
-      "plan_growth_factor": 2.29
+      "energy_ema_weight": 0.96,
+      "procrastination_threshold": 76,
+      "plan_decay_factor": 0.73,
+      "plan_growth_factor": 2.51
     },
     "broadcast_messages": [
       {
@@ -151,8 +151,8 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-22T10:00:28.911Z",
-    "ai_opt_user_count": 46
+    "ai_last_optimization": "2026-05-22T10:09:35.107Z",
+    "ai_opt_user_count": 50
   },
   "users": {
     "455": {
@@ -10500,7 +10500,7 @@
       "password_hash": "937e8d5fbb48bd4949536cd65b8d35c426b80d2f830c5c308e2cdec422ae2244",
       "display_name": "اختبار شامل",
       "created_at": "2026-05-22T10:02:15.920Z",
-      "last_active": "2026-05-22T10:08:00.286Z",
+      "last_active": "2026-05-22T10:16:09.061Z",
       "avatar_color": "#0c533a",
       "bio": "",
       "is_banned": false,
@@ -10576,6 +10576,10 @@
         {
           "at": "2026-05-22T10:08:00.286Z",
           "remember_me": false
+        },
+        {
+          "at": "2026-05-22T10:16:09.061Z",
+          "remember_me": false
         }
       ],
       "khatma": {
@@ -10587,7 +10591,37 @@
         "daily_log": {},
         "total_pages_read": 0,
         "completions": 0
-      }
+      },
+      "smart_mistakes": {},
+      "smart_sessions": [
+        {
+          "surah_name": "الفاتحة",
+          "ayah_num": 1,
+          "accuracy": 100,
+          "correct": 4,
+          "wrong": 0,
+          "missing": 0,
+          "ts": "2026-05-22T10:16:09.230Z"
+        },
+        {
+          "surah_name": "الفاتحة",
+          "ayah_num": 2,
+          "accuracy": 90,
+          "correct": 3,
+          "wrong": 0,
+          "missing": 0,
+          "ts": "2026-05-22T10:16:09.328Z"
+        },
+        {
+          "surah_name": "الفاتحة",
+          "ayah_num": 3,
+          "accuracy": 100,
+          "correct": 5,
+          "wrong": 0,
+          "missing": 0,
+          "ts": "2026-05-22T10:16:09.885Z"
+        }
+      ]
     },
     "suptest01": {
       "username": "suptest01",
@@ -11004,6 +11038,11 @@
       "username": "fulltest01",
       "expires": 1779530880286,
       "created_at": "2026-05-22T10:08:00.286Z"
+    },
+    "b5dbb592ce2106a1825bc477b697eaabffb92e63b221acc8": {
+      "username": "fulltest01",
+      "expires": 1779531369061,
+      "created_at": "2026-05-22T10:16:09.061Z"
     }
   }
 }

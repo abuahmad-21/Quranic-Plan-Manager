@@ -140,6 +140,7 @@
       <span style="position:relative;display:inline-flex"><button class="icon-btn" data-go="view-notifications" title="الإشعارات">🔔</button><span id="notif-badge" class="notif-badge hidden">0</span></span>
       <button class="icon-btn" data-go="view-quran" title="القرآن الكريم">📖</button>
       <button class="icon-btn" data-go="view-tarteel" title="مركز التلاوة">🎙️</button>
+      <button class="icon-btn" data-go="view-smart-tarteel" title="التسميع الذكي v2">🧠</button>
       <button class="icon-btn" data-go="view-khatma" title="ختمتي">📿</button>
       <button class="icon-btn" data-go="view-admin-gate" title="إدارة">⚙️</button>
       <button class="icon-btn" id="btn-logout" title="خروج">⎋</button>
@@ -166,6 +167,7 @@
         <button class="btn btn-primary" data-go="view-session">ابدأ جلسة</button>
         <button class="btn btn-secondary" data-go="view-plan">الخطة</button>
         <button class="btn btn-ghost" data-go="view-leaderboard">المتصدرون</button>
+        <button class="btn btn-ghost" data-go="view-smart-tarteel" style="background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(236,72,153,.2));border-color:rgba(139,92,246,.4)">🧠 تسميع ذكي</button>
       </div>
       <div class="glass-card" style="padding:16px;margin:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;max-width:480px;width:calc(100% - 32px)">
         <div><div class="mono" style="font-size:1.4rem" id="stat-pages">0</div><div style="color:var(--text-2);font-size:.75rem">صفحات</div></div>
@@ -1139,6 +1141,128 @@
         <div id="tarteel-history-wrap" style="display:none">
           <h3 style="margin:14px 6px 8px;font-size:.88rem">📋 سجل جلسات التسميع الذكي</h3>
           <div id="tarteel-history-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SMART TARTEEL v2 VIEW ═══════════════════ -->
+  <section id="view-smart-tarteel" class="view">
+    <div class="page-container">
+      <button class="btn btn-ghost btn-sm" data-go="view-dashboard">⟵ رجوع</button>
+      <h2 class="view-title">🧠 التسميع الذكي v2</h2>
+      <p style="font-size:.78rem;color:var(--text-3);margin:-8px 0 12px">مقارنة كلمة بكلمة · تجويد مساعد · مراجعة ذكية · مجاني 100%</p>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-primary" data-stab="recite" id="stab-recite">🎙️ تسميع</button>
+        <button class="btn btn-sm btn-ghost" data-stab="review" id="stab-review">🔁 مراجعة SR</button>
+        <button class="btn btn-sm btn-ghost" data-stab="stats" id="stab-stats">📊 إحصاء</button>
+        <button class="btn btn-sm btn-ghost" data-stab="tajweed" id="stab-tajweed">📖 تجويد</button>
+      </div>
+
+      <!-- TAB: تسميع -->
+      <div id="st-tab-recite">
+        <!-- Selector -->
+        <div class="glass-card pad" style="margin-bottom:10px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <select id="st-surah-sel" class="field-input" style="flex:1;min-width:140px">
+              <option value="">اختر السورة…</option>
+            </select>
+            <select id="st-ayah-sel" class="field-input" style="width:90px">
+              <option value="">آية</option>
+            </select>
+            <button class="btn btn-sm btn-primary" id="btn-st-load">تحميل</button>
+          </div>
+          <!-- Mode -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <label style="font-size:.75rem;color:var(--text-3)">وضع التسميع:</label>
+            <button class="btn btn-sm btn-ghost active-mode" data-stmode="type" id="stmode-type">⌨️ كتابة</button>
+            <button class="btn btn-sm btn-ghost" data-stmode="speech" id="stmode-speech">🎙️ صوت</button>
+            <button class="btn btn-sm btn-ghost" data-stmode="hidden" id="stmode-hidden">👁️ غيب</button>
+          </div>
+        </div>
+
+        <!-- Quran text display -->
+        <div class="glass-card pad" id="st-text-area" style="display:none;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span id="st-ayah-label" style="font-size:.8rem;color:#a5b4fc;font-weight:700"></span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm btn-ghost" id="btn-st-tts" title="استمع للآية">🔊</button>
+              <button class="btn btn-sm btn-ghost" id="btn-st-comprehension" title="سؤال فهم">💡</button>
+              <button class="btn btn-sm btn-ghost" id="btn-st-tajweed-check" title="أحكام تجويد">📖</button>
+            </div>
+          </div>
+          <!-- Word-by-word display -->
+          <div id="st-word-display" dir="rtl" style="font-family:'Amiri Quran',serif;font-size:1.5rem;line-height:2.2;text-align:center;padding:8px 4px;min-height:60px"></div>
+          <!-- Hidden mode: text hidden -->
+          <div id="st-hidden-cover" style="display:none;text-align:center;padding:20px;font-size:.85rem;color:var(--text-3)">النص مخفي — سمّع من الذاكرة 🧠</div>
+        </div>
+
+        <!-- Input area -->
+        <div class="glass-card pad" id="st-input-area" style="display:none;margin-bottom:10px">
+          <!-- Typing mode -->
+          <div id="st-type-input">
+            <textarea id="st-text-input" class="field-input" dir="rtl" rows="3" placeholder="اكتب ما تحفظه هنا…" style="font-family:'Amiri',serif;font-size:1.1rem;resize:vertical;width:100%;box-sizing:border-box"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn btn-primary" id="btn-st-check">✅ تحقق</button>
+              <button class="btn btn-ghost" id="btn-st-clear-input">مسح</button>
+            </div>
+          </div>
+          <!-- Speech mode -->
+          <div id="st-speech-input" style="display:none">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <button class="btn btn-primary" id="btn-st-mic">🎙️ ابدأ التلاوة</button>
+              <div id="st-mic-status" style="font-size:.82rem;color:var(--text-2)"></div>
+              <div id="st-mic-timer" style="font-size:.82rem;color:var(--gold);font-weight:700;display:none"></div>
+            </div>
+            <div id="st-live-words" dir="rtl" style="min-height:44px;padding:10px;background:rgba(99,102,241,.09);border-radius:10px;font-size:1rem;font-family:'Amiri',serif;color:#a5b4fc;line-height:1.8;display:none"></div>
+            <canvas id="st-waveform" height="44" style="width:100%;height:44px;border-radius:8px;background:rgba(0,0,0,.25);display:block;margin-top:8px"></canvas>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="st-result" style="display:none;margin-bottom:10px"></div>
+
+        <!-- Comprehension Q&A -->
+        <div id="st-comprehension-box" style="display:none;margin-bottom:10px"></div>
+
+        <!-- Nav: prev/next ayah -->
+        <div id="st-ayah-nav" style="display:none;display:flex;gap:8px;justify-content:center;margin-bottom:10px">
+          <button class="btn btn-ghost btn-sm" id="btn-st-prev-ayah">⟵ السابقة</button>
+          <span id="st-ayah-pos" style="font-size:.78rem;color:var(--text-3);align-self:center"></span>
+          <button class="btn btn-ghost btn-sm" id="btn-st-next-ayah">التالية ⟶</button>
+        </div>
+      </div>
+
+      <!-- TAB: مراجعة SR -->
+      <div id="st-tab-review" style="display:none">
+        <div id="st-review-loading" class="glass-card pad" style="text-align:center;color:var(--text-3);font-size:.85rem">جارٍ تحميل قائمة المراجعة…</div>
+        <div id="st-review-content" style="display:none"></div>
+      </div>
+
+      <!-- TAB: إحصاء -->
+      <div id="st-tab-stats" style="display:none">
+        <div id="st-stats-loading" class="glass-card pad" style="text-align:center;color:var(--text-3);font-size:.85rem">جارٍ تحميل الإحصاءات…</div>
+        <div id="st-stats-content" style="display:none"></div>
+      </div>
+
+      <!-- TAB: تجويد -->
+      <div id="st-tab-tajweed" style="display:none">
+        <div class="glass-card pad" style="margin-bottom:10px">
+          <div style="font-size:.9rem;font-weight:700;margin-bottom:10px">📖 تحليل أحكام التجويد</div>
+          <p style="font-size:.78rem;color:var(--text-3);margin-bottom:10px">الصق أي نص قرآني لتحليل أحكام التجويد فيه محلياً بدون إنترنت</p>
+          <textarea id="st-tajweed-input" class="field-input" dir="rtl" rows="4" placeholder="الصق النص القرآني هنا…" style="font-family:'Amiri',serif;font-size:1.1rem;resize:vertical;width:100%;box-sizing:border-box"></textarea>
+          <button class="btn btn-primary" id="btn-st-tajweed-analyze" style="margin-top:8px">🔍 تحليل التجويد</button>
+        </div>
+        <div id="st-tajweed-results" style="display:none"></div>
+        <!-- Tajweed rules reference -->
+        <div class="glass-card pad" style="margin-top:10px">
+          <div style="font-size:.85rem;font-weight:700;margin-bottom:10px;color:#a5b4fc">📚 مرجع أحكام التجويد السريع</div>
+          <div style="display:grid;gap:6px">
+            ${[['🟡','إقلاب','النون الساكنة مع الباء → ميم مخفاة'],['🟢','إدغام','النون الساكنة مع يرملون'],['🔵','إظهار','النون الساكنة مع أحرف الحلق أعغحخه'],['🟣','إخفاء','النون الساكنة مع باقي الحروف'],['🟠','إخفاء شفوي','الميم الساكنة مع الباء'],['⭐','مد','مد طبيعي حركتان، مد فرعي 4-6 حركات'],['✨','قلقلة','حروف قطب جد عند السكون'],['💗','شدّة','إتمام مخرج الحرف المشدد']].map(([s,t,d])=>`<div style="display:flex;gap:8px;align-items:start;padding:6px 8px;background:rgba(255,255,255,.04);border-radius:8px"><span style="font-size:1rem">${s}</span><div><div style="font-size:.82rem;font-weight:700;color:var(--text-1)">${t}</div><div style="font-size:.72rem;color:var(--text-3)">${d}</div></div></div>`).join('')}
+          </div>
         </div>
       </div>
 

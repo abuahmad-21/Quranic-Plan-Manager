@@ -3785,6 +3785,189 @@ R('POST','/qqc/tarteel/ai-check', async(req,res)=>{
 });
 
 /* ════════════════════════════════════════════════════════════════
+   SMART TARTEEL v2 — محرك تسميع ذكي مجاني 100% مفتوح المصدر
+   • تطبيع النص العربي (إزالة التشكيل، توحيد الأحرف)
+   • مقارنة كلمة بكلمة بخوارزمية Levenshtein
+   • تتبع الأخطاء بـ Spaced Repetition (SM-2)
+   • تحليل أحكام التجويد محلياً بدون إنترنت
+   • سؤال فهم المعنى بالذكاء الاصطناعي (اختياري)
+════════════════════════════════════════════════════════════════ */
+
+function normalizeArabic(t){
+  return t
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g,'')
+    .replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
+    .replace(/\u0640/g,'').replace(/\s+/g,' ').trim();
+}
+
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function wordSim(a,b){
+  const na=normalizeArabic(a),nb=normalizeArabic(b);
+  if(na===nb) return 1;
+  const mx=Math.max(na.length,nb.length);
+  return mx?Math.max(0,1-levenshtein(na,nb)/mx):1;
+}
+
+function compareArabicTexts(expected,actual){
+  const expW=expected.split(/\s+/).filter(Boolean);
+  const actW=actual.split(/\s+/).filter(Boolean);
+  const words=[];
+  let correct=0,close=0,wrong=0,missing=0;
+  for(let i=0;i<expW.length;i++){
+    const ew=expW[i],aw=actW[i]||'';
+    if(!aw){words.push({expected:ew,actual:'',status:'missing',sim:0});missing++;continue;}
+    const sim=wordSim(ew,aw);
+    const status=sim>=0.88?'correct':sim>=0.55?'close':'wrong';
+    words.push({expected:ew,actual:aw,status,sim:+sim.toFixed(2)});
+    if(status==='correct')correct++;
+    else if(status==='close')close++;
+    else wrong++;
+  }
+  for(let i=expW.length;i<actW.length;i++)
+    words.push({expected:'',actual:actW[i],status:'extra',sim:0});
+  const total=expW.length;
+  const accuracy=total>0?Math.round((correct+close*0.6)*100/total):0;
+  return {words,correct,close,wrong,missing,total,accuracy};
+}
+
+const TAJWEED_DB=[
+  {re:/ن[\u0652]?\s*[بم]/u,       rule:'إقلاب — النون الساكنة/التنوين مع الباء: قلبها ميماً مخفاة',          color:'#f59e0b', symbol:'🟡'},
+  {re:/ن[\u0652]?\s*[يرملو ن]/u,  rule:'إدغام — النون الساكنة مع حروف (يرملون): إدغام بغنة أو بغير غنة',    color:'#34d399', symbol:'🟢'},
+  {re:/ن[\u0652]?\s*[أعغحخه]/u,   rule:'إظهار حلقي — النون الساكنة مع أحرف الحلق (أعغحخه)',                 color:'#60a5fa', symbol:'🔵'},
+  {re:/م[\u0652]?\s*م/u,           rule:'إدغام شفوي — الميم الساكنة مع الميم',                               color:'#818cf8', symbol:'🟣'},
+  {re:/م[\u0652]?\s*ب/u,           rule:'إخفاء شفوي — الميم الساكنة مع الباء',                              color:'#fb923c', symbol:'🟠'},
+  {re:/لل/u,                       rule:'لام شمسية/قمرية — تحقق من الإدغام مع الحروف الشمسية',              color:'#e879f9', symbol:'🔮'},
+  {re:/ّ/u,                         rule:'شدّة (تشديد) — أتمّ مخرج الحرف المشدد كاملاً',                    color:'#f472b6', symbol:'💗'},
+  {re:/[اوي]{2}/u,                  rule:'مد — تأكد من مقدار المد الطبيعي (حركتان)',                         color:'#fbbf24', symbol:'⭐'},
+  {re:/ال[تثدذرزسشصضطظلن]/u,       rule:'لام شمسية — تُدغم لام التعريف مع الحروف الشمسية',                  color:'#a78bfa', symbol:'☀️'},
+  {re:/قل[أيع]/u,                   rule:'قلقلة — حروف القلقلة (قطب جد): أتمّ القلقلة عند الوقف',           color:'#34d399', symbol:'✨'},
+];
+
+/* ── POST /qqc/tarteel/v2/check ── */
+R('POST','/qqc/tarteel/v2/check',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const b=await readBody(req);
+  const expected=String(b.expected_text||'').slice(0,3000);
+  const actual=String(b.actual_text||'').slice(0,3000);
+  const surah_name=String(b.surah_name||'').slice(0,100);
+  const ayah_num=+b.ayah_num||0;
+  if(!expected||!actual)return send(res,400,{error:'expected_text و actual_text مطلوبان'});
+
+  const result=compareArabicTexts(expected,actual);
+
+  if(!u.smart_mistakes)u.smart_mistakes={};
+  const wrongWords=result.words.filter(w=>w.status==='wrong'||w.status==='missing');
+  wrongWords.forEach(w=>{
+    const key=`${surah_name}__${normalizeArabic(w.expected)}`;
+    if(!u.smart_mistakes[key])u.smart_mistakes[key]={word:w.expected,surah:surah_name,ayah:ayah_num,count:0,last_seen:null,next_review:null,ease:2.5,next_interval:1};
+    const m=u.smart_mistakes[key];
+    m.count++;m.last_seen=now();
+    const interval=m.count===1?1:m.count===2?3:Math.round((m.next_interval||3)*m.ease);
+    m.next_interval=Math.min(interval,90);
+    m.next_review=new Date(Date.now()+m.next_interval*86400000).toISOString().slice(0,10);
+  });
+
+  if(!u.smart_sessions)u.smart_sessions=[];
+  u.smart_sessions.push({surah_name,ayah_num,accuracy:result.accuracy,correct:result.correct,wrong:result.wrong,missing:result.missing,ts:now()});
+  if(u.smart_sessions.length>1000)u.smart_sessions=u.smart_sessions.slice(-1000);
+
+  if(result.accuracy<80&&expected&&actual){
+    appendLog('recitation_errors.jsonl',{username:u.username,surah_name,ayah_num,accuracy_pct:result.accuracy,method:'smart_local',expected_text:expected.slice(0,500),actual_text:actual.slice(0,500),wrong_words:wrongWords.map(w=>w.expected).slice(0,20)});
+  }
+  persist();
+  send(res,200,{ok:true,...result,mistakes_tracked:wrongWords.length});
+});
+
+/* ── GET /qqc/tarteel/v2/review ── */
+R('GET','/qqc/tarteel/v2/review',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const today=new Date().toISOString().slice(0,10);
+  const mistakes=Object.values(u.smart_mistakes||{});
+  const due=mistakes.filter(m=>!m.next_review||m.next_review<=today).sort((a,b)=>b.count-a.count).slice(0,30);
+  const upcoming=mistakes.filter(m=>m.next_review&&m.next_review>today).sort((a,b)=>a.next_review.localeCompare(b.next_review)).slice(0,10);
+  send(res,200,{ok:true,due_count:due.length,total_tracked:mistakes.length,due,upcoming});
+});
+
+/* ── GET /qqc/tarteel/v2/stats ── */
+R('GET','/qqc/tarteel/v2/stats',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const sessions=(u.smart_sessions||[]).slice(-100);
+  const mistakes=Object.values(u.smart_mistakes||{});
+  const avgAcc=sessions.length?Math.round(sessions.reduce((s,ss)=>s+ss.accuracy,0)/sessions.length):0;
+  const trend=sessions.slice(-14).map(s=>({acc:s.accuracy,ts:s.ts,surah:s.surah_name}));
+  const topMistakes=mistakes.sort((a,b)=>b.count-a.count).slice(0,15).map(m=>({word:m.word,surah:m.surah,ayah:m.ayah,count:m.count,next_review:m.next_review}));
+  const today=new Date().toISOString().slice(0,10);
+  const dueCount=mistakes.filter(m=>!m.next_review||m.next_review<=today).length;
+  const bySurah={};
+  sessions.forEach(s=>{if(!bySurah[s.surah_name])bySurah[s.surah_name]={count:0,sum:0};bySurah[s.surah_name].count++;bySurah[s.surah_name].sum+=s.accuracy;});
+  const surahStats=Object.entries(bySurah).map(([s,v])=>({surah:s,sessions:v.count,avg:Math.round(v.sum/v.count)})).sort((a,b)=>b.sessions-a.sessions).slice(0,10);
+  send(res,200,{ok:true,sessions_count:sessions.length,avg_accuracy:avgAcc,trend,top_mistakes:topMistakes,due_review:dueCount,total_mistakes_tracked:mistakes.length,recent_sessions:sessions.slice(-10).reverse(),surah_stats:surahStats});
+});
+
+/* ── DELETE /qqc/tarteel/v2/mistakes/:key ── */
+R('DELETE','/qqc/tarteel/v2/mistakes/:key',async(req,res,p)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const key=decodeURIComponent(p.key);
+  if(u.smart_mistakes&&u.smart_mistakes[key]){delete u.smart_mistakes[key];persist();}
+  send(res,200,{ok:true});
+});
+
+/* ── DELETE /qqc/tarteel/v2/mistakes (clear all) ── */
+R('DELETE','/qqc/tarteel/v2/mistakes',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  u.smart_mistakes={};persist();
+  send(res,200,{ok:true,cleared:true});
+});
+
+/* ── POST /qqc/tarteel/v2/comprehension ── */
+R('POST','/qqc/tarteel/v2/comprehension',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const b=await readBody(req);
+  const ayah_text=String(b.ayah_text||'').slice(0,1000);
+  const surah_name=String(b.surah_name||'').slice(0,100);
+  const ayah_num=+b.ayah_num||0;
+  if(!ayah_text)return send(res,400,{error:'ayah_text مطلوب'});
+  const cfg=getActiveAIConfig();
+  if(!cfg)return send(res,200,{ok:true,question:'ما المعنى العام لهذه الآية؟',answer:'الذكاء الاصطناعي غير متاح حالياً — يمكنك تفعيله من إعدادات الأدمن.',tip:'',no_ai:true});
+  try{
+    const sysP=`أنت معلم قرآن كريم ومفسر. عندما تُعطى آية قرآنية:
+١) اطرح سؤال فهم واحداً مختصراً وواضحاً
+٢) أعط الإجابة باختصار
+٣) اذكر فائدة عملية من الآية (جملة واحدة)
+التنسيق الإلزامي بالضبط:
+س: [السؤال]
+ج: [الإجابة]
+ف: [الفائدة العملية]`;
+    const r=await callAI(sysP,`سورة ${surah_name} آية ${ayah_num}: "${ayah_text}"`,350);
+    const qm=r?.match(/س:\s*(.+)/); const am=r?.match(/ج:\s*(.+)/); const fm=r?.match(/ف:\s*(.+)/);
+    send(res,200,{ok:true,question:qm?.[1]?.trim()||'',answer:am?.[1]?.trim()||'',tip:fm?.[1]?.trim()||'',raw:r||''});
+  }catch(e){send(res,500,{error:e.message});}
+});
+
+/* ── POST /qqc/tarteel/v2/tajweed-hint ── */
+R('POST','/qqc/tarteel/v2/tajweed-hint',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const b=await readBody(req);
+  const text=String(b.text||'').slice(0,1000);
+  const hints=TAJWEED_DB.filter(r=>r.re.test(text)).map(r=>({rule:r.rule,color:r.color,symbol:r.symbol}));
+  send(res,200,{ok:true,hints,count:hints.length});
+});
+
+/* ── GET /qqc/tarteel/v2/normalize ── (utility for frontend) ── */
+R('POST','/qqc/tarteel/v2/normalize',async(req,res)=>{
+  const b=await readBody(req);
+  const text=String(b.text||'').slice(0,5000);
+  send(res,200,{ok:true,normalized:normalizeArabic(text)});
+});
+
+/* ════════════════════════════════════════════════════════════════
    KHATMA — Full Quran reading plan with daily tracking
    User sets target days → gets pages/day → marks daily ward done
 ════════════════════════════════════════════════════════════════ */
