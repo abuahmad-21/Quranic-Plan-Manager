@@ -142,6 +142,12 @@
       "category": "general",
       "impact": "medium",
       "at": "2026-05-22T09:47:20.487Z"
+    },
+    {
+      "text": "there are many errors in the website",
+      "category": "user_behavior",
+      "impact": "high",
+      "at": "2026-05-22T10:01:28.972Z"
     }
   ],
   "runs": [
@@ -751,15 +757,38 @@
       "actions": [],
       "next_run_focus": "",
       "duration_ms": 8208
+    },
+    {
+      "id": "f63de661cfd3f933",
+      "at": "2026-05-22T10:01:28.989Z",
+      "tool_calls": 3,
+      "summary": "",
+      "actions": [
+        "log_insight: {\"ok\":true,\"total_insights\":12}"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 22667
+    },
+    {
+      "id": "8de13edc38bacc00",
+      "at": "2026-05-22T10:08:26.109Z",
+      "tool_calls": 6,
+      "summary": "",
+      "actions": [
+        "analyze_and_improve_algorithm: {\"ok\":true,\"focus\":\"all\",\"avg_accuracy\":90,\"sessions_analyzed\":1,\"top_error_word",
+        "write_project_file: {\"ok\":true,\"file\":\"ai_core.js\",\"reason\":\"تحسين دالة LocalML.train\",\"backup\":\"/ho"
+      ],
+      "next_run_focus": "",
+      "duration_ms": 26171
     }
   ],
-  "last_run": "2026-05-22T09:39:55.516Z",
+  "last_run": "2026-05-22T10:08:26.109Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 42,
-    "total_tool_calls": 438,
+    "total_runs": 44,
+    "total_tool_calls": 447,
     "users_helped": 523,
     "weights_updated": 8,
     "plans_adjusted": 122
@@ -801,6 +830,14 @@
       "top_words": "",
       "analysis": "أقترح ثلاثة تحسينات محددة للكود بناءً على البيانات المقدمة:\n\n1. **تحسين دقة التنبؤ في الكلاس `LocalML`**:\n * المشكلة: القيمة القديمة للتعلم `ML_LR` هي 0.01، والتي قد تكون كبيرة جدًا وتؤدي إلى تذبذب في التنبؤات.\n * القيمة القديمة: `ML_LR: 0.01`\n * القيمة الجديدة المقترحة: `ML_LR: 0.005`\n * السبب: تقليل معدل التعلم يمكن أن يؤدي إلى تحسين دقة التنبؤ عن طريق تقليل التأثير السلبي للتحديثات الكبيرة.\n\n2. **تحسين معاملات التصفية في الكلاس `Kalman`**:\n * المشكلة: القيمة القديمة لمعامل التصفية `KALMAN_Q` هي 1e-3، والتي قد تكون صغيرة جدًا وتؤدي إلى إهمال التغييرات في البيانات.\n * القيمة القديمة: `KALMAN_Q: 1e-3`\n * القيمة الجديدة المقترحة: `KALMAN_Q: 1e-2`\n * السبب: زيادة معامل التصفية يمكن أن يؤدي إلى تحسين است",
       "sessions_analyzed": 0
+    },
+    {
+      "focus": "all",
+      "at": "2026-05-22T10:08:21.552Z",
+      "avg_accuracy": 90,
+      "top_words": "",
+      "analysis": "## 1️⃣ تحسين دالة `LocalML.train`\n\n**المشكلة**  \nفي السطر الأخير من `train()` يقطع الكود قبل إكمال حساب خسارة (`loss`) وتخزينها في `this.loss`. كما يفتقد إغلاق المتغيرات وعودة القيم، مما قد يتسبب في أخطاء التحميل (`8 server errors`) عندما تحاول الخوارزمية تخزين القيم غير المكتملة.\n\n**النص القديم**  \n```js\nconst l=0.5*e*\n```\n\n**النص المقترح**  \n```js\nconst l = 0.5 * e * e;          // الخسارة تُحسب كـ ½ (خطأ)²\nthis.loss.push(l);             // حفظ القيمة لتتبع الأداء\n```\n\n**سبب التغيير** – احتمال أن تظل الخسارة غير محسوبة وتؤدي إلى أخطاء في تحليل الأداء على الخادم. وضعها في `this.loss` يسمح بالتحقق اللاحق وقيمة `loss` صالحة للرسوم البيانية أو الضبط الديناميكي للمعلمات.\n\n---\n\n## 2️⃣ إضافة إعادة محاولة تلقائية عند خطأ الشبكة (`'network'`)\n\n**المشكلة**  \nعند حدث `network` داخل الـ `SpeechRecognition` يُطبع تحذير فقط، ولا يتم إعادة المحاولة أو إغلاق الجلسة وإعادة فتحها، فالأخطاء تتراكم (8 أخطاء سيرفر في سجلاتك).\n\n**النص القديم**  \n```js\nrec.onerror = ev=>{\n  ...\n  if (!silentErrors.has(ev.error)) toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);\n};\n```\n\n**النص المقترح**  \n```js\nrec.onerror = ev=>{\n  ...\n  if (!silentErrors.has(ev.error)) {\n    toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);\n    // إعادة محاولة الشبكة تلقائياً بعد 1 ثانية\n    if (ev.error === 'network') {\n      setTimeout(()=>{ rec.cancel(); initSpeech(); }, 1000);\n    }\n  }\n};\n```\n\n*ملاحظة* : `initSpeech()` هي الدالة التي تُنشئ كائن `SpeechRecognition` وتبدأ الجلسة مرة أخرى.  \n\n**سبب التغيير** – تخفف التكرارات الغير ضرورية على الخادم وتلغي عدم القدرة على تشغيل الجلسة مرة أخرى عند انقطاع الشبكة.\n\n---\n\n## 3️⃣ تقليل استهلاك الـ DOM في تحديث المحادثة الحية\n\n**المشكلة**  \nيُحدّث عنصر `#tarteel-live-transcript` في كل مرة يخرج منها `rec.onresult`. إذا كانت هذه الأحداث كثيرة قد يؤدي ذلك إلى ضرر في الأداء (خصوصاً على الأجهزة منخفضة القدرة) ويزيد من استهلاك الموارد، مما قد يرفع عدد الأخطاء على الخادم.\n\n**النص القديم**  \n```js\nif (live){\n  live.style.display = 'block';\n  live.innerHTML = interim\n    ? `<span style=\"color:#fcd34d\">🎤 ${escapeHTML(interim)}</span>`\n    : final.trim()\n    ? `<span style=\"color:#34d399\">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`\n    : '';\n}\n```\n\n**النص المقترح**  \n```js\nif (live){\n  const html = interim\n    ? `<span style=\"color:#fcd34d\">🎤 ${escapeHTML(interim",
+      "sessions_analyzed": 1
     }
   ],
   "code_edits": [
@@ -820,6 +857,12 @@
       "reason": "تحسين دقة الكلمات الأكثر خطأ",
       "at": "2026-05-21T13:06:15.261Z",
       "chars_changed": 650
+    },
+    {
+      "file": "ai_core.js",
+      "reason": "تحسين دالة LocalML.train",
+      "at": "2026-05-22T10:08:23.756Z",
+      "chars_changed": 83
     }
   ],
   "recitation_training": {
@@ -849,7 +892,6 @@
     "updated_at": "2026-05-21T15:58:31.965Z"
   },
   "last_training": "2026-05-21T15:58:31.965Z",
-  "_running": true,
   "browser_history": [
     {
       "url": "search:أفضل أساليب تحفيز حافظ القرآن",

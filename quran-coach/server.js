@@ -1778,6 +1778,10 @@ const server = http.createServer(async (req,res)=>{
   const pathname = parsedUrl.pathname || '/';
   const query = Object.fromEntries(parsedUrl.searchParams);
 
+  if (pathname === '/qqc/health' || pathname === '/health') {
+    return send(res,200,{ok:true, status:'running', uptime:+process.uptime().toFixed(1), port:PORT, ts:Date.now()});
+  }
+
   if (pathname.startsWith('/qqc/')) {
     const route = matchRoute(req.method, pathname);
     if (!route) return send(res,404,{error:'route_not_found', path:pathname});
@@ -3999,7 +4003,7 @@ function buildUserContext(u){
 الصفحات المحفوظة: ${prog.total_pages_memorized||0}
 إجمالي الجلسات: ${prog.total_sessions_completed||0}
 السلسلة الحالية: ${prog.current_streak_days||0} يوم
-أفضل سلسلة: ${prog.best_streak_days||0} يوم
+أفضل سلسلة: ${prog.longest_streak_days||0} يوم
 متوسط درجة التسميع (آخر 5): ${Math.round(avgScore)||'—'}%
 ${khatma ? `خطة الختمة: ${Math.round((khatma.total_pages_read/604)*100)||0}% مكتملة (${khatma.total_pages_read||0}/604 صفحة)` : 'لا توجد خطة ختمة نشطة'}
 ${plan ? `خطة الحفظ: ${plan.name||'غير محددة'} — الهدف: ${plan.daily_pages||'?'} صفحة/يوم` : ''}

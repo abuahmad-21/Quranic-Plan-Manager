@@ -77,8 +77,7 @@ class LocalML {
   train(f,y){
     const yh=this.predict(f),e=yh-y;
     for(let i=0;i<FDIM;i++){const g=e*f[i]+this.reg*this.W[i];this.W[i]-=this.lr*g;}
-    const l = 0.5 * e * e; // الخسارة تُحسب كـ ½ (خطأ)²
-this.loss.push(l); // حفظ القيمة لتتبع الأداءe; this.loss.push(l); if(this.loss.length>20)this.loss.shift(); this.n++;
+    const l=0.5*e*e; this.loss.push(l); if(this.loss.length>20)this.loss.shift(); this.n++;
     return {loss:l,yHat:yh};
   }
   serialize(){return {W:this.W.slice(),n:this.n};}
