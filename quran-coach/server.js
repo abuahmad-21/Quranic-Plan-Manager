@@ -1852,7 +1852,47 @@ const HERMES_TOOLS = [
   /* ═══ أدوات التسميع الذكي — Hermes يتدرب على مقاطع التلاوة ═══ */
   { type:'function', function:{ name:'search_recitation_videos', description:'البحث في YouTube عن مقاطع تلاوة قرآنية لتدريب نموذج التسميع الذكي. يعيد قائمة بالفيديوهات ومعلوماتها (الشيخ، السورة، الأسلوب) لاستخراج الأنماط وتحسين التقييم.', parameters:{ type:'object', properties:{ query:{ type:'string', description:'كلمات البحث (مثال: تلاوة سورة البقرة المنشاوي، سورة الفاتحة الحصري، تسميع القرآن)' }, max_results:{ type:'number', description:'عدد النتائج 1-20 (افتراضي 10)' } }, required:['query'] } } },
   { type:'function', function:{ name:'add_video_training', description:'حفظ فيديو تلاوة كبيانات تدريب لنموذج التسميع الذكي. هرمز يحلّل العنوان ويستخرج رؤى الشيخ والسورة وأسلوب الأداء ويحفظها في ذاكرته لتحسين تقييم المستخدمين.', parameters:{ type:'object', properties:{ video_id:{ type:'string', description:'معرّف الفيديو على YouTube' }, title:{ type:'string', description:'عنوان الفيديو' }, channel:{ type:'string', description:'اسم القناة/الشيخ' }, sheikh_name:{ type:'string', description:'اسم الشيخ إن كان معروفاً' }, surah_info:{ type:'string', description:'السورة والآيات المعنية' }, recitation_notes:{ type:'string', description:'ملاحظات هرمز عن أسلوب التلاوة والدروس المستخلصة للتسميع الذكي' } }, required:['video_id','title','recitation_notes'] } } },
-  { type:'function', function:{ name:'get_video_training_data', description:'قراءة قائمة مقاطع التلاوة المحفوظة كبيانات تدريب في ذاكرة هرمز، مع الملاحظات والرؤى المستخلصة.', parameters:{ type:'object', properties:{} } } }
+  { type:'function', function:{ name:'get_video_training_data', description:'قراءة قائمة مقاطع التلاوة المحفوظة كبيانات تدريب في ذاكرة هرمز، مع الملاحظات والرؤى المستخلصة.', parameters:{ type:'object', properties:{} } } },
+
+  /* ═══ أدوات المتصفح الذكي — Hermes يتجول في الويب ═══ */
+  { type:'function', function:{ name:'browser_open',
+    description:'افتح صفحة ويب كمتصفح حقيقي: يجلب المحتوى ويستخرج النص المقروء + الروابط المهمة. استخدمها للتجوّل في المواقع واستخراج المعلومات.',
+    parameters:{ type:'object', properties:{
+      url:{ type:'string', description:'الرابط الكامل (https://...)' },
+      extract_links:{ type:'boolean', description:'استخرج الروابط من الصفحة (افتراضي true)' },
+      max_chars:{ type:'number', description:'الحد الأقصى للحروف المستخرجة (افتراضي 5000)' }
+    }, required:['url'] }
+  } },
+  { type:'function', function:{ name:'browser_search',
+    description:'ابحث في الويب بمتصفح ذكي يستخدم محركات بحث متعددة (DuckDuckGo + Wikipedia + Brave). يُرجع نتائج حقيقية مع روابط قابلة للفتح.',
+    parameters:{ type:'object', properties:{
+      query:{ type:'string', description:'نص البحث' },
+      engines:{ type:'array', items:{ type:'string', enum:['duckduckgo','wikipedia','wikipedia_ar','brave'] }, description:'محركات البحث (افتراضي كلها)' },
+      open_top_results:{ type:'number', description:'فتح أفضل N نتيجة تلقائياً لجلب محتواها (0-3، افتراضي 0)' }
+    }, required:['query'] }
+  } },
+  { type:'function', function:{ name:'save_learning_file',
+    description:'احفظ ما تعلّمته كملف Markdown في مختبر هرمز ليظهر للمستخدم. استخدمها بعد كل جلسة تعلّم لتوثيق ما اكتسبته.',
+    parameters:{ type:'object', properties:{
+      filename:{ type:'string', description:'اسم الملف بدون امتداد (سيُضاف .md تلقائياً)' },
+      title:{ type:'string', description:'عنوان المحتوى' },
+      content:{ type:'string', description:'محتوى التعلّم بتنسيق Markdown' },
+      skill_title:{ type:'string', description:'عنوان المهارة لحفظها في الذاكرة أيضاً' },
+      skill_applies_to:{ type:'string', enum:['users','algorithm','recitation','plan','general'] }
+    }, required:['filename','title','content'] }
+  } },
+
+  /* ═══ أداة التعلم الذاتي العميق — Hermes يتعلم مهارة من الإنترنت ═══ */
+  { type:'function', function:{ name:'learn_skill_from_web',
+    description:'تعلّم مهارة أو موضوع معين من الإنترنت: يبحث → يجلب المحتوى من أفضل المصادر → يلخّصه بالذكاء الاصطناعي → يحفظه كمهارة دائمة في الذاكرة. استخدمها عندما يطلب الأدمن: "تعلّم مهارة X" أو "ابحث وتعلّم عن Y" أو "احفظ معلومات عن Z".',
+    parameters:{ type:'object', properties:{
+      topic:{ type:'string', description:'الموضوع أو المهارة المراد تعلمها (مثال: spaced repetition, تحفيز حافظ القرآن, خوارزميات التذكر)' },
+      search_queries:{ type:'array', items:{ type:'string' }, description:'2-4 استعلامات بحث متنوعة للحصول على معلومات شاملة' },
+      applies_to:{ type:'string', enum:['users','algorithm','recitation','plan','general'], description:'مجال تطبيق المهارة في التطبيق' },
+      urls_to_fetch:{ type:'array', items:{ type:'string' }, description:'روابط محددة لجلبها مباشرة بدلاً من البحث (اختياري)' },
+      context:{ type:'string', description:'السياق: كيف ستطبّق هذه المهارة في تطبيق Quantum Quran Coach' }
+    }, required:['topic','search_queries'] }
+  } }
 ];
 
 /* ─── Tool executor — كل أداة تغير البيانات الحقيقية ─── */
@@ -2354,23 +2394,52 @@ Focus: ${focus}
     /* ═══ أدوات المختبر والإنترنت ═══ */
 
     case 'web_search': {
-      const query = String(args.query||'').slice(0,200);
+      const query = String(args.query||'').slice(0,300);
       if(!query) return {error:'query مطلوب'};
+      const UA = 'Mozilla/5.0 (compatible; HermesAgent/2.0; +https://qurancoach.app)';
+      const results = [];
+
+      // 1. DuckDuckGo Instant Answer API
       try {
-        // DuckDuckGo Instant Answer API — no key required
-        const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-        const resp = await fetch(ddgUrl, {headers:{'User-Agent':'HermesAgent/2.0'}, signal:AbortSignal.timeout(8000)});
-        const data = await resp.json();
-        const results = [];
-        if(data.AbstractText) results.push({title:data.Heading||query, snippet:data.AbstractText.slice(0,400), url:data.AbstractURL});
-        if(Array.isArray(data.RelatedTopics)) {
-          data.RelatedTopics.slice(0,8).forEach(t=>{
-            if(t.Text) results.push({title:t.Text.slice(0,80), snippet:t.Text.slice(0,300), url:t.FirstURL||''});
-          });
-        }
-        if(!results.length) return {query, message:'لم يُوجد نتائج مباشرة. حاول fetch_url مع رابط محدد.', tip:'جرّب: fetch_url بـ https://www.npmjs.com/search?q=...'};
-        return {query, count:results.length, results};
-      } catch(e){ return {error:'فشل البحث: '+e.message, tip:'تحقق من الاتصال بالإنترنت أو جرّب fetch_url مباشرة'}; }
+        const ddgApi = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+        const r = await fetch(ddgApi, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(7000)});
+        const d = await r.json();
+        if(d.AbstractText) results.push({title:d.Heading||query, snippet:d.AbstractText.slice(0,500), url:d.AbstractURL||''});
+        (d.RelatedTopics||[]).slice(0,5).forEach(t=>{ if(t.Text) results.push({title:t.Text.slice(0,100), snippet:t.Text.slice(0,400), url:t.FirstURL||''}); });
+      } catch {}
+
+      // 2. DuckDuckGo HTML Lite — scrape snippets
+      if(results.length < 3) {
+        try {
+          const liteUrl = `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}`;
+          const r = await fetch(liteUrl, {headers:{'User-Agent':UA,'Accept':'text/html'}, signal:AbortSignal.timeout(9000)});
+          const html = await r.text();
+          // Extract result links
+          const linkRe = /<a[^>]+href="(https?:\/\/[^"]+)"[^>]*class="result-link"[^>]*>([^<]+)<\/a>/g;
+          const snippRe = /<td[^>]*class="result-snippet"[^>]*>([\s\S]*?)<\/td>/g;
+          const links=[]; let m;
+          while((m=linkRe.exec(html))!==null) links.push({url:m[1],title:m[2].trim()});
+          const snippets=[]; let s;
+          while((s=snippRe.exec(html))!==null) snippets.push(s[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
+          links.slice(0,8).forEach((l,i)=>{ if(snippets[i]||l.title) results.push({title:l.title, snippet:snippets[i]||'', url:l.url}); });
+        } catch {}
+      }
+
+      // 3. Wikipedia fallback (English + Arabic)
+      if(results.length < 2) {
+        try {
+          const wikiQ = encodeURIComponent(query);
+          const wikiR = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wikiQ}`, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(6000)});
+          if(wikiR.ok){ const w=await wikiR.json(); if(w.extract) results.push({title:w.title, snippet:w.extract.slice(0,600), url:w.content_urls?.desktop?.page||'', source:'wikipedia'}); }
+        } catch {}
+        try {
+          const wikiAr = await fetch(`https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(6000)});
+          if(wikiAr.ok){ const w=await wikiAr.json(); if(w.extract) results.push({title:w.title, snippet:w.extract.slice(0,600), url:w.content_urls?.desktop?.page||'', source:'wikipedia_ar'}); }
+        } catch {}
+      }
+
+      if(!results.length) return {query, ok:false, message:'لم يُوجد نتائج. جرّب fetch_url مع رابط محدد.', tip:'مثال: fetch_url بـ https://en.wikipedia.org/wiki/Spaced_repetition'};
+      return {query, ok:true, count:results.length, results};
     }
 
     case 'fetch_url': {
@@ -2386,6 +2455,232 @@ Focus: ${focus}
         const truncated = text.length > maxChars;
         return {url, status:resp.status, content_type:ct.slice(0,50), chars:text.length, truncated, content:text.slice(0,maxChars)+(truncated?'\n...[مقتطع]':'')};
       } catch(e){ return {error:'فشل جلب الرابط: '+e.message, url}; }
+    }
+
+    case 'learn_skill_from_web': {
+      const topic = String(args.topic||'').slice(0,200);
+      if(!topic) return {error:'topic مطلوب'};
+      const queries = Array.isArray(args.search_queries) ? args.search_queries.slice(0,4) : [topic];
+      const appliesTo = args.applies_to || 'general';
+      const context = String(args.context||'تطبيق Quantum Quran Coach لحفظ القرآن الكريم').slice(0,300);
+      const UA = 'Mozilla/5.0 (compatible; HermesLearner/2.0)';
+      let rawContent = [];
+      const urlsToFetch = Array.isArray(args.urls_to_fetch) ? [...args.urls_to_fetch] : [];
+      const seenUrls = new Set();
+
+      // 1. بحث DuckDuckGo لكل استعلام
+      for(const q of queries){
+        try {
+          // DuckDuckGo Instant Answer
+          const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`,
+            {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(7000)});
+          const d = await r.json();
+          if(d.AbstractText) rawContent.push(`[DDG:${q}] ${d.AbstractText.slice(0,600)}`);
+          (d.RelatedTopics||[]).slice(0,3).forEach(t=>{ if(t.Text) rawContent.push(`• ${t.Text.slice(0,200)}`); });
+          if(d.AbstractURL && !seenUrls.has(d.AbstractURL)){ seenUrls.add(d.AbstractURL); urlsToFetch.push(d.AbstractURL); }
+        } catch {}
+        // Wikipedia
+        try {
+          const wkR = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`,{headers:{'User-Agent':UA}, signal:AbortSignal.timeout(6000)});
+          if(wkR.ok){ const w=await wkR.json(); if(w.extract){ rawContent.push(`[Wikipedia:${w.title}] ${w.extract.slice(0,800)}`); if(w.content_urls?.desktop?.page) urlsToFetch.push(w.content_urls.desktop.page); } }
+        } catch {}
+        try {
+          const wkAr = await fetch(`https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`,{headers:{'User-Agent':UA}, signal:AbortSignal.timeout(6000)});
+          if(wkAr.ok){ const w=await wkAr.json(); if(w.extract) rawContent.push(`[ويكيبيديا:${w.title}] ${w.extract.slice(0,800)}`); }
+        } catch {}
+      }
+
+      // 2. جلب محتوى أفضل 3 روابط
+      const uniqueUrls = [...new Set(urlsToFetch)].filter(u=>u.startsWith('http')&&!u.includes('duckduckgo')).slice(0,3);
+      for(const url of uniqueUrls){
+        try {
+          const r = await fetch(url, {headers:{'User-Agent':UA,'Accept':'text/html,application/json'}, signal:AbortSignal.timeout(9000)});
+          const ct = r.headers.get('content-type')||'';
+          let txt = await r.text();
+          if(ct.includes('html')) txt = txt.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s{2,}/g,' ').trim();
+          if(txt.length>100) rawContent.push(`[مصدر: ${url.slice(0,60)}]\n${txt.slice(0,2500)}`);
+        } catch {}
+      }
+
+      if(!rawContent.length) return {ok:false, topic, error:'لم يُعثر على محتوى — جرّب استعلامات مختلفة أو روابط مباشرة'};
+
+      // 3. تلخيص بالذكاء الاصطناعي
+      const combined = rawContent.join('\n\n').slice(0, 9000);
+      const activeCfg = getActiveAIConfig();
+      let summary = '';
+      if(activeCfg){
+        try {
+          const sr = await fetch(`${activeCfg.baseUrl}/chat/completions`,{
+            method:'POST', signal:AbortSignal.timeout(30000),
+            headers:{'Authorization':`Bearer ${activeCfg.apiKey}`,'Content-Type':'application/json'},
+            body:JSON.stringify({model:activeCfg.model, max_tokens:700, messages:[
+              {role:'system', content:'أنت خبير تعليمي. استخرج المعلومات الأكثر قيمة وعملية وقابلة للتطبيق. الرد بالعربية.'},
+              {role:'user', content:`لخّص هذا المحتوى عن "${topic}" في سياق "${context}".\n\nاستخرج:\n1. التعريف الجوهري\n2. المبادئ الرئيسية (3-5 نقاط)\n3. كيفية التطبيق العملي في التطبيق\n4. أرقام أو حقائق مهمة\n\nالمحتوى:\n${combined}`}
+            ]})
+          });
+          const sd = await sr.json();
+          summary = sd.choices?.[0]?.message?.content || '';
+        } catch {}
+      }
+      if(!summary) summary = rawContent.map(c=>c.slice(0,150)).join('\n').slice(0,700);
+
+      // 4. حفظ كمهارة دائمة
+      if(!mem.skills) mem.skills=[];
+      const existIdx = mem.skills.findIndex(s=>s.title.toLowerCase()===topic.toLowerCase());
+      const skill = {
+        id: uid(), title:topic, content:summary,
+        tags:[...queries, appliesTo], applies_to:appliesTo,
+        sources:uniqueUrls, learned_at:now(),
+        updated_count: existIdx>=0 ? (mem.skills[existIdx].updated_count||0)+1 : 1
+      };
+      if(existIdx>=0) mem.skills[existIdx]=skill; else mem.skills.push(skill);
+      if(mem.skills.length>300) mem.skills=mem.skills.slice(-300);
+
+      // 5. تسجيل رؤية
+      if(!mem.insights) mem.insights=[];
+      mem.insights.push({text:`تعلّمت مهارة جديدة: "${topic}" — ${summary.slice(0,100)}`, category:'general', impact:'medium', at:now()});
+
+      return {ok:true, topic, summary:summary.slice(0,400), sources_fetched:uniqueUrls.length, raw_chunks:rawContent.length, total_skills:mem.skills.length, skill_saved:true, applies_to:appliesTo};
+    }
+
+    case 'browser_open': {
+      const url = String(args.url||'');
+      if(!url.startsWith('http')) return {error:'رابط غير صالح — يجب أن يبدأ بـ http'};
+      const maxChars = Math.min(10000, +args.max_chars||5000);
+      const doLinks = args.extract_links !== false;
+      const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+      try {
+        const resp = await fetch(url, {
+          headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language':'ar,en;q=0.5'},
+          signal:AbortSignal.timeout(12000)
+        });
+        const ct = resp.headers.get('content-type')||'';
+        let raw = await resp.text();
+        let title = (raw.match(/<title[^>]*>([^<]+)<\/title>/i)||[])[1]?.trim()||url;
+
+        // استخراج الروابط قبل تنظيف HTML
+        const links = [];
+        if(doLinks){
+          const linkRe = /<a[^>]+href="(https?:\/\/[^"#?]+)"[^>]*>([^<]{3,80})<\/a>/gi;
+          let lm; const seen=new Set();
+          while((lm=linkRe.exec(raw))!==null && links.length<15){
+            if(!seen.has(lm[1])){ seen.add(lm[1]); links.push({url:lm[1], text:lm[2].replace(/<[^>]+>/g,'').trim().slice(0,80)}); }
+          }
+        }
+
+        // تنظيف HTML واستخراج النص
+        if(ct.includes('html')){
+          raw = raw
+            .replace(/<script[\s\S]*?<\/script>/gi,'')
+            .replace(/<style[\s\S]*?<\/style>/gi,'')
+            .replace(/<nav[\s\S]*?<\/nav>/gi,'')
+            .replace(/<footer[\s\S]*?<\/footer>/gi,'')
+            .replace(/<header[\s\S]*?<\/header>/gi,'')
+            .replace(/<aside[\s\S]*?<\/aside>/gi,'')
+            .replace(/<!--[\s\S]*?-->/g,'')
+            .replace(/<[^>]+>/g,' ')
+            .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,' ')
+            .replace(/\s{3,}/g,' ').trim();
+        }
+
+        // سجّل في تاريخ التصفح
+        if(!mem.browser_history) mem.browser_history=[];
+        mem.browser_history.push({url, title:title.slice(0,100), at:now(), chars:raw.length});
+        if(mem.browser_history.length>100) mem.browser_history=mem.browser_history.slice(-100);
+
+        return {ok:true, url, title:title.slice(0,200), status:resp.status, content_type:ct.slice(0,40), chars:raw.length, truncated:raw.length>maxChars, content:raw.slice(0,maxChars)+(raw.length>maxChars?'\n…[مقتطع]':''), links};
+      } catch(e){ return {error:'فشل فتح الصفحة: '+e.message, url}; }
+    }
+
+    case 'browser_search': {
+      const query = String(args.query||'').slice(0,300);
+      if(!query) return {error:'query مطلوب'};
+      const engines = Array.isArray(args.engines) ? args.engines : ['duckduckgo','wikipedia','wikipedia_ar'];
+      const openTop = Math.min(3, +args.open_top_results||0);
+      const UA = 'Mozilla/5.0 (compatible; HermesBot/2.0)';
+      const results = [];
+
+      // DuckDuckGo Instant Answer
+      if(engines.includes('duckduckgo')){
+        try {
+          const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(8000)});
+          const d = await r.json();
+          if(d.AbstractText) results.push({title:d.Heading||query, snippet:d.AbstractText.slice(0,500), url:d.AbstractURL||'', source:'duckduckgo', type:'answer'});
+          (d.RelatedTopics||[]).slice(0,6).forEach(t=>{ if(t.Text&&t.FirstURL) results.push({title:t.Text.slice(0,100), snippet:t.Text.slice(0,400), url:t.FirstURL, source:'duckduckgo', type:'related'}); });
+        } catch {}
+        // DuckDuckGo HTML Lite scrape
+        try {
+          const r = await fetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query)}`, {headers:{'User-Agent':UA,'Accept':'text/html'}, signal:AbortSignal.timeout(10000)});
+          const html = await r.text();
+          const snippRe = /<td[^>]*class="result-snippet"[^>]*>([\s\S]*?)<\/td>/g;
+          const linkRe = /<a[^>]+class="result-link"[^>]+href="(https?:\/\/[^"]+)"[^>]*>([^<]+)<\/a>/g;
+          const snips=[],lnks=[]; let sm,lm2;
+          while((sm=snippRe.exec(html))!==null) snips.push(sm[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
+          while((lm2=linkRe.exec(html))!==null) lnks.push({url:lm2[1],title:lm2[2].trim()});
+          lnks.slice(0,8).forEach((l,i)=>{ if(l.title) results.push({title:l.title, snippet:snips[i]||'', url:l.url, source:'duckduckgo_web', type:'web'}); });
+        } catch {}
+      }
+
+      // Wikipedia English
+      if(engines.includes('wikipedia')){
+        try {
+          const r = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=1&format=json&srlimit=5`, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(7000)});
+          const d = await r.json();
+          (d.query?.search||[]).forEach(s=>results.push({title:s.title, snippet:(s.snippet||'').replace(/<[^>]+>/g,'').slice(0,400), url:`https://en.wikipedia.org/wiki/${encodeURIComponent(s.title)}`, source:'wikipedia', type:'article'}));
+        } catch {}
+      }
+
+      // Wikipedia Arabic
+      if(engines.includes('wikipedia_ar')){
+        try {
+          const r = await fetch(`https://ar.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=1&format=json&srlimit=5`, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(7000)});
+          const d = await r.json();
+          (d.query?.search||[]).forEach(s=>results.push({title:s.title, snippet:(s.snippet||'').replace(/<[^>]+>/g,'').slice(0,400), url:`https://ar.wikipedia.org/wiki/${encodeURIComponent(s.title)}`, source:'wikipedia_ar', type:'article'}));
+        } catch {}
+      }
+
+      // فتح أفضل النتائج تلقائياً
+      const openedPages = [];
+      if(openTop > 0){
+        const toOpen = results.filter(r=>r.url&&r.url.startsWith('http')).slice(0,openTop);
+        for(const r of toOpen){
+          try {
+            const pr = await fetch(r.url, {headers:{'User-Agent':UA}, signal:AbortSignal.timeout(9000)});
+            let txt = await pr.text();
+            txt = txt.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s{3,}/g,' ').trim();
+            openedPages.push({url:r.url, title:r.title, content:txt.slice(0,2000)});
+          } catch {}
+        }
+      }
+
+      // سجّل في تاريخ التصفح
+      if(!mem.browser_history) mem.browser_history=[];
+      mem.browser_history.push({url:'search:'+query, title:'بحث: '+query, at:now(), results:results.length});
+      if(mem.browser_history.length>100) mem.browser_history=mem.browser_history.slice(-100);
+
+      return {ok:true, query, results_count:results.length, results:results.slice(0,15), opened_pages:openedPages};
+    }
+
+    case 'save_learning_file': {
+      const rawName = String(args.filename||'learning').replace(/[^a-zA-Z0-9_\u0600-\u06FF\s-]/g,'').trim();
+      const filename = rawName.replace(/\s+/g,'_')+(rawName.endsWith('.md')?'':'.md');
+      const fp = path.join(HERMES_LAB_DIR, filename);
+      const title = String(args.title||'').slice(0,200);
+      const body = String(args.content||'');
+      const full = `# ${title}\n\n*تاريخ التعلّم: ${new Date().toLocaleDateString('ar-SA')} | هرمز*\n\n${body}`;
+      fs.writeFileSync(fp, full, 'utf8');
+      const sizeKb = Math.round(full.length/1024*10)/10;
+
+      // حفظ مهارة في الذاكرة أيضاً
+      if(args.skill_title){
+        if(!mem.skills) mem.skills=[];
+        const skill={id:uid(), title:String(args.skill_title).slice(0,100), content:body.slice(0,700), tags:[filename], applies_to:args.skill_applies_to||'general', created_at:now(), updated_count:1, source_file:filename};
+        const idx=mem.skills.findIndex(s=>s.title===skill.title);
+        if(idx>=0) mem.skills[idx]={...skill,updated_count:(mem.skills[idx].updated_count||0)+1}; else mem.skills.push(skill);
+        if(mem.skills.length>300) mem.skills=mem.skills.slice(-300);
+      }
+
+      return {ok:true, filename, title, size_kb:sizeKb, lab_url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(filename)}`, chars:body.length};
     }
 
     case 'generate_tts_file': {
@@ -2962,6 +3257,7 @@ R('GET','/qqc/admin/hermes/status', async(req,res)=>{
     recent_runs:(mem.runs||[]).slice(-15).reverse(),
     recent_insights:(mem.insights||[]).slice(-30).reverse(),
     skills:(mem.skills||[]).slice(-20).reverse(),
+    browser_history:(mem.browser_history||[]).slice(-30).reverse(),
     next_run_focus:mem.runs?.slice(-1)?.[0]?.next_run_focus||'',
     code_edits:(mem.code_edits||[]).slice().reverse(),
   });
@@ -3057,22 +3353,48 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   const skillsSummary = (mem.skills||[]).slice(-5).map(s=>`• ${s.title}: ${s.content.slice(0,80)}`).join('\n')||'لا مهارات بعد';
   const labFiles = fs.readdirSync(HERMES_LAB_DIR).slice(0,15).join(', ')||'لا ملفات';
 
+  const skillsSummaryFull = (mem.skills||[]).slice(-8).map((s,i)=>`${i+1}. [${s.applies_to||'general'}] ${s.title}: ${s.content.slice(0,120)}`).join('\n')||'لا مهارات بعد';
+
   const systemPrompt = `أنت Hermes Agent — وكيل ذكاء اصطناعي لتطبيق Quantum Quran Coach.
 أنت تتحدث مع مدير النظام (الأدمن) مباشرة.
-لديك أدوات حقيقية لتنفيذ المطلوب: بحث الإنترنت، توليد صوت، تحليل بيانات، تعديل كود، إدارة مختبر الملفات.
+لديك أدوات حقيقية تنفّذ المطلوب فعلياً: بحث إنترنت، تعلّم مهارات، تحليل بيانات، تعديل كود، إدارة ملفات.
 
-ذاكرتك الحالية:
-• مهارات مكتسبة: ${skillsSummary}
-• ملفات المختبر: ${labFiles}
-• دورات منفّذة: ${mem.stats?.total_runs||0}
+━━━ ذاكرتك الحالية ━━━
+مهاراتك المكتسبة (${(mem.skills||[]).length} مهارة):
+${skillsSummaryFull}
 
-قواعد المحادثة:
+ملفات المختبر: ${labFiles}
+دورات منفّذة: ${mem.stats?.total_runs||0}
+
+━━━ قواعد التعلّم والتصفح (الأهم) ━━━
+
+🌐 لديك متصفح ذكي كامل! استخدم:
+• browser_search — ابحث في الويب (DuckDuckGo + Wikipedia)
+• browser_open — افتح أي صفحة واقرأ محتواها
+• save_learning_file — احفظ ما تعلّمته كملف Markdown يظهر للمستخدم
+• learn_skill_from_web — تعلّم موضوعاً كاملاً من البداية إلى النهاية
+
+عندما يطلب الأدمن أي مما يلي:
+• "تعلّم مهارة X" → learn_skill_from_web ثم save_learning_file
+• "ابحث عن X" → browser_search ثم browser_open لأفضل النتائج
+• "افتح موقع X" → browser_open مباشرة
+• "احفظ ما تعلّمته" → save_learning_file
+• "تجوّل في الإنترنت عن X" → browser_search → browser_open × 2-3 → save_learning_file
+
+سير التعلّم الكامل:
+1. browser_search للعثور على المصادر
+2. browser_open لأفضل 2-3 روابط (اقرأ المحتوى الحقيقي)
+3. learn_skill_from_web لتجميع وتلخيص الذكاء الاصطناعي
+4. save_learning_file لحفظ التقرير النهائي كملف Markdown للمستخدم
+
+━━━ قواعد المحادثة العامة ━━━
 - نفّذ طلبات الأدمن فعلياً باستخدام الأدوات — لا تكتفِ بالوصف
 - استخدم أدوات متعددة إن لزم (بحث → تنفيذ → حفظ)
 - أجب بالعربية دائماً
 - كن مختصراً ومباشراً في الرسائل النصية
 - عند طلب صوت لأي آية: استخدم get_sheikh_audio_refs — توليد الصوت بالذكاء الاصطناعي معطّل تماماً
-- للتدريب الشامل استخدم train_on_all_data، ولتحسين نموذج التلاوة استخدم improve_recitation_model`;
+- للتدريب الشامل استخدم train_on_all_data، ولتحسين نموذج التلاوة استخدم improve_recitation_model
+- بعد تعلّم أي مهارة: أخبر الأدمن بملخص ما تعلّمته وكيف ستطبّقه`;
 
   const chatModel = activeCfg.model || 'gpt-4o-mini';
 
@@ -3083,15 +3405,47 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
   ];
 
   let toolCallCount = 0;
-  const maxCalls = 10;
+  const maxCalls = 12;
+
+  // استخراج tool calls من النص عندما يكتبها الـ model كـ JSON (providers بدون tool support)
+  function extractToolCallsFromText(text){
+    if(!text) return [];
+    const calls = [];
+    // نمط 1: {"type":"function","name":"tool_name","parameters":{...}}
+    const re1 = /\{[\s\S]*?"type"\s*:\s*"function"[\s\S]*?"name"\s*:\s*"([^"]+)"[\s\S]*?"parameters"\s*:\s*(\{[\s\S]*?\})\s*\}/g;
+    let m;
+    while((m=re1.exec(text))!==null){
+      try{ const args=JSON.parse(m[2]); calls.push({id:'txt-'+Date.now()+'-'+calls.length, function:{name:m[1], arguments:JSON.stringify(args)}}); }catch{}
+    }
+    // نمط 2: {"name":"tool_name","arguments":{...}} أو {"name":"tool_name","parameters":{...}}
+    if(!calls.length){
+      const re2 = /\{[\s\S]*?"name"\s*:\s*"([^"]+)"[\s\S]*?(?:"arguments"|"parameters")\s*:\s*(\{[\s\S]*?\})\s*\}/g;
+      while((m=re2.exec(text))!==null){
+        const name=m[1]; const toolNames=HERMES_TOOLS.map(t=>t.function.name);
+        if(toolNames.includes(name)){
+          try{ const args=JSON.parse(m[2]); calls.push({id:'txt-'+Date.now()+'-'+calls.length, function:{name, arguments:JSON.stringify(args)}}); }catch{}
+        }
+      }
+    }
+    return calls;
+  }
 
   try {
     while(toolCallCount < maxCalls){
       let resp;
       try {
         const supportsToolsChat = !['pollinations','claude_free'].includes(getActiveAIProviderName());
-        const chatReqBody = {model:chatModel, messages, max_tokens:1500};
+        const chatReqBody = {model:chatModel, messages, max_tokens:1800};
         if(supportsToolsChat){ chatReqBody.tools=HERMES_TOOLS; chatReqBody.tool_choice='auto'; }
+        else {
+          // للـ providers التي لا تدعم tools — أخبر الـ model عن الأدوات في النص
+          const toolNames = HERMES_TOOLS.map(t=>`• ${t.function.name}: ${t.function.description.slice(0,80)}`).join('\n');
+          chatReqBody.messages = [
+            ...messages.slice(0,1),
+            {role:'system', content:`${messages[0].content}\n\nللاستدعاء أداة اكتب JSON هكذا:\n{"type":"function","name":"TOOL_NAME","parameters":{...}}\n\nالأدوات المتاحة:\n${toolNames}`},
+            ...messages.slice(1)
+          ];
+        }
         resp = await fetch(chatUrl,{
           method:'POST', signal:AbortSignal.timeout(60000),
           headers:{'Authorization':`Bearer ${chatKey}`,'Content-Type':'application/json'},
@@ -3099,20 +3453,28 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
         });
       } catch(e){ sse('error',{message:'خطأ في الاتصال بالذكاء الاصطناعي: '+e.message}); break; }
 
-      if(!resp.ok){ sse('error',{message:`API error: ${resp.status}`}); break; }
+      if(!resp.ok){ const errTxt=await resp.text().catch(()=>''); sse('error',{message:`API error: ${resp.status} — ${errTxt.slice(0,150)}`}); break; }
       const data = await resp.json();
       const msg = data.choices?.[0]?.message;
       if(!msg) break;
       messages.push(msg);
 
-      // رسالة نصية من هرمس
-      if(msg.content) sse('message',{content:msg.content});
+      // استخرج tool calls — إما native أو من النص
+      let toolCalls = msg.tool_calls && msg.tool_calls.length ? msg.tool_calls : extractToolCallsFromText(msg.content||'');
 
-      // لا يوجد tool calls — انتهى
-      if(!msg.tool_calls||!msg.tool_calls.length) break;
+      // رسالة نصية من هرمس (فقط إن لم تكن tool call JSON)
+      if(msg.content && !toolCalls.length) sse('message',{content:msg.content});
+      else if(msg.content && toolCalls.length){
+        // اعرض النص فقط إن كان هناك محتوى غير JSON
+        const cleanText = (msg.content||'').replace(/\{[\s\S]*?\}/g,'').trim();
+        if(cleanText.length>5) sse('message',{content:cleanText});
+      }
+
+      // لا توجد tool calls — انتهى
+      if(!toolCalls.length) break;
 
       // تنفيذ الأدوات وبث النتائج
-      for(const tc of msg.tool_calls){
+      for(const tc of toolCalls){
         toolCallCount++;
         const toolName=tc.function?.name;
         let args={};
@@ -3133,8 +3495,15 @@ R('POST','/qqc/admin/hermes/chat', async(req,res)=>{
           if(['.txt','.json','.md'].includes(ext)) sse('lab_file',{filename:result.filename, url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(result.filename)}`, size_kb:result.size_kb, type:'text'});
         }
 
-        sse('tool_result',{name:toolName, result:JSON.stringify(result).slice(0,600)});
-        messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(result)});
+        sse('tool_result',{name:toolName, result:JSON.stringify(result).slice(0,800)});
+
+        // push نتيجة الأداة للـ messages
+        if(tc.id && !tc.id.startsWith('txt-')){
+          messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(result)});
+        } else {
+          // non-native: أضف كـ user message حتى يفهم الـ model النتيجة
+          messages.push({role:'user', content:`نتيجة أداة ${toolName}:\n${JSON.stringify(result).slice(0,1500)}`});
+        }
       }
     }
   } catch(e){ sse('error',{message:e.message}); }

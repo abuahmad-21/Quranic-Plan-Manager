@@ -1684,7 +1684,7 @@ const Admin = {
 
       <!-- Tabs inside Hermes -->
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
-        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['claude','🤖 Claude AI'],['chat','💬 محادثة'],['videos','🎬 تدريب الفيديو'],['lab','🧪 المختبر']].map(([t,l])=>
+        ${[['runs','الدورات 📊'],['skills','المهارات 🧠'],['browser','المتصفح 🌐'],['insights','الرؤى 💡'],['commits','GitHub 🔗'],['claude','🤖 Claude AI'],['chat','💬 محادثة'],['videos','🎬 تدريب الفيديو'],['lab','🧪 المختبر']].map(([t,l])=>
           `<button class="btn btn-sm ${t==='runs'?'btn-primary':'btn-ghost'}" data-htab="${t}">${l}</button>`).join('')}
       </div>
 
@@ -1721,6 +1721,34 @@ const Admin = {
               ${sk.updated_count>1?`<span style="font-size:.65rem;padding:2px 6px;background:rgba(250,204,21,.08);border-radius:4px;color:var(--gold)">×${sk.updated_count}</span>`:''}
             </div>
           </div>`).join('')}
+      </div>
+
+      <!-- Browser History Tab -->
+      <div id="h-browser" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:.85rem;font-weight:700;color:#a78bfa">🌐 تاريخ تصفح هرمز للويب</div>
+          <div style="font-size:.72rem;color:var(--text-3)">${(r.browser_history||[]).length} زيارة</div>
+        </div>
+        ${!(r.browser_history||[]).length ? `<div style="text-align:center;padding:30px;color:var(--text-3);font-size:.82rem">
+          <div style="font-size:2rem;margin-bottom:8px">🌐</div>
+          <div>لم يتصفح هرمز الويب بعد</div>
+          <div style="font-size:.72rem;margin-top:6px">اطلب منه: "ابحث عن X" أو "تعلّم مهارة Y"</div>
+        </div>` :
+        `<div style="display:flex;flex-direction:column;gap:6px">
+          ${(r.browser_history||[]).slice(-30).reverse().map(h=>{
+            const isSearch=h.url?.startsWith('search:');
+            return `<div style="padding:8px 10px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.07);border-radius:8px;display:flex;align-items:flex-start;gap:8px">
+              <span style="font-size:.9rem;flex-shrink:0">${isSearch?'🔍':'🌐'}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.78rem;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(h.title||h.url||'')}</div>
+                ${!isSearch?`<div style="font-size:.68rem;color:#a78bfa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr"><a href="${escapeHTML(h.url||'')}" target="_blank" style="color:inherit;text-decoration:none">${escapeHTML((h.url||'').slice(0,80))}</a></div>`:''}
+                ${h.results?`<div style="font-size:.66rem;color:var(--mint)">${h.results} نتيجة</div>`:''}
+                ${h.chars?`<div style="font-size:.66rem;color:var(--text-3)">${Math.round(h.chars/1000)}K حرف</div>`:''}
+              </div>
+              <div style="font-size:.65rem;color:var(--text-3);flex-shrink:0">${fmtTime(h.at)}</div>
+            </div>`;
+          }).join('')}
+        </div>`}
       </div>
 
       <!-- Insights -->
@@ -1763,7 +1791,14 @@ const Admin = {
             <button id="h-chat-send" class="btn btn-sm" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;border:none;padding:8px 16px;white-space:nowrap">إرسال ↵</button>
           </div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
-            ${['ابحث عن أفضل مكتبات تحليل الصوت العربي','ولّد ملف صوتي لـ بسم الله الرحمن الرحيم','حلّل بيانات التلاوة وأنشئ تقريراً','ما هي أخطاء المستخدمين الأكثر تكراراً؟'].map(q=>`<button class="btn btn-sm btn-ghost h-chat-quick" style="font-size:.68rem" data-q="${q}">${q}</button>`).join('')}
+            ${[
+              ['🧠 تعلّم Spaced Repetition','تعلّم مهارة Spaced Repetition وكيف تطبّقها في حفظ القرآن — ابحث في الإنترنت واجمع معلومات واحفظها كملف تعلّم'],
+              ['🌐 تجوّل في الويب','ابحث في الإنترنت عن أفضل أساليب تحفيز حافظ القرآن وافتح أفضل 2 مصادر واحفظ ما تعلّمته كملف'],
+              ['🔬 ابحث عن تقنيات النطق','ابحث عن تقنيات تقييم النطق العربي وتحليل الصوت — browser_search ثم افتح المصادر'],
+              ['📊 تحليل البيانات','ما هي أخطاء المستخدمين الأكثر تكراراً وماذا تقترح للتحسين؟'],
+              ['🎙️ تحسين التلاوة','حلّل بيانات التلاوة وأنشئ تقريراً وابحث عن طرق تحسين الأداء'],
+              ['🔒 فحص الأمان','افحص الكود أمنياً وابحث عن أفضل ممارسات أمن Node.js'],
+            ].map(([label,q])=>`<button class="btn btn-sm btn-ghost h-chat-quick" style="font-size:.68rem" data-q="${q}">${label}</button>`).join('')}
           </div>
         </div>
       </div>
@@ -1951,7 +1986,7 @@ const Admin = {
       </div>`;
 
       /* Tab switching inside Hermes */
-      const hTabs=['runs','skills','insights','commits','claude','chat','videos','lab'];
+      const hTabs=['runs','skills','browser','insights','commits','claude','chat','videos','lab'];
       el.querySelectorAll('[data-htab]').forEach(btn=>{
         btn.onclick=()=>{
           el.querySelectorAll('[data-htab]').forEach(b=>{ b.className='btn btn-sm btn-ghost'; });
@@ -2219,8 +2254,50 @@ const Admin = {
                 else hermesDiv.textContent=hermesText;
                 chatMsgs.scrollTop=chatMsgs.scrollHeight;
               } else if(ev.type==='tool_call'){
-                const toolNames={'web_search':'🔍 يبحث في الإنترنت','fetch_url':'🌐 يجلب رابط','generate_tts_file':'🔊 يولّد صوت','list_lab_files':'📁 يراجع المختبر','create_text_file':'📄 يكتب ملف','delete_lab_file':'🗑️ يحذف ملف','get_global_stats':'📊 يقرأ إحصائيات','scan_users':'👥 يمسح المستخدمين','analyze_recitation_patterns':'🎙️ يحلل التلاوة','modify_algorithm_weights':'⚖️ يعدل الخوارزمية','read_project_file':'📖 يقرأ كود','write_project_file':'✏️ يعدل كود','analyze_and_improve_algorithm':'🧠 يحلل ويُحسّن'};
-                if(chatStatus) chatStatus.textContent=(toolNames[ev.name]||('🔧 '+ev.name))+'…';
+                const toolNames={
+                  'web_search':'🔍 يبحث في الإنترنت',
+                  'fetch_url':'🌐 يجلب رابط',
+                  'browser_open':'🌐 يفتح صفحة ويب',
+                  'browser_search':'🔍 يبحث بالمتصفح',
+                  'save_learning_file':'💾 يحفظ ملف التعلّم',
+                  'learn_skill_from_web':'🧠 يتعلّم من الإنترنت',
+                  'generate_tts_file':'🔊 يولّد صوت',
+                  'list_lab_files':'📁 يراجع المختبر',
+                  'create_text_file':'📄 يكتب ملف',
+                  'delete_lab_file':'🗑️ يحذف ملف',
+                  'get_global_stats':'📊 يقرأ إحصائيات',
+                  'scan_users':'👥 يمسح المستخدمين',
+                  'analyze_recitation_patterns':'🎙️ يحلل التلاوة',
+                  'modify_algorithm_weights':'⚖️ يعدل الخوارزمية',
+                  'read_project_file':'📖 يقرأ كود',
+                  'write_project_file':'✏️ يعدل كود',
+                  'analyze_and_improve_algorithm':'🧠 يحلل ويُحسّن',
+                  'read_hermes_memory':'🧠 يقرأ الذاكرة',
+                  'save_skill':'💡 يحفظ مهارة',
+                  'log_insight':'💡 يسجّل رؤية',
+                  'get_user_details':'👤 يفحص مستخدم',
+                  'adjust_user_plan':'📋 يعدّل خطة',
+                  'push_smart_notification':'🔔 يرسل إشعار',
+                  'train_on_all_data':'🎓 يتدرّب على البيانات',
+                  'test_server_health':'💚 يفحص السيرفر',
+                  'get_sheikh_audio_refs':'🎙️ يجلب صوتيات الشيوخ',
+                };
+                const detail = ev.args?.url ? ` — ${String(ev.args.url).slice(0,50)}` :
+                               ev.args?.query ? ` — "${String(ev.args.query).slice(0,40)}"` :
+                               ev.args?.filename ? ` — ${ev.args.filename}` :
+                               ev.args?.topic ? ` — ${String(ev.args.topic).slice(0,40)}` : '';
+                if(chatStatus) chatStatus.innerHTML=`<span style="animation:pulse 1s infinite">${toolNames[ev.name]||('🔧 '+ev.name)}${escapeHTML(detail)}…</span>`;
+
+                // بطاقة الأداة في المحادثة (للأدوات المهمة)
+                const showCard = ['browser_open','browser_search','learn_skill_from_web','save_learning_file','web_search'].includes(ev.name);
+                if(showCard && chatMsgs){
+                  const card=document.createElement('div');
+                  card.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.15);border-radius:8px;font-size:.73rem;color:#a78bfa;margin:2px 0';
+                  card.innerHTML=`<span>${(toolNames[ev.name]||'🔧').split(' ')[0]}</span><span>${(toolNames[ev.name]||ev.name).split(' ').slice(1).join(' ')}</span><code style="font-size:.66rem;color:var(--text-3);direction:ltr;margin-right:auto">${escapeHTML(detail.slice(0,45))}</code><span>⏳</span>`;
+                  chatMsgs.appendChild(card);
+                  chatMsgs.scrollTop=chatMsgs.scrollHeight;
+                  ev._card=card;
+                }
               } else if(ev.type==='lab_file'){
                 hChatAppend('hermes',ev.type==='audio'?`✅ تم إنشاء ملف الصوت: ${ev.filename}`:`✅ تم إنشاء ملف: ${ev.filename}`,{type:ev.type||'audio',...ev});
               } else if(ev.type==='tool_result'&&ev.name==='generate_tts_file'){
@@ -2232,6 +2309,48 @@ const Admin = {
                 try{
                   const r2=JSON.parse(ev.result);
                   if(r2.ok&&r2.filename) hChatAppend('hermes',`📄 ملف: ${r2.filename}`,{type:'text',filename:r2.filename,url:`/qqc/admin/hermes/lab/file/${encodeURIComponent(r2.filename)}`,size_kb:r2.size_kb});
+                }catch{}
+              } else if(ev.type==='tool_result'&&ev.name==='save_learning_file'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok&&r2.filename){
+                    hChatAppend('hermes',`💾 تقرير تعلّم جاهز: ${r2.filename}`,{type:'text',filename:r2.filename,url:r2.lab_url,size_kb:r2.size_kb});
+                    const notif=document.createElement('div');
+                    notif.style.cssText='padding:7px 12px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:8px;font-size:.75rem;color:var(--mint);margin-top:4px;display:flex;align-items:center;gap:6px';
+                    notif.innerHTML=`✅ تم حفظ ما تعلّمه هرمز في: <strong>${escapeHTML(r2.filename)}</strong> (${r2.size_kb}KB) — <a href="${API}${r2.lab_url}" target="_blank" style="color:inherit;text-decoration:underline">افتح الملف</a>`;
+                    chatMsgs?.appendChild(notif);
+                    chatMsgs&&(chatMsgs.scrollTop=chatMsgs.scrollHeight);
+                  }
+                }catch{}
+              } else if(ev.type==='tool_result'&&ev.name==='browser_open'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok){
+                    const chip=document.createElement('div');
+                    chip.style.cssText='display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.15);border-radius:8px;font-size:.71rem;color:#a78bfa;margin:2px 0;flex-wrap:wrap';
+                    chip.innerHTML=`🌐 <a href="${escapeHTML(r2.url||'')}" target="_blank" style="color:#c4b5fd;text-decoration:none;direction:ltr">${escapeHTML((r2.title||r2.url||'').slice(0,60))}</a> <span style="color:var(--text-3)">(${r2.chars?Math.round(r2.chars/1000)+'K حرف':''})</span>${(r2.links||[]).length?` · ${r2.links.length} رابط`:''}`;
+                    chatMsgs?.appendChild(chip); chatMsgs&&(chatMsgs.scrollTop=chatMsgs.scrollHeight);
+                  }
+                }catch{}
+              } else if(ev.type==='tool_result'&&ev.name==='browser_search'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok&&r2.results_count){
+                    const chip=document.createElement('div');
+                    chip.style.cssText='padding:5px 10px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;font-size:.71rem;color:var(--mint);margin:2px 0';
+                    chip.innerHTML=`🔍 "${escapeHTML(r2.query||'')}" — <strong>${r2.results_count}</strong> نتيجة من ${[...new Set((r2.results||[]).map(r=>r.source))].join('، ')}`;
+                    chatMsgs?.appendChild(chip); chatMsgs&&(chatMsgs.scrollTop=chatMsgs.scrollHeight);
+                  }
+                }catch{}
+              } else if(ev.type==='tool_result'&&ev.name==='learn_skill_from_web'){
+                try{
+                  const r2=JSON.parse(ev.result);
+                  if(r2.ok){
+                    const chip=document.createElement('div');
+                    chip.style.cssText='padding:5px 12px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;font-size:.73rem;color:#c4b5fd;margin:2px 0';
+                    chip.innerHTML=`🧠 تعلّم: "<strong>${escapeHTML(r2.topic||'')}</strong>" · ${r2.sources_fetched||0} مصادر · ${r2.total_skills||0} مهارة محفوظة`;
+                    chatMsgs?.appendChild(chip); chatMsgs&&(chatMsgs.scrollTop=chatMsgs.scrollHeight);
+                  }
                 }catch{}
               } else if(ev.type==='error'){
                 hChatAppend('tool','⚠️ '+(ev.message||'خطأ غير محدد'));
