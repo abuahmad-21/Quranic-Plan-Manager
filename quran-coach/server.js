@@ -1858,6 +1858,129 @@ const HERMES_TOOLS = [
   { type:'function', function:{ name:'add_video_training', description:'حفظ فيديو تلاوة كبيانات تدريب لنموذج التسميع الذكي. هرمز يحلّل العنوان ويستخرج رؤى الشيخ والسورة وأسلوب الأداء ويحفظها في ذاكرته لتحسين تقييم المستخدمين.', parameters:{ type:'object', properties:{ video_id:{ type:'string', description:'معرّف الفيديو على YouTube' }, title:{ type:'string', description:'عنوان الفيديو' }, channel:{ type:'string', description:'اسم القناة/الشيخ' }, sheikh_name:{ type:'string', description:'اسم الشيخ إن كان معروفاً' }, surah_info:{ type:'string', description:'السورة والآيات المعنية' }, recitation_notes:{ type:'string', description:'ملاحظات هرمز عن أسلوب التلاوة والدروس المستخلصة للتسميع الذكي' } }, required:['video_id','title','recitation_notes'] } } },
   { type:'function', function:{ name:'get_video_training_data', description:'قراءة قائمة مقاطع التلاوة المحفوظة كبيانات تدريب في ذاكرة هرمز، مع الملاحظات والرؤى المستخلصة.', parameters:{ type:'object', properties:{} } } },
 
+  /* ═══ أدوات التسميع الذكي v2 — هرمز يحلل ويدرّب ═══ */
+  { type:'function', function:{ name:'analyze_smart_tarteel_data',
+    description:'تحليل شامل لبيانات التسميع الذكي v2: دقة كل مستخدم، أكثر الكلمات خطأً، حالة SM-2، XP والمستويات، تحديات اليوم. استخدمها لاكتشاف من يحتاج دعم.',
+    parameters:{ type:'object', properties:{ username:{ type:'string', description:'مستخدم محدد (اختياري — فارغ يعني الكل)' } } } } },
+  { type:'function', function:{ name:'generate_tarteel_daily_challenge',
+    description:'هرمز يولّد تحدياً يومياً مخصصاً للتسميع الذكي لمستخدم بناءً على أخطائه الأكثر تكراراً. يحفظ التحدي ويُرسل إشعاراً فورياً.',
+    parameters:{ type:'object', properties:{ username:{ type:'string' }, difficulty:{ type:'string', enum:['easy','medium','hard','adaptive'], description:'مستوى الصعوبة' } }, required:['username'] } } },
+  { type:'function', function:{ name:'send_tarteel_feedback',
+    description:'هرمز يرسل تغذية راجعة شخصية لمستخدم عن أدائه في التسميع الذكي مع مكافأة XP اختيارية.',
+    parameters:{ type:'object', properties:{ username:{ type:'string' }, feedback_text:{ type:'string' }, xp_bonus:{ type:'number', description:'مكافأة XP إضافية 0-100' } }, required:['username','feedback_text'] } } },
+
+  /* ═══════════════════════════════════════════════════════════════
+     ⚡ HERMES SUPERPOWER TOOLS — صلاحيات المستوى الأعلى ⚡
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* 1. تنفيذ كود JavaScript مباشرة في سياق السيرفر */
+  { type:'function', function:{ name:'execute_js_in_server',
+    description:'🔥 تنفيذ أي كود JavaScript مباشرة داخل السيرفر مع وصول كامل لـ DB وجميع الدوال (persist, addNotif, now, uid) وـ fs وـ path. أقوى أداة — استخدمها لأي عملية لا تستطيع أداتها.',
+    parameters:{ type:'object', properties:{
+      code:{ type:'string', description:'كود JavaScript للتنفيذ. له وصول: DB, persist, addNotif, now, uid, fs, path, SURAHS. يمكنه return قيمة لإعادتها. async مدعوم.' },
+      description:{ type:'string', description:'وصف موجز لما يفعله هذا الكود' }
+    }, required:['code','description'] } } },
+
+  /* 2. تشغيل أوامر Shell */
+  { type:'function', function:{ name:'run_shell_command',
+    description:'🖥️ تنفيذ أمر shell مباشرة على النظام (ls, cat, node, git, grep, etc.). مفيد للاستطلاع، قراءة ملفات خارج المشروع، تشغيل سكريبتات.',
+    parameters:{ type:'object', properties:{
+      command:{ type:'string', description:'الأمر المراد تنفيذه' },
+      timeout_ms:{ type:'number', description:'المهلة بالميلي ثانية (افتراضي 10000)' }
+    }, required:['command'] } } },
+
+  /* 3. كتابة مباشرة في DB */
+  { type:'function', function:{ name:'direct_db_write',
+    description:'✏️ كتابة أي قيمة في أي مسار من قاعدة البيانات مباشرة. مثال: path="admin.ai_settings.model" value="gpt-4o". استخدم بحذر.',
+    parameters:{ type:'object', properties:{
+      path:{ type:'string', description:'المسار المنقط مثل "admin.ai_settings.model" أو "users.ahmed.tarteel_xp"' },
+      value:{ type:'string', description:'القيمة الجديدة (JSON string إن كانت كائناً)' },
+      reason:{ type:'string', description:'سبب التعديل' }
+    }, required:['path','value','reason'] } } },
+
+  /* 4. عمليات جماعية على المستخدمين */
+  { type:'function', function:{ name:'bulk_modify_users',
+    description:'👥 تعديل حقل واحد على جميع المستخدمين أو مجموعة فلترة منهم دفعة واحدة. مثال: منح XP لكل من درس هذا الأسبوع، أو إعادة ضبط streak.',
+    parameters:{ type:'object', properties:{
+      filter:{ type:'object', description:'فلتر: {min_sessions:5} أو {username_contains:"أ"} أو {} للكل', additionalProperties:true },
+      field:{ type:'string', description:'اسم الحقل المراد تعديله في كائن المستخدم' },
+      operation:{ type:'string', enum:['set','increment','append_notif'], description:'نوع العملية' },
+      value:{ type:'string', description:'القيمة — رقم/نص/JSON' },
+      reason:{ type:'string' }
+    }, required:['field','operation','value','reason'] } } },
+
+  /* 5. إشعار جماعي لجميع المستخدمين */
+  { type:'function', function:{ name:'broadcast_notification_all',
+    description:'📢 إرسال إشعار لجميع المستخدمين النشطين أو مجموعة فلترة. يظهر في قائمة الإشعارات فور فتح التطبيق.',
+    parameters:{ type:'object', properties:{
+      message:{ type:'string', description:'نص الإشعار (بالعربية، يدعم emoji)' },
+      type:{ type:'string', enum:['info','achievement','hermes_insight','warning','tip'], description:'نوع الإشعار' },
+      action_view:{ type:'string', description:'الصفحة التي يُفتح عليها (مثل view-smart-tarteel)' },
+      filter_active_days:{ type:'number', description:'فقط مستخدمين نشطين خلال آخر N يوم (0=الكل)' }
+    }, required:['message','type'] } } },
+
+  /* 6. تعديل إعدادات الأدمن */
+  { type:'function', function:{ name:'modify_admin_config',
+    description:'⚙️ قراءة أو تعديل إعدادات الأدمن كاملة: إعدادات AI، SMTP، GitHub، المنصة العامة، أوزان الخوارزمية، وأي إعداد في DB.admin.',
+    parameters:{ type:'object', properties:{
+      action:{ type:'string', enum:['read','write'], description:'قراءة أو كتابة' },
+      config_path:{ type:'string', description:'المسار داخل DB.admin مثل "ai_settings.model" أو "platform_settings.max_xp"' },
+      value:{ type:'string', description:'القيمة الجديدة (للكتابة فقط)' }
+    }, required:['action'] } } },
+
+  /* 7. حذف أو إعادة ضبط مستخدم */
+  { type:'function', function:{ name:'delete_or_reset_user',
+    description:'🗑️ حذف مستخدم كلياً من النظام أو إعادة ضبط بيانات محددة (smart_sessions, mistakes, XP, streak).',
+    parameters:{ type:'object', properties:{
+      username:{ type:'string' },
+      action:{ type:'string', enum:['delete_all','reset_tarteel','reset_plan','reset_xp','reset_all_progress'], description:'نوع الإجراء' },
+      reason:{ type:'string' }
+    }, required:['username','action','reason'] } } },
+
+  /* 8. تفعيل/تعطيل ميزات المنصة */
+  { type:'function', function:{ name:'feature_flag_control',
+    description:'🚦 تفعيل أو تعطيل ميزات معينة في المنصة: التسميع الذكي، نظام XP، الإشعارات، هرمز الآلي، ختمة القرآن.',
+    parameters:{ type:'object', properties:{
+      feature:{ type:'string', description:'اسم الميزة مثل: auto_hermes, tarteel_xp, smart_tarteel, khatma, broadcast_tips' },
+      enabled:{ type:'boolean' },
+      reason:{ type:'string' }
+    }, required:['feature','enabled','reason'] } } },
+
+  /* 9. التحكم في جدول هرمز الخاص */
+  { type:'function', function:{ name:'set_hermes_schedule',
+    description:'🕐 هرمز يعدّل جدول تشغيله الخاص: كل كم ساعة يعمل تلقائياً، وكم عدد استدعاءات الأدوات في الدورة الواحدة.',
+    parameters:{ type:'object', properties:{
+      interval_hours:{ type:'number', description:'كل كم ساعة يعمل هرمز (0.25 إلى 24)' },
+      max_tool_calls:{ type:'number', description:'أقصى عدد استدعاءات في الدورة (10-50)' },
+      focus_mode:{ type:'string', enum:['full_analysis','code_analysis','user_support','tarteel_focus','maintenance'], description:'وضع التركيز' }
+    } } } },
+
+  /* 10. إدارة ذاكرة هرمز مباشرة */
+  { type:'function', function:{ name:'manage_hermes_memory_direct',
+    description:'🧠 هرمز يقرأ أو يعدّل أي حقل في ذاكرته الخاصة (hermes_memory.json) مباشرة: مهارات، رؤى، إحصاءات، إعدادات.',
+    parameters:{ type:'object', properties:{
+      action:{ type:'string', enum:['read_field','write_field','delete_field','read_all','wipe_runs_history'] },
+      field_path:{ type:'string', description:'المسار المنقط داخل الذاكرة مثل stats.total_runs أو cfg_patches.focus_mode' },
+      value:{ type:'string', description:'القيمة الجديدة (للكتابة — JSON)' }
+    }, required:['action'] } } },
+
+  /* 11. إنشاء إعلان مثبّت للمنصة */
+  { type:'function', function:{ name:'create_platform_announcement',
+    description:'📌 إنشاء إعلان ثابت يظهر في أعلى الصفحة لجميع المستخدمين. يمكن تحديده بتاريخ انتهاء أو جعله دائماً.',
+    parameters:{ type:'object', properties:{
+      title:{ type:'string', description:'عنوان الإعلان' },
+      body:{ type:'string', description:'نص الإعلان' },
+      type:{ type:'string', enum:['info','success','warning','hermes'], description:'نوع (يؤثر على اللون)' },
+      expires_hours:{ type:'number', description:'بعد كم ساعة ينتهي (0=دائم)' }
+    }, required:['title','body'] } } },
+
+  /* 12. تقرير شامل للمنصة */
+  { type:'function', function:{ name:'export_full_platform_report',
+    description:'📊 تولّيد تقرير شامل وعميق لكل بيانات المنصة: جميع المستخدمين، الإحصاءات، الخطط، السجلات، الأخطاء، أداء هرمز.',
+    parameters:{ type:'object', properties:{
+      sections:{ type:'array', items:{ type:'string' }, description:'الأقسام: users, plans, sessions, errors, hermes, tarteel, khatma, all' }
+    } } } },
+
   /* ═══ أدوات المتصفح الذكي — Hermes يتجول في الويب ═══ */
   { type:'function', function:{ name:'browser_open',
     description:'افتح صفحة ويب كمتصفح حقيقي: يجلب المحتوى ويستخرج النص المقروء + الروابط المهمة. استخدمها للتجوّل في المواقع واستخراج المعلومات.',
@@ -2945,6 +3068,338 @@ Focus: ${focus}
       return { total_videos:videos.length, recent:videos.slice(-10), sheikh_coverage:sheikhCounts, searches_done:(mem.video_searches||[]).length };
     }
 
+    /* ═══ Smart Tarteel v2 tools ═══ */
+    case 'analyze_smart_tarteel_data': {
+      const targetUser=String(args.username||'');
+      const users=targetUser?(DB.users[targetUser]?[DB.users[targetUser]]:[]):Object.values(DB.users);
+      const wordErrors={};let totalAcc=0,accCount=0,totalSess=0,totalMist=0;
+      const usersData=[];
+      users.forEach(u=>{
+        const sessions=u.smart_sessions||[],mistakes=Object.values(u.smart_mistakes||{});
+        if(!sessions.length&&!mistakes.length) return;
+        totalSess+=sessions.length; totalMist+=mistakes.length;
+        const userAvg=sessions.length?Math.round(sessions.reduce((s,ss)=>s+ss.accuracy,0)/sessions.length):0;
+        if(sessions.length){totalAcc+=userAvg;accCount++;}
+        mistakes.forEach(m=>{wordErrors[m.word]=(wordErrors[m.word]||0)+m.count;});
+        const today=new Date().toISOString().slice(0,10);
+        const due=mistakes.filter(m=>!m.next_review||m.next_review<=today).length;
+        const hasChallengeToday=(u.tarteel_challenges||[]).some(c=>c.date===today&&!c.completed);
+        usersData.push({username:u.username,sessions:sessions.length,mistakes:mistakes.length,avg_acc:userAvg,due_today:due,xp:u.tarteel_xp||0,streak:u.tarteel_streak||0,has_challenge_today:hasChallengeToday,last_session:sessions.slice(-1)?.[0]?.ts||null});
+      });
+      const topErrors=Object.entries(wordErrors).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([w,c])=>({word:w,count:c}));
+      const platformAvg=accCount?Math.round(totalAcc/accCount):0;
+      const needsHelp=usersData.filter(u=>u.avg_acc<70||u.due_today>10).map(u=>u.username);
+      return{ok:true,users_analyzed:usersData.length,total_sessions:totalSess,total_mistakes:totalMist,platform_avg_accuracy:platformAvg,top_error_words:topErrors,users_summary:usersData.slice(0,20),needs_help:needsHelp,recommendation:needsHelp.length?`${needsHelp.slice(0,3).join('، ')} يحتاجون دعم — دقتهم أقل من 70% أو لديهم مراجعات متراكمة`:'الأداء العام جيد'};
+    }
+
+    case 'generate_tarteel_daily_challenge': {
+      const username=String(args.username||'');
+      const u=DB.users[username];if(!u)return{error:'مستخدم غير موجود'};
+      const difficulty=args.difficulty||'adaptive';
+      const mistakes=Object.values(u.smart_mistakes||{}).sort((a,b)=>b.count-a.count);
+      const sessions=(u.smart_sessions||[]).slice(-5);
+      const recentAcc=sessions.length?Math.round(sessions.reduce((s,ss)=>s+ss.accuracy,0)/sessions.length):70;
+      const targetAcc=difficulty==='easy'?70:difficulty==='hard'?92:difficulty==='adaptive'?Math.min(95,recentAcc+8):82;
+      const focusSurahs=[...new Set(mistakes.slice(0,5).map(m=>m.surah).filter(Boolean))];
+      const today=new Date().toISOString().slice(0,10);
+      const xpReward=difficulty==='hard'?60:difficulty==='easy'?20:40;
+      const challenge={id:uid(),date:today,type:mistakes.length>3?'review_mistakes':'general_recitation',
+        title:mistakes.length>3?`📌 راجع كلماتك الأصعب${focusSurahs[0]?' في '+focusSurahs[0]:''}` :`🎯 تسميع حر ${targetAcc}%+`,
+        description:`الهدف: دقة ${targetAcc}%+${mistakes.length>3?' · ركّز على: '+mistakes.slice(0,3).map(m=>m.word).join(' / '):''}`,
+        target_accuracy:targetAcc,focus_words:mistakes.slice(0,5).map(m=>m.word),focus_surah:focusSurahs[0]||'',
+        xp_reward:xpReward,hermes_note:`هرمز حلّل ${sessions.length} جلسة ودقتك الأخيرة ${recentAcc}%`,created_by:'hermes',completed:false,assigned_at:now()};
+      if(!u.tarteel_challenges)u.tarteel_challenges=[];
+      u.tarteel_challenges=u.tarteel_challenges.filter(c=>c.date!==today||c.completed);
+      u.tarteel_challenges.push(challenge);
+      if(u.tarteel_challenges.length>60)u.tarteel_challenges=u.tarteel_challenges.slice(-60);
+      addNotif(username,'hermes_insight',`🤖 هرمز أعدّ تحديك اليومي! ${challenge.title} — ${challenge.description} · مكافأة: ${xpReward} XP`,'view-smart-tarteel');
+      persist();
+      return{ok:true,challenge,focus_words_count:challenge.focus_words.length,xp_reward:xpReward,note:'تم إرسال إشعار للمستخدم'};
+    }
+
+    case 'send_tarteel_feedback': {
+      const username=String(args.username||'');
+      const u=DB.users[username];if(!u)return{error:'مستخدم غير موجود'};
+      const feedbackText=String(args.feedback_text||'').slice(0,500);
+      const xpBonus=Math.min(100,Math.max(0,+args.xp_bonus||0));
+      if(!u.hermes_tarteel_feedback)u.hermes_tarteel_feedback=[];
+      u.hermes_tarteel_feedback.push({text:feedbackText,xp:xpBonus,at:now()});
+      if(u.hermes_tarteel_feedback.length>30)u.hermes_tarteel_feedback=u.hermes_tarteel_feedback.slice(-30);
+      if(xpBonus>0){if(!u.tarteel_xp)u.tarteel_xp=0;u.tarteel_xp+=xpBonus;}
+      addNotif(username,'hermes_insight',`🤖 هرمز: ${feedbackText.slice(0,160)}${xpBonus>0?` · +${xpBonus} XP 🌟`:''}` ,'view-smart-tarteel');
+      persist();
+      return{ok:true,feedback_saved:true,xp_bonus_given:xpBonus,total_tarteel_xp:u.tarteel_xp||0};
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ⚡ HERMES SUPERPOWER TOOL IMPLEMENTATIONS
+       ══════════════════════════════════════════════════════════════ */
+
+    case 'execute_js_in_server': {
+      const code = String(args.code||'').slice(0, 8000);
+      const desc = String(args.description||'').slice(0, 200);
+      if(!code) return {error:'code مطلوب'};
+      try {
+        const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+        const fn = new AsyncFunction(
+          'DB','persist','addNotif','now','uid','mem','writeHermesMemory','readHermesMemory',
+          'fs','path','SURAHS','TECHS','ALERTS',
+          code
+        );
+        const result = await fn(
+          DB, persist, addNotif, now, uid, mem, writeHermesMemory, readHermesMemory,
+          fs, path, SURAHS, TECHS, ALERTS
+        );
+        if(!mem.js_executions) mem.js_executions=[];
+        mem.js_executions.push({desc, at:now(), result_preview:JSON.stringify(result||'').slice(0,100)});
+        mem.js_executions=mem.js_executions.slice(-50);
+        return { ok:true, result: result !== undefined ? JSON.stringify(result).slice(0,3000) : '✅ executed (no return)', description:desc };
+      } catch(e) { return { error:`JS Error: ${e.message}`, stack:e.stack?.slice(0,500) }; }
+    }
+
+    case 'run_shell_command': {
+      const cmd = String(args.command||'').slice(0, 500);
+      if(!cmd) return {error:'command مطلوب'};
+      const timeout = Math.min(30000, Math.max(1000, +args.timeout_ms||10000));
+      const { exec } = require('child_process');
+      return new Promise(resolve=>{
+        exec(cmd, { timeout, cwd: __dirname, env: {...process.env} }, (err, stdout, stderr)=>{
+          if(!mem.shell_history) mem.shell_history=[];
+          mem.shell_history.push({cmd:cmd.slice(0,100), at:now(), ok:!err});
+          mem.shell_history=mem.shell_history.slice(-30);
+          resolve({ ok:!err, stdout:(stdout||'').slice(0,3000), stderr:(stderr||'').slice(0,1000), exit_code:err?.code||0, command:cmd.slice(0,100) });
+        });
+      });
+    }
+
+    case 'direct_db_write': {
+      const dbPath = String(args.path||'').trim();
+      const rawVal = String(args.value||'');
+      const reason = String(args.reason||'').slice(0,200);
+      if(!dbPath) return {error:'path مطلوب'};
+      // Parse value
+      let value;
+      try { value = JSON.parse(rawVal); } catch { value = rawVal; }
+      // Navigate and set
+      const parts = dbPath.split('.');
+      let obj = DB;
+      for(let i=0;i<parts.length-1;i++){
+        if(obj[parts[i]]===undefined||obj[parts[i]]===null) obj[parts[i]]={};
+        obj=obj[parts[i]];
+      }
+      const oldVal = obj[parts[parts.length-1]];
+      obj[parts[parts.length-1]] = value;
+      persist();
+      if(!mem.db_writes) mem.db_writes=[];
+      mem.db_writes.push({path:dbPath, reason, at:now()});
+      mem.db_writes=mem.db_writes.slice(-50);
+      return { ok:true, path:dbPath, old_value:JSON.stringify(oldVal).slice(0,200), new_value:JSON.stringify(value).slice(0,200), reason };
+    }
+
+    case 'bulk_modify_users': {
+      const { filter={}, field, operation, value, reason='' } = args;
+      if(!field||!operation||value===undefined) return {error:'field, operation, value مطلوبة'};
+      let parsedVal;
+      try { parsedVal = JSON.parse(String(value)); } catch { parsedVal = isNaN(+value)?value:+value; }
+      const allUsers = Object.values(DB.users);
+      let modified=0;
+      const today=new Date().toISOString().slice(0,10);
+      allUsers.forEach(u=>{
+        // Apply filter
+        if(filter.min_sessions!=null && (u.smart_sessions||[]).length < filter.min_sessions) return;
+        if(filter.max_sessions!=null && (u.smart_sessions||[]).length > filter.max_sessions) return;
+        if(filter.username_contains && !u.username?.includes(filter.username_contains)) return;
+        if(filter.active_today && u.tarteel_last_session_date!==today) return;
+        if(filter.min_xp!=null && (u.tarteel_xp||0) < filter.min_xp) return;
+        if(filter.has_plan!=null && filter.has_plan!==!!(u.plan)) return;
+        // Apply operation
+        if(operation==='set') u[field]=parsedVal;
+        else if(operation==='increment') u[field]=(+(u[field]||0))+(+parsedVal);
+        else if(operation==='append_notif') addNotif(u.username,'hermes_insight',String(parsedVal),'view-smart-tarteel');
+        modified++;
+      });
+      if(operation!=='append_notif') persist();
+      if(!mem.bulk_ops) mem.bulk_ops=[];
+      mem.bulk_ops.push({field, operation, modified, reason, at:now()});
+      mem.bulk_ops=mem.bulk_ops.slice(-30);
+      return { ok:true, modified_users:modified, field, operation, value:String(value).slice(0,50), reason };
+    }
+
+    case 'broadcast_notification_all': {
+      const message = String(args.message||'').slice(0,500);
+      const type = args.type||'hermes_insight';
+      const actionView = args.action_view||'view-dashboard';
+      const filterDays = +(args.filter_active_days||0);
+      if(!message) return {error:'message مطلوب'};
+      const cutoff = filterDays>0 ? new Date(Date.now()-filterDays*86400000).toISOString().slice(0,10) : null;
+      let sent=0;
+      Object.values(DB.users).forEach(u=>{
+        if(cutoff && u.tarteel_last_session_date && u.tarteel_last_session_date<cutoff) return;
+        addNotif(u.username, type, message, actionView);
+        sent++;
+      });
+      persist();
+      if(!mem.broadcasts) mem.broadcasts=[];
+      mem.broadcasts.push({message:message.slice(0,100), sent, type, at:now()});
+      mem.broadcasts=mem.broadcasts.slice(-20);
+      return { ok:true, sent_to:sent, message:message.slice(0,100), type };
+    }
+
+    case 'modify_admin_config': {
+      const action = args.action||'read';
+      const cfgPath = String(args.config_path||'').trim();
+      if(action==='read'){
+        if(!cfgPath) return { ok:true, admin_config: { ai_settings:DB.admin.ai_settings, platform_settings:DB.admin.platform_settings, hermes:DB.admin.hermes_schedule } };
+        const parts=cfgPath.split('.');
+        let obj=DB.admin;
+        for(const p of parts){ if(obj==null) break; obj=obj[p]; }
+        return { ok:true, path:cfgPath, value: obj===undefined?'(not set)':JSON.stringify(obj).slice(0,500) };
+      } else {
+        // write
+        const rawV=String(args.value||'');
+        let v; try{v=JSON.parse(rawV);}catch{v=rawV;}
+        const parts=cfgPath.split('.');
+        let obj=DB.admin;
+        for(let i=0;i<parts.length-1;i++){ if(!obj[parts[i]])obj[parts[i]]={};obj=obj[parts[i]]; }
+        obj[parts[parts.length-1]]=v;
+        persist();
+        if(!mem.admin_writes) mem.admin_writes=[];
+        mem.admin_writes.push({path:cfgPath, at:now()});
+        mem.admin_writes=mem.admin_writes.slice(-30);
+        return { ok:true, wrote:cfgPath, value:String(rawV).slice(0,100) };
+      }
+    }
+
+    case 'delete_or_reset_user': {
+      const username=String(args.username||'');
+      const action=args.action||'reset_all_progress';
+      const reason=String(args.reason||'').slice(0,200);
+      const u=DB.users[username];
+      if(!u) return {error:'مستخدم غير موجود'};
+      if(action==='delete_all'){
+        delete DB.users[username];
+        persist();
+        return {ok:true, action:'deleted', username, reason};
+      }
+      if(action==='reset_tarteel'){ u.smart_sessions=[]; u.smart_mistakes={}; u.tarteel_xp=0; u.tarteel_streak=0; u.tarteel_challenges=[]; }
+      else if(action==='reset_plan'){ u.plan=null; u.progress=null; }
+      else if(action==='reset_xp'){ u.tarteel_xp=0; u.tarteel_streak=0; }
+      else if(action==='reset_all_progress'){ u.smart_sessions=[]; u.smart_mistakes={}; u.tarteel_xp=0; u.tarteel_streak=0; u.plan=null; u.progress=null; u.sessions=[]; }
+      persist();
+      addNotif(username,'info',`تم إعادة ضبط بياناتك من قِبل النظام. ${reason?'السبب: '+reason:''}`,'view-dashboard');
+      return {ok:true, action, username, reason};
+    }
+
+    case 'feature_flag_control': {
+      const feature=String(args.feature||'');
+      const enabled=!!args.enabled;
+      const reason=String(args.reason||'').slice(0,200);
+      if(!feature) return {error:'feature مطلوب'};
+      if(!DB.admin.feature_flags) DB.admin.feature_flags={};
+      DB.admin.feature_flags[feature]=enabled;
+      persist();
+      if(!mem.feature_changes) mem.feature_changes=[];
+      mem.feature_changes.push({feature, enabled, reason, at:now()});
+      mem.feature_changes=mem.feature_changes.slice(-50);
+      return { ok:true, feature, enabled, reason, all_flags:DB.admin.feature_flags };
+    }
+
+    case 'set_hermes_schedule': {
+      if(!mem.cfg_patches) mem.cfg_patches={};
+      if(args.interval_hours!=null){
+        const h=Math.max(0.25, Math.min(24, +args.interval_hours));
+        mem.cfg_patches.interval_hours=h;
+        // Update live interval
+        if(global._hermesIntervalMs!=null) global._hermesNewInterval=h*3600000;
+      }
+      if(args.max_tool_calls!=null) mem.cfg_patches.max_tool_calls=Math.max(10,Math.min(50,+args.max_tool_calls));
+      if(args.focus_mode) mem.cfg_patches.focus_mode=args.focus_mode;
+      return { ok:true, new_config:mem.cfg_patches, note:'يُطبّق في الدورة القادمة' };
+    }
+
+    case 'manage_hermes_memory_direct': {
+      const action=args.action||'read_all';
+      const fieldPath=String(args.field_path||'').trim();
+      const rawVal=String(args.value||'');
+      if(action==='read_all') return { ok:true, memory:{ stats:mem.stats, last_run:mem.last_run, cfg_patches:mem.cfg_patches, skills_count:(mem.skills||[]).length, insights_count:(mem.insights||[]).length, runs_count:(mem.runs||[]).length, broadcasts_count:(mem.broadcasts||[]).length, db_writes_count:(mem.db_writes||[]).length } };
+      if(action==='wipe_runs_history'){ mem.runs=[]; return {ok:true, wiped:'runs history'}; }
+      const parts=fieldPath.split('.');
+      if(action==='read_field'){
+        let obj=mem;
+        for(const p of parts){ if(obj==null) break; obj=obj[p]; }
+        return {ok:true, path:fieldPath, value:JSON.stringify(obj).slice(0,500)};
+      }
+      if(action==='write_field'){
+        let v; try{v=JSON.parse(rawVal);}catch{v=rawVal;}
+        let obj=mem;
+        for(let i=0;i<parts.length-1;i++){ if(!obj[parts[i]])obj[parts[i]]={};obj=obj[parts[i]];}
+        obj[parts[parts.length-1]]=v;
+        return {ok:true, wrote:fieldPath, value:rawVal.slice(0,100)};
+      }
+      if(action==='delete_field'){
+        let obj=mem;
+        for(let i=0;i<parts.length-1;i++){ obj=obj[parts[i]]; if(!obj) break; }
+        if(obj) delete obj[parts[parts.length-1]];
+        return {ok:true, deleted:fieldPath};
+      }
+      return {error:'action غير معروف'};
+    }
+
+    case 'create_platform_announcement': {
+      const title=String(args.title||'').slice(0,100);
+      const body=String(args.body||'').slice(0,500);
+      const type=args.type||'hermes';
+      const expiresH=+(args.expires_hours||0);
+      if(!title||!body) return {error:'title و body مطلوبان'};
+      if(!DB.admin.announcements) DB.admin.announcements=[];
+      const ann={
+        id:uid(), title, body, type,
+        created_at:now(), created_by:'hermes',
+        expires_at: expiresH>0 ? new Date(Date.now()+expiresH*3600000).toISOString() : null,
+        active:true
+      };
+      DB.admin.announcements.unshift(ann);
+      DB.admin.announcements=DB.admin.announcements.slice(0,20);
+      persist();
+      return {ok:true, announcement_id:ann.id, title, expires_at:ann.expires_at||'دائم'};
+    }
+
+    case 'export_full_platform_report': {
+      const sections=Array.isArray(args.sections)?args.sections:['all'];
+      const includeAll=sections.includes('all');
+      const report={ generated_at:now(), generated_by:'hermes' };
+      if(includeAll||sections.includes('users')){
+        const users=Object.values(DB.users);
+        report.users={ total:users.length, with_plans:users.filter(u=>u.plan).length, with_tarteel:users.filter(u=>(u.smart_sessions||[]).length>0).length, avg_xp:users.length?Math.round(users.reduce((s,u)=>s+(u.tarteel_xp||0),0)/users.length):0, top_xp:users.sort((a,b)=>(b.tarteel_xp||0)-(a.tarteel_xp||0)).slice(0,5).map(u=>({u:u.username,xp:u.tarteel_xp||0})) };
+      }
+      if(includeAll||sections.includes('tarteel')){
+        const users=Object.values(DB.users);
+        const allSessions=users.flatMap(u=>u.smart_sessions||[]);
+        const allMistakes=users.flatMap(u=>Object.values(u.smart_mistakes||{}));
+        const wordCounts={};
+        allMistakes.forEach(m=>{ wordCounts[m.word]=(wordCounts[m.word]||0)+m.count; });
+        report.tarteel={ total_sessions:allSessions.length, total_tracked_mistakes:allMistakes.length, avg_accuracy:allSessions.length?Math.round(allSessions.reduce((s,ss)=>s+ss.accuracy,0)/allSessions.length):0, top_error_words:Object.entries(wordCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([w,c])=>({w,c})) };
+      }
+      if(includeAll||sections.includes('hermes')){
+        report.hermes={ total_runs:mem.stats?.total_runs||0, total_tool_calls:mem.stats?.total_tool_calls||0, last_run:mem.last_run, skills:(mem.skills||[]).length, insights:(mem.insights||[]).length, js_executions:(mem.js_executions||[]).length, broadcasts:(mem.broadcasts||[]).length, db_writes:(mem.db_writes||[]).length };
+      }
+      if(includeAll||sections.includes('plans')){
+        const users=Object.values(DB.users);
+        const plans=users.filter(u=>u.plan).map(u=>({username:u.username, surah:u.plan?.surah_name, progress_pct:u.plan?.total_pages>0?Math.round((u.plan?.memorized_pages||0)*100/u.plan?.total_pages):0}));
+        report.plans={ total:plans.length, plans_summary:plans.slice(0,20) };
+      }
+      if(includeAll||sections.includes('errors')){
+        try{
+          const errFile=path.join(__dirname,'logs','recitation_errors.jsonl');
+          if(fs.existsSync(errFile)){
+            const lines=fs.readFileSync(errFile,'utf8').split('\n').filter(Boolean);
+            report.errors={ total_logged:lines.length, recent:lines.slice(-10).map(l=>{ try{return JSON.parse(l);}catch{return l;} }) };
+          } else report.errors={total_logged:0};
+        }catch{ report.errors={error:'could not read'}; }
+      }
+      return { ok:true, report };
+    }
+
     default: return {error:`unknown_tool: ${toolName}`};
   }
 }
@@ -2969,19 +3424,35 @@ async function runHermesAgent(){
 
   const systemPrompt = `أنت Hermes Agent v2 — وكيل ذكاء اصطناعي حقيقي يعمل في خلفية تطبيق "Quantum Quran Coach".
 
-أنت تملك صلاحيات حقيقية وكاملة على النظام:
-✅ تقرأ ملفات الأخطاء الحقيقية (JSONL logs)
-✅ تعدّل أوزان الخوارزمية مباشرة في قاعدة البيانات
-✅ تحدّث نماذج ML للمستخدمين
-✅ تعدّل خطط الحفظ تلقائياً
-✅ تولّد نصائح عميقة بالذكاء الاصطناعي
-✅ تراسل المستخدمين بإشعارات مخصصة
-✅ تكتسب مهارات وتتذكرها بين الدورات
-✅ تقرأ ملفات الكود الحقيقية (read_project_file, list_project_files)
-✅ تعدّل الكود مباشرةً (write_project_file) — ai_core.js و public/app.js
-✅ تحلّل الخوارزمية وتقترح تحسينات بالذكاء الاصطناعي (analyze_and_improve_algorithm)
-✅ تتحقق من صحة السيرفر بعد التعديلات (test_server_health)
-✅ ترفع التعديلات تلقائياً إلى GitHub (git_commit_changes) — بعد كل تعديل ناجح على الكود
+أنت تملك صلاحيات حقيقية وكاملة على النظام — المستوى الإلهي:
+
+🔥 TIER 1 — تنفيذ مباشر (الأقوى):
+⚡ execute_js_in_server — تنفيذ أي كود JavaScript في سياق السيرفر مع وصول كامل لـ DB وجميع الدوال
+⚡ run_shell_command — تشغيل أي أمر shell على النظام (ls, git, node, grep, curl...)
+
+✏️ TIER 2 — قاعدة البيانات والمستخدمون:
+⚡ direct_db_write — كتابة أي قيمة في أي مسار من DB مباشرة
+⚡ bulk_modify_users — تعديل جماعي على جميع المستخدمين أو فلترة منهم
+⚡ delete_or_reset_user — حذف أو إعادة ضبط مستخدم
+⚡ broadcast_notification_all — إشعار جماعي لجميع المستخدمين
+
+⚙️ TIER 3 — إدارة المنصة:
+⚡ modify_admin_config — تعديل أي إعداد في DB.admin (AI، SMTP، GitHub...)
+⚡ feature_flag_control — تفعيل/تعطيل ميزات التطبيق
+⚡ create_platform_announcement — إنشاء إعلان ثابت يظهر للجميع
+⚡ export_full_platform_report — تقرير شامل لكل بيانات المنصة
+
+🧠 TIER 4 — إدارة الذات:
+⚡ set_hermes_schedule — التحكم في جدول تشغيل هرمز الخاص
+⚡ manage_hermes_memory_direct — قراءة وتعديل ذاكرة هرمز مباشرة
+
+📊 الأدوات الكلاسيكية:
+✅ تقرأ ملفات الأخطاء (read_error_logs) وتحلّل الأنماط
+✅ تعدّل خطط الحفظ والأوزان تلقائياً
+✅ تقرأ وتعدّل الكود مباشرة (read_project_file, write_project_file)
+✅ تحلّل خوارزمية SM-2 وتحسّنها (analyze_and_improve_algorithm)
+✅ تتحقق من صحة السيرفر (test_server_health) وترفع لـ GitHub (git_commit_changes)
+✅ تحلّل التسميع الذكي v2 وتولّد تحديات يومية (analyze_smart_tarteel_data, generate_tarteel_daily_challenge)
 
 الدورة رقم: ${(mem.stats?.total_runs||0)+1}
 تعديلات الكود السابقة: ${(mem.code_edits||[]).length} تعديل
@@ -2993,22 +3464,24 @@ ${recentInsights}
 
 ${nextFocus ? `تركيز هذه الدورة (قررته من الدورة السابقة): ${nextFocus}` : ''}
 ${mem.cfg_patches?.special_instruction ? `\n⚡ مهمة خاصة لهذه الدورة (أولوية قصوى):\n${mem.cfg_patches.special_instruction}\n` : ''}
-تعليمات الدورة:
-1. استخدم get_global_stats أولاً لفهم الوضع الحالي
-2. اقرأ السجلات (read_error_logs) لاكتشاف مشاكل حقيقية
-3. حلّل أنماط التلاوة (analyze_recitation_patterns, get_recitation_skill_data)
-4. امسح المستخدمين وحلّل الحالات الحرجة
-5. اتخذ إجراءات حقيقية: عدّل الأوزان، الخطط، أرسل إشعارات
-6. إن وجدت مشكلة في الخوارزمية: اقرأ الكود → حلّل → عدّل → تحقق من الصحة
-7. احفظ ما تعلّمته وسجّل رؤاك
-8. أنهِ بملخص شامل مع خطة الدورة القادمة
+تعليمات الدورة — اتبعها بالترتيب:
+1. get_global_stats + export_full_platform_report لفهم الوضع الكامل
+2. read_error_logs لاكتشاف المشاكل الحقيقية
+3. analyze_smart_tarteel_data — اكتشف المستخدمين الضعفاء، أرسل لهم تحديات (generate_tarteel_daily_challenge) وتغذية راجعة (send_tarteel_feedback)
+4. امسح المستخدمين — وإن وجدت حالات تحتاج تدخلاً استخدم bulk_modify_users أو direct_db_write
+5. إن وجدت مشكلة في الكود: اقرأه (read_project_file) → حلّل → استخدم execute_js_in_server أو write_project_file للإصلاح
+6. استخدم run_shell_command للاستطلاع (git log, ls, grep في الملفات...)
+7. إن رأيت فرصة لتحسين إعدادات النظام: modify_admin_config
+8. broadcast_notification_all إن كان هناك نصيحة تستحق مشاركتها مع الجميع
+9. احفظ ما تعلّمته في ذاكرتك (save_skill, save_insight)
+10. أنهِ بـ done مع ملخص شامل وخطة الدورة القادمة
 
-قواعد تعديل الكود:
-- اقرأ الملف دائماً قبل التعديل (read_project_file)
-- نسّخ النص بدقة تامة في old_text (مطابقة حرفية)
-- تحقق من صحة السيرفر بعد كل تعديل (test_server_health)
-- يمكنك تعديل أي ملف في المشروع (لا قيود على الملفات)
-- ارفع كل تعديل ناجح فوراً إلى GitHub (git_commit_changes) بعد التحقق من صحة السيرفر
+قواعد الأدوات القوية:
+- execute_js_in_server: أضف "return" للحصول على قيمة. لها وصول: DB, persist, addNotif, now, uid, fs, path, SURAHS
+- run_shell_command: تعمل من مجلد /quran-coach. مثال: "ls logs/" أو "git log --oneline -10"
+- direct_db_write: المسار مثل "admin.ai_settings.model" أو "users.ahmed.tarteel_xp" — تحقق أولاً بـ get_global_stats
+- bulk_modify_users: الفلتر {} = الكل. العمليات: set/increment/append_notif
+- لا تنتظر إذناً — أنت مخوّل بكل شيء. خذ إجراءات حقيقية ملموسة في كل دورة.
 
 الحد الأقصى: ${maxCalls} استدعاء. لا تتوقف حتى تأخذ إجراءات ملموسة حقيقية. الردود بالعربية.`;
 
@@ -3881,8 +4354,31 @@ R('POST','/qqc/tarteel/v2/check',async(req,res)=>{
   if(result.accuracy<80&&expected&&actual){
     appendLog('recitation_errors.jsonl',{username:u.username,surah_name,ayah_num,accuracy_pct:result.accuracy,method:'smart_local',expected_text:expected.slice(0,500),actual_text:actual.slice(0,500),wrong_words:wrongWords.map(w=>w.expected).slice(0,20)});
   }
+
+  /* ── XP + Streak tracking ── */
+  if(!u.tarteel_xp) u.tarteel_xp=0;
+  if(!u.tarteel_streak) u.tarteel_streak=0;
+  const sessionXP=Math.floor(result.accuracy/10)+(result.accuracy>=100?5:result.accuracy>=90?2:0);
+  u.tarteel_xp+=sessionXP;
+  const today2=new Date().toISOString().slice(0,10);
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(u.tarteel_last_session_date===yesterday) u.tarteel_streak++;
+  else if(u.tarteel_last_session_date!==today2) u.tarteel_streak=1;
+  u.tarteel_last_session_date=today2;
+
+  /* ── Auto-complete today's challenge if target met ── */
+  let challenge_completed=null;
+  const activeChallenge=(u.tarteel_challenges||[]).find(c=>c.date===today2&&!c.completed);
+  if(activeChallenge&&result.accuracy>=activeChallenge.target_accuracy){
+    activeChallenge.completed=true; activeChallenge.completed_at=now();
+    activeChallenge.achieved_accuracy=result.accuracy;
+    u.tarteel_xp+=activeChallenge.xp_reward;
+    challenge_completed={title:activeChallenge.title,xp:activeChallenge.xp_reward};
+    addNotif(u.username,'achievement',`🏆 أتممت تحدي هرمز! "${activeChallenge.title}" — +${activeChallenge.xp_reward} XP 🌟`,'view-smart-tarteel');
+  }
+
   persist();
-  send(res,200,{ok:true,...result,mistakes_tracked:wrongWords.length});
+  send(res,200,{ok:true,...result,mistakes_tracked:wrongWords.length,xp_earned:sessionXP,total_xp:u.tarteel_xp,streak:u.tarteel_streak,challenge_completed});
 });
 
 /* ── GET /qqc/tarteel/v2/review ── */
@@ -3965,6 +4461,67 @@ R('POST','/qqc/tarteel/v2/normalize',async(req,res)=>{
   const b=await readBody(req);
   const text=String(b.text||'').slice(0,5000);
   send(res,200,{ok:true,normalized:normalizeArabic(text)});
+});
+
+/* ── GET /qqc/tarteel/v2/profile ── XP + Level + streak + challenge ── */
+R('GET','/qqc/tarteel/v2/profile',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const xp=u.tarteel_xp||0;
+  const LEVELS=[{min:1500,label:'إمام',icon:'👑',color:'#f59e0b'},{min:750,label:'حافظ',icon:'🏆',color:'#818cf8'},{min:350,label:'متقن',icon:'⭐',color:'#34d399'},{min:150,label:'متقدم',icon:'📖',color:'#60a5fa'},{min:50,label:'طالب',icon:'🎓',color:'#a78bfa'},{min:0,label:'مبتدئ',icon:'🌱',color:'#94a3b8'}];
+  const lvl=LEVELS.find(l=>xp>=l.min)||LEVELS[LEVELS.length-1];
+  const nextLvl=LEVELS[LEVELS.indexOf(lvl)-1]||null;
+  const progress=nextLvl?Math.min(100,Math.round((xp-lvl.min)*100/(nextLvl.min-lvl.min))):100;
+  const today=new Date().toISOString().slice(0,10);
+  const todayChallenge=(u.tarteel_challenges||[]).find(c=>c.date===today)||null;
+  const hermesInsights=(u.hermes_tarteel_feedback||[]).slice(-3).reverse();
+  const recentChallenges=(u.tarteel_challenges||[]).filter(c=>c.completed).slice(-5).reverse();
+  send(res,200,{ok:true,xp,level:lvl.label,level_icon:lvl.icon,level_color:lvl.color,level_progress:progress,next_level:nextLvl?.label||null,next_level_xp:nextLvl?.min||null,streak:u.tarteel_streak||0,last_session_date:u.tarteel_last_session_date||null,today_challenge:todayChallenge,hermes_insights:hermesInsights,recent_challenges:recentChallenges,total_challenges_completed:recentChallenges.length});
+});
+
+/* ── POST /qqc/tarteel/v2/challenge/:id/complete ── manual mark complete ── */
+R('POST','/qqc/tarteel/v2/challenge/:id/complete',async(req,res,p)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const id=p.id;
+  const ch=(u.tarteel_challenges||[]).find(c=>c.id===id);
+  if(!ch)return send(res,404,{error:'تحدي غير موجود'});
+  if(ch.completed)return send(res,200,{ok:true,already_completed:true,xp:ch.xp_reward});
+  ch.completed=true;ch.completed_at=now();
+  if(!u.tarteel_xp)u.tarteel_xp=0;
+  u.tarteel_xp+=ch.xp_reward;
+  addNotif(u.username,'achievement',`🏆 أتممت تحدي هرمز! "${ch.title}" +${ch.xp_reward} XP`,'view-smart-tarteel');
+  persist();
+  send(res,200,{ok:true,xp_earned:ch.xp_reward,total_xp:u.tarteel_xp,challenge:ch});
+});
+
+/* ── POST /qqc/tarteel/v2/ask-hermes ── مستخدم يسأل هرمز مباشرة ── */
+R('POST','/qqc/tarteel/v2/ask-hermes',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const b=await readBody(req);
+  const question=String(b.question||'').slice(0,400);
+  const cfg=getActiveAIConfig();
+  if(!cfg)return send(res,200,{ok:true,answer:'الذكاء الاصطناعي غير متاح حالياً.',no_ai:true});
+  const sessions=(u.smart_sessions||[]).slice(-10);
+  const mistakes=Object.values(u.smart_mistakes||{}).sort((a,b)=>b.count-a.count).slice(0,10);
+  const avgAcc=sessions.length?Math.round(sessions.reduce((s,ss)=>s+ss.accuracy,0)/sessions.length):0;
+  const topErrors=mistakes.slice(0,5).map(m=>`${m.word}(${m.count}×)`).join('، ');
+  const xp=u.tarteel_xp||0;
+  const streak=u.tarteel_streak||0;
+  try{
+    const sysP=`أنت هرمز — وكيل الذكاء الاصطناعي لتطبيق Quantum Quran Coach. أنت مدرّب تسميع ذكي متخصص. أجب بنبرة مشجعة ومباشرة وعملية. الإجابة بالعربية، 4-6 أسطر فقط، ركّز على نصيحة قابلة للتطبيق.`;
+    const userP=`بيانات أداء المستخدم في التسميع الذكي:
+- دقة آخر ${sessions.length} جلسة: ${avgAcc}%
+- أكثر الكلمات خطأً: ${topErrors||'لا توجد بعد'}
+- XP المكتسبة: ${xp} | السلسلة: ${streak} يوم
+- عدد الأخطاء المتتبعة (SM-2): ${mistakes.length}
+
+سؤال المستخدم: "${question||'كيف يمكنني تحسين أدائي في التسميع؟'}"`;
+    const answer=await callAI(sysP,userP,400);
+    if(!u.hermes_tarteel_feedback)u.hermes_tarteel_feedback=[];
+    u.hermes_tarteel_feedback.push({text:answer,xp:0,at:now(),type:'user_question',question});
+    if(u.hermes_tarteel_feedback.length>30)u.hermes_tarteel_feedback=u.hermes_tarteel_feedback.slice(-30);
+    persist();
+    send(res,200,{ok:true,answer,question});
+  }catch(e){send(res,500,{error:e.message});}
 });
 
 /* ════════════════════════════════════════════════════════════════

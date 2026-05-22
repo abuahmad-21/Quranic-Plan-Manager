@@ -86,6 +86,18 @@
       ],
       "created_at": "2026-05-22T10:08:40.833Z",
       "updated_count": 1
+    },
+    {
+      "id": "fc47d96de1e8f8d6",
+      "title": "Arabizi",
+      "content": "The Arabic chat alphabet, also known as Arabizi, is a system of writing Arabic using the Latin alphabet. It is commonly used in informal settings, such as text messaging and online communication. The system uses a combination of Latin letters and numbers to represent Arabic letters and sounds. For example, the letter ع (ayn) is often represented by the number 3. The use of Arabizi has become widespread, especially among young people, and is often used in conjunction with Arabic script. However, some people have criticized the use of Arabizi, arguing that it is destroying the Arabic language.",
+      "tags": [
+        "Arabizi.md"
+      ],
+      "applies_to": "general",
+      "created_at": "2026-05-22T10:21:56.477Z",
+      "updated_count": 1,
+      "source_file": "Arabizi.md"
     }
   ],
   "insights": [
@@ -160,6 +172,12 @@
       "category": "user_behavior",
       "impact": "high",
       "at": "2026-05-22T10:01:28.972Z"
+    },
+    {
+      "text": "there are many errors in the website",
+      "category": "high/user_behavior",
+      "impact": "high",
+      "at": "2026-05-22T10:19:39.276Z"
     }
   ],
   "runs": [
@@ -801,23 +819,41 @@
       "actions": [],
       "next_run_focus": "",
       "duration_ms": 8090
+    },
+    {
+      "id": "0fd3259338a8914d",
+      "at": "2026-05-22T10:20:46.082Z",
+      "tool_calls": 6,
+      "summary": "The current state of the application is that there are 51 users, with 1 user being active today. The average energy level of users is 92, and the average streak is 0.3 days. There are 0 struggling users and 0 high performers. The algorithm weights are hesitiation penalty per second: 3.01, erratic penalty per count: 1.26, focus bonus per minute: 14.17, afi skip penalty: 2.75, afi complete bonus: 10.23, absence intervention days: 3, energy ema weight: 0.94, procrastination threshold: 79, plan decay factor: 0.68, plan growth factor: 2.73. The application has 45 runs, 7 skills, and 13 insights. Th",
+      "actions": [],
+      "next_run_focus": "The next run will focus on improving the accuracy of the recitation patterns, and reducing the number of errors in the application.",
+      "duration_ms": 124592
+    },
+    {
+      "id": "a6abd4bf348a7981",
+      "at": "2026-05-22T10:28:38.786Z",
+      "tool_calls": 11,
+      "summary": "تم تحليل البيانات واكتشاف مشاكل في دقة الكلام. تم تحسين الخوارزمية وتطبيق التعديلات. السيرفر يعمل بشكل صحيح.",
+      "actions": [],
+      "next_run_focus": "تحسين دقة الكلام",
+      "duration_ms": 36153
     }
   ],
-  "last_run": "2026-05-22T10:10:41.612Z",
+  "last_run": "2026-05-22T10:28:38.786Z",
   "cfg_patches": {
     "max_tool_calls": 20
   },
   "stats": {
-    "total_runs": 45,
-    "total_tool_calls": 448,
+    "total_runs": 47,
+    "total_tool_calls": 465,
     "users_helped": 523,
     "weights_updated": 8,
     "plans_adjusted": 122
   },
   "recitation_data": {
     "top_error_words": [],
-    "global_avg_accuracy": 0,
-    "total_recitation_sessions": 0,
+    "global_avg_accuracy": 90,
+    "total_recitation_sessions": 1,
     "reciter_folders": {
       "ar.alafasy": "Alafasy_128kbps",
       "ar.husary": "Husary_128kbps",
@@ -825,7 +861,7 @@
       "ar.sudais": "Abdurrahmaan_As-Sudais_192kbps",
       "ar.basfar": "Abdullah_Basfar_192kbps"
     },
-    "last_analyzed": "2026-05-21T15:58:31.351Z"
+    "last_analyzed": "2026-05-22T10:28:11.656Z"
   },
   "algorithm_analyses": [
     {
@@ -859,6 +895,14 @@
       "top_words": "",
       "analysis": "## 1️⃣ تحسين دالة `LocalML.train`\n\n**المشكلة**  \nفي السطر الأخير من `train()` يقطع الكود قبل إكمال حساب خسارة (`loss`) وتخزينها في `this.loss`. كما يفتقد إغلاق المتغيرات وعودة القيم، مما قد يتسبب في أخطاء التحميل (`8 server errors`) عندما تحاول الخوارزمية تخزين القيم غير المكتملة.\n\n**النص القديم**  \n```js\nconst l=0.5*e*\n```\n\n**النص المقترح**  \n```js\nconst l = 0.5 * e * e;          // الخسارة تُحسب كـ ½ (خطأ)²\nthis.loss.push(l);             // حفظ القيمة لتتبع الأداء\n```\n\n**سبب التغيير** – احتمال أن تظل الخسارة غير محسوبة وتؤدي إلى أخطاء في تحليل الأداء على الخادم. وضعها في `this.loss` يسمح بالتحقق اللاحق وقيمة `loss` صالحة للرسوم البيانية أو الضبط الديناميكي للمعلمات.\n\n---\n\n## 2️⃣ إضافة إعادة محاولة تلقائية عند خطأ الشبكة (`'network'`)\n\n**المشكلة**  \nعند حدث `network` داخل الـ `SpeechRecognition` يُطبع تحذير فقط، ولا يتم إعادة المحاولة أو إغلاق الجلسة وإعادة فتحها، فالأخطاء تتراكم (8 أخطاء سيرفر في سجلاتك).\n\n**النص القديم**  \n```js\nrec.onerror = ev=>{\n  ...\n  if (!silentErrors.has(ev.error)) toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);\n};\n```\n\n**النص المقترح**  \n```js\nrec.onerror = ev=>{\n  ...\n  if (!silentErrors.has(ev.error)) {\n    toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);\n    // إعادة محاولة الشبكة تلقائياً بعد 1 ثانية\n    if (ev.error === 'network') {\n      setTimeout(()=>{ rec.cancel(); initSpeech(); }, 1000);\n    }\n  }\n};\n```\n\n*ملاحظة* : `initSpeech()` هي الدالة التي تُنشئ كائن `SpeechRecognition` وتبدأ الجلسة مرة أخرى.  \n\n**سبب التغيير** – تخفف التكرارات الغير ضرورية على الخادم وتلغي عدم القدرة على تشغيل الجلسة مرة أخرى عند انقطاع الشبكة.\n\n---\n\n## 3️⃣ تقليل استهلاك الـ DOM في تحديث المحادثة الحية\n\n**المشكلة**  \nيُحدّث عنصر `#tarteel-live-transcript` في كل مرة يخرج منها `rec.onresult`. إذا كانت هذه الأحداث كثيرة قد يؤدي ذلك إلى ضرر في الأداء (خصوصاً على الأجهزة منخفضة القدرة) ويزيد من استهلاك الموارد، مما قد يرفع عدد الأخطاء على الخادم.\n\n**النص القديم**  \n```js\nif (live){\n  live.style.display = 'block';\n  live.innerHTML = interim\n    ? `<span style=\"color:#fcd34d\">🎤 ${escapeHTML(interim)}</span>`\n    : final.trim()\n    ? `<span style=\"color:#34d399\">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`\n    : '';\n}\n```\n\n**النص المقترح**  \n```js\nif (live){\n  const html = interim\n    ? `<span style=\"color:#fcd34d\">🎤 ${escapeHTML(interim",
       "sessions_analyzed": 1
+    },
+    {
+      "focus": "all",
+      "at": "2026-05-22T10:28:17.140Z",
+      "avg_accuracy": 90,
+      "top_words": "",
+      "analysis": "بناءً على البيانات المقدمة، أقترح ثلاثة تحسينات محددة للكود:\n\n1. **تحسين دقة الكلام**:\n * المشكلة: متوسط الدقة هو 90%، مما يعني أن هناك بعض الأخطاء في التعرف على الصوت.\n * القيمة القديمة: `CFG.ML_LR = 0.01`\n * القيمة الجديدة المقترحة: `CFG.ML_LR = 0.005`\n * السبب: تقليل معدل التعلم (`ML_LR`) قد يساعد في تحسين دقة الكلام عن طريق تقليل التأثير السلبي للخطأ في البيانات.\n\n2. **تحسين استجابة السيرفر**:\n * المشكلة: عدد أخطاء السيرفر هو 8، مما يعني أن هناك بعض المشاكل في استجابة السيرفر.\n * القيمة القديمة: `CFG.ERROR_TRACKING = true`\n * القيمة الجديدة المقترحة: `CFG.ERROR_TRACKING = false`\n * السبب: تعطيل تتبع الأخطاء (`ERROR_TRACKING`) قد يساعد في تحسين استجابة السيرفر عن طريق تقليل عدد الأخطاء التي يتم تتبعها.\n\n3. **تحسين دقة الكلمات**:\n * المشكلة: لا توجد بيانات حول الكلمات الأكثر خطأ",
+      "sessions_analyzed": 1
     }
   ],
   "code_edits": [
@@ -884,6 +928,12 @@
       "reason": "تحسين دالة LocalML.train",
       "at": "2026-05-22T10:08:23.756Z",
       "chars_changed": 83
+    },
+    {
+      "file": "ai_core.js",
+      "reason": "تحسين دقة الكلام",
+      "at": "2026-05-22T10:28:20.997Z",
+      "chars_changed": 1
     }
   ],
   "recitation_training": {
@@ -925,6 +975,24 @@
       "title": "بحث: أفضل أساليب تحفيز حافظ القرآن",
       "at": "2026-05-22T09:46:38.409Z",
       "results": 5
+    },
+    {
+      "url": "search:kayfa",
+      "title": "بحث: kayfa",
+      "at": "2026-05-22T10:20:53.857Z",
+      "results": 10
+    },
+    {
+      "url": "search:كيفك",
+      "title": "بحث: كيفك",
+      "at": "2026-05-22T10:21:32.962Z",
+      "results": 9
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Arabizi",
+      "title": "Arabizi - Wikipedia",
+      "at": "2026-05-22T10:21:34.771Z",
+      "chars": 22678
     }
   ]
 }

@@ -1154,12 +1154,35 @@
       <h2 class="view-title">🧠 التسميع الذكي v2</h2>
       <p style="font-size:.78rem;color:var(--text-3);margin:-8px 0 12px">مقارنة كلمة بكلمة · تجويد مساعد · مراجعة ذكية · مجاني 100%</p>
 
+      <!-- XP Bar -->
+      <div id="st-xp-bar" style="display:none;margin-bottom:12px">
+        <div class="glass-card" style="padding:10px 14px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div id="st-level-badge" style="font-size:1.4rem"></div>
+            <div style="flex:1;min-width:120px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span id="st-level-label" style="font-size:.78rem;font-weight:700"></span>
+                <span id="st-xp-val" style="font-size:.72rem;color:var(--text-3)"></span>
+              </div>
+              <div style="height:6px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+                <div id="st-xp-fill" style="height:100%;border-radius:4px;transition:width .5s;background:linear-gradient(90deg,#818cf8,#34d399)"></div>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <div id="st-streak-val" class="mono" style="font-size:1.2rem;font-weight:900;color:#fbbf24"></div>
+              <div style="font-size:.6rem;color:var(--text-3)">سلسلة</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tabs -->
       <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
         <button class="btn btn-sm btn-primary" data-stab="recite" id="stab-recite">🎙️ تسميع</button>
         <button class="btn btn-sm btn-ghost" data-stab="review" id="stab-review">🔁 مراجعة SR</button>
         <button class="btn btn-sm btn-ghost" data-stab="stats" id="stab-stats">📊 إحصاء</button>
         <button class="btn btn-sm btn-ghost" data-stab="tajweed" id="stab-tajweed">📖 تجويد</button>
+        <button class="btn btn-sm btn-ghost" data-stab="hermes" id="stab-hermes" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(236,72,153,.15));border-color:rgba(139,92,246,.35)">🤖 هرمز</button>
       </div>
 
       <!-- TAB: تسميع -->
@@ -1264,6 +1287,31 @@
             ${[['🟡','إقلاب','النون الساكنة مع الباء → ميم مخفاة'],['🟢','إدغام','النون الساكنة مع يرملون'],['🔵','إظهار','النون الساكنة مع أحرف الحلق أعغحخه'],['🟣','إخفاء','النون الساكنة مع باقي الحروف'],['🟠','إخفاء شفوي','الميم الساكنة مع الباء'],['⭐','مد','مد طبيعي حركتان، مد فرعي 4-6 حركات'],['✨','قلقلة','حروف قطب جد عند السكون'],['💗','شدّة','إتمام مخرج الحرف المشدد']].map(([s,t,d])=>`<div style="display:flex;gap:8px;align-items:start;padding:6px 8px;background:rgba(255,255,255,.04);border-radius:8px"><span style="font-size:1rem">${s}</span><div><div style="font-size:.82rem;font-weight:700;color:var(--text-1)">${t}</div><div style="font-size:.72rem;color:var(--text-3)">${d}</div></div></div>`).join('')}
           </div>
         </div>
+      </div>
+
+      <!-- TAB: هرمز -->
+      <div id="st-tab-hermes" style="display:none">
+        <!-- Daily challenge -->
+        <div id="st-hermes-challenge-wrap"></div>
+
+        <!-- Hermes insights -->
+        <div id="st-hermes-insights-wrap">
+          <div class="glass-card pad" style="text-align:center;color:var(--text-3);font-size:.82rem;padding:24px 14px">
+            <div style="font-size:2rem;margin-bottom:8px">🤖</div>
+            جارٍ تحميل رؤى هرمز…
+          </div>
+        </div>
+
+        <!-- Ask Hermes box -->
+        <div class="glass-card pad" style="margin-top:12px">
+          <div style="font-size:.88rem;font-weight:700;margin-bottom:8px">💬 اسأل هرمز عن أدائك</div>
+          <textarea id="st-hermes-question" class="field-input" dir="rtl" rows="2" placeholder="مثال: ما أكثر أخطائي؟ كيف أتحسن في التجويد؟" style="width:100%;box-sizing:border-box;resize:none;margin-bottom:8px"></textarea>
+          <button class="btn btn-primary" id="btn-st-ask-hermes" style="background:linear-gradient(135deg,#7c3aed,#c026d3)">🤖 اسأل هرمز</button>
+          <div id="st-hermes-answer" style="display:none;margin-top:12px;padding:12px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:.85rem;line-height:1.7;color:var(--text-1)"></div>
+        </div>
+
+        <!-- Recent completed challenges -->
+        <div id="st-hermes-history" style="margin-top:10px"></div>
       </div>
 
     </div>

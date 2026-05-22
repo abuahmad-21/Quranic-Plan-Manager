@@ -19,7 +19,7 @@ const CFG = {
   KALMAN_R: 1e-1,
   EWMA_ALPHA: 0.30,
   EWMA_ALPHA_SLOW: 0.10,
-  ML_LR: 0.005,
+  ML_LR: 0.01,
   ML_REG: 0.001,
   ML_MIN: 5,
   ML_WIN: 30,

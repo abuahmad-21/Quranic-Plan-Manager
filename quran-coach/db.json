@@ -16,16 +16,16 @@
       }
     ],
     "algorithm_weights": {
-      "hesitation_penalty_per_second": 3.33,
-      "erratic_penalty_per_count": 1.41,
-      "focus_bonus_per_minute": 12.92,
-      "afi_skip_penalty": 3.01,
-      "afi_complete_bonus": 9.33,
+      "hesitation_penalty_per_second": 3.26,
+      "erratic_penalty_per_count": 1.37,
+      "focus_bonus_per_minute": 15.29,
+      "afi_skip_penalty": 2.99,
+      "afi_complete_bonus": 11.05,
       "absence_intervention_days": 3,
-      "energy_ema_weight": 0.96,
-      "procrastination_threshold": 76,
-      "plan_decay_factor": 0.73,
-      "plan_growth_factor": 2.51
+      "energy_ema_weight": 0.92,
+      "procrastination_threshold": 84,
+      "plan_decay_factor": 0.63,
+      "plan_growth_factor": 2.93
     },
     "broadcast_messages": [
       {
@@ -44,7 +44,7 @@
       }
     ],
     "stats": {
-      "total_users": 50,
+      "total_users": 53,
       "total_sessions_today": 53,
       "total_pages_memorized_alltime": 10.7
     },
@@ -151,8 +151,8 @@
         "interval_hours": 0.5
       }
     },
-    "ai_last_optimization": "2026-05-22T10:09:35.107Z",
-    "ai_opt_user_count": 50
+    "ai_last_optimization": "2026-05-22T10:27:07.582Z",
+    "ai_opt_user_count": 51
   },
   "users": {
     "455": {
@@ -409,6 +409,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "985a46fe1450e20c",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -657,6 +665,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "4cc9234a3f50104d",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -890,6 +906,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "3757e1c3606ee0eb",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -1130,6 +1154,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "8c65a14dcd0861fa",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -1370,6 +1402,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "93d58cdcc943318e",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -1613,6 +1653,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "3f4cb17782398f3e",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -1853,6 +1901,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "04f27cf9fa5dd524",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -2260,6 +2316,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "1454ef8b8b6e86a3",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -2713,6 +2777,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "6defd2633e6abacc",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -2971,6 +3043,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "2abc2e098c4c1e3a",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -3268,6 +3348,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "b9c5d9d31f173bbc",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -3574,6 +3662,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "dc00309624b2d9f7",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -3813,6 +3909,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "c406825851f99071",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -4055,6 +4159,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "2a1be9754d9f5bd9",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -4287,6 +4399,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "d37897ab0f08488f",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -4545,6 +4665,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "dd7ef66cf6a360fd",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -4791,6 +4919,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "5293295ec28b0232",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -5025,6 +5161,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "f1d0964a06b67c60",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [
@@ -5279,6 +5423,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "1ef836a4e2e24a52",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -5513,6 +5665,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "4c628870bacaf3e3",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -5738,6 +5898,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "c9d3fa48c24a72c4",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -5976,6 +6144,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "7e8a02c70ddeaf70",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -6171,6 +6347,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "783b04c0e56884bb",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -6364,6 +6548,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "1f06bb53c6fe3998",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": []
@@ -6542,6 +6734,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "bedfcd7f244eef37",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -6757,6 +6957,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "4f4b8aa88821f352",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -6920,6 +7128,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "54138db82ae20fbf",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -7104,6 +7320,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "4e8f4edb2c961277",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -7272,6 +7496,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "20c7157a5bf9c9f2",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -7427,6 +7659,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "f752d1cc9e4e96ed",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -7620,6 +7860,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "e1dd8c924f4f0b1f",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -8012,6 +8260,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "bbeb3ac5290a82ed",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -8173,6 +8429,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "838158ebfe5e916c",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -8391,6 +8655,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "13197165d47443c4",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -8620,6 +8892,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "f778ce98c80a6819",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -8848,6 +9128,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "5bbd0024bfa13075",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9141,6 +9429,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "e349033cff088f36",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9397,6 +9693,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "f9741243d8fdf3c3",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9601,6 +9905,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "a161eda7e95276c1",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9742,6 +10054,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "43828aad1b05e380",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9832,6 +10152,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "b8c1b39dd70a8ba5",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -9965,6 +10293,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "781bf9722a5545b6",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -10090,6 +10426,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "67280c424ffba2e9",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -10215,6 +10559,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "7d36b545c8b7eeea",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -10340,6 +10692,14 @@
           "ref": "view-dashboard",
           "read": false,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "5371cbdc92395e6b",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -10441,6 +10801,14 @@
           "ref": "view-dashboard",
           "read": true,
           "created_at": "2026-05-22T09:16:35.813Z"
+        },
+        {
+          "id": "c7b57ab426281787",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
         }
       ],
       "posts": [],
@@ -10491,7 +10859,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "838a42e13efefd56",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -10558,7 +10935,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "c4e5e9ecaab8e15f",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
+        }
+      ],
       "posts": [],
       "login_history": [
         {
@@ -10668,7 +11054,16 @@
       "friend_requests_sent": [],
       "friend_requests_received": [],
       "voice_permissions_granted": [],
-      "notifications": [],
+      "notifications": [
+        {
+          "id": "f9c1f91af5d4b488",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
+        }
+      ],
       "posts": [],
       "login_history": []
     },
@@ -10754,6 +11149,232 @@
       "notifications": [],
       "posts": [],
       "login_history": []
+    },
+    "jsjdj": {
+      "username": "jsjdj",
+      "password_hash": "93d6a213a6a881b87e17d0ed9d52d940ba7413471d66f8f43fe5d520b19c03e5",
+      "display_name": "Dhdhdhd",
+      "created_at": "2026-05-22T10:18:44.245Z",
+      "last_active": "2026-05-22T10:22:19.016Z",
+      "avatar_color": "#0ccef6",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": true,
+        "daily_minutes": 30,
+        "goal_months": 24,
+        "preferred_time": "after_fajr",
+        "learning_style": "auditory",
+        "current_level": "beginner",
+        "plan_type": "quantum_auto"
+      },
+      "plan": {
+        "type": "quantum_auto",
+        "start_date": "2026-05-22T10:18:47.305Z",
+        "current_daily_pages": 0.25,
+        "phase": "ramp_up",
+        "phase_start_date": "2026-05-22T10:18:47.305Z",
+        "phase_days_elapsed": 0,
+        "manual_override": false,
+        "override_target": null,
+        "weekly_off_days": [
+          5
+        ]
+      },
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 100,
+        "friction": 1.09,
+        "afi": 83,
+        "history": [
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "sr_state": {},
+      "ml_state": {
+        "W": [
+          0.08,
+          -0.12,
+          -0.009,
+          -0.25,
+          -0.18,
+          -8,
+          -2.5,
+          3,
+          -0.12,
+          0.05,
+          0.02,
+          0.02
+        ],
+        "n": 0
+      },
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [
+        {
+          "id": "e821f66c27aeb033",
+          "type": "motivation",
+          "text": "Come back to Quran Coach! We miss you.",
+          "ref": "view-dashboard",
+          "read": false,
+          "created_at": "2026-05-22T10:21:29.720Z"
+        }
+      ],
+      "posts": [],
+      "login_history": [],
+      "smart_mistakes": {},
+      "smart_sessions": [
+        {
+          "surah_name": "سُورَةُ ٱلْفَاتِحَةِ",
+          "ayah_num": 1,
+          "accuracy": 80,
+          "correct": 2,
+          "wrong": 0,
+          "missing": 0,
+          "ts": "2026-05-22T10:19:38.238Z"
+        }
+      ]
+    },
+    "testsuper": {
+      "username": "testsuper",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae",
+      "display_name": "testsuper",
+      "created_at": "2026-05-22T10:31:24.189Z",
+      "last_active": "2026-05-22T10:31:24.189Z",
+      "avatar_color": "#0e044c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": []
+    },
+    "testsuper2": {
+      "username": "testsuper2",
+      "password_hash": "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae",
+      "display_name": "testsuper2",
+      "created_at": "2026-05-22T10:31:52.398Z",
+      "last_active": "2026-05-22T10:31:52.398Z",
+      "avatar_color": "#0e044c",
+      "bio": "",
+      "is_banned": false,
+      "sheikh_verified": false,
+      "sheikh_requested": false,
+      "onboarding": {
+        "completed": false
+      },
+      "plan": null,
+      "progress": {
+        "total_pages_memorized": 0,
+        "total_sessions_completed": 0,
+        "current_streak_days": 0,
+        "longest_streak_days": 0,
+        "last_session_date": null,
+        "juz_completed": [],
+        "current_juz": 1,
+        "current_page_in_juz": 1,
+        "total_absences": 0,
+        "consecutive_absences": 0
+      },
+      "sessions": [],
+      "review_system": {
+        "active": false
+      },
+      "energy": {
+        "score": 75,
+        "friction": 0,
+        "afi": 100,
+        "history": [
+          75
+        ]
+      },
+      "sr_state": {},
+      "ml_state": null,
+      "friends": [],
+      "friend_requests_sent": [],
+      "friend_requests_received": [],
+      "voice_permissions_granted": [],
+      "notifications": [],
+      "posts": [],
+      "login_history": [],
+      "smart_mistakes": {},
+      "smart_sessions": [
+        {
+          "surah_name": "الفاتحة",
+          "ayah_num": 1,
+          "accuracy": 100,
+          "correct": 4,
+          "wrong": 0,
+          "missing": 0,
+          "ts": "2026-05-22T10:31:52.596Z"
+        }
+      ],
+      "tarteel_xp": 15,
+      "tarteel_streak": 1,
+      "tarteel_last_session_date": "2026-05-22"
     }
   },
   "chats": {},
@@ -11043,6 +11664,21 @@
       "username": "fulltest01",
       "expires": 1779531369061,
       "created_at": "2026-05-22T10:16:09.061Z"
+    },
+    "336296e6f021293327b3b4251c8936029440e39c0f17f785": {
+      "username": "jsjdj",
+      "expires": 1782037124245,
+      "created_at": "2026-05-22T10:18:44.245Z"
+    },
+    "166319e5bfaebda51b839ae3e9f2b6b81049f73ca9cfbb7e": {
+      "username": "testsuper",
+      "expires": 1779532284189,
+      "created_at": "2026-05-22T10:31:24.189Z"
+    },
+    "fd50084277f70597780b4e4e84c0f06f328925b36325af2f": {
+      "username": "testsuper2",
+      "expires": 1779532312398,
+      "created_at": "2026-05-22T10:31:52.398Z"
     }
   }
 }

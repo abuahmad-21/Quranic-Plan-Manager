@@ -6882,7 +6882,7 @@ const SmartTarteel = {
     /* Tab switching */
     document.querySelectorAll('[data-stab]').forEach(btn=>{
       btn.onclick=()=>{
-        ['recite','review','stats','tajweed'].forEach(t=>{
+        ['recite','review','stats','tajweed','hermes'].forEach(t=>{
           const tab=document.getElementById('st-tab-'+t);
           const btn2=document.getElementById('stab-'+t);
           if(tab) tab.style.display='none';
@@ -6894,8 +6894,15 @@ const SmartTarteel = {
         btn.classList.add('btn-primary'); btn.classList.remove('btn-ghost');
         if(target==='review') SmartTarteel._loadReview();
         if(target==='stats') SmartTarteel._loadStats();
+        if(target==='hermes') SmartTarteel._loadHermes();
       };
     });
+
+    /* Ask Hermes button */
+    document.getElementById('btn-st-ask-hermes')?.addEventListener('click',()=>SmartTarteel._askHermes());
+
+    /* Load XP bar on init */
+    SmartTarteel._loadXPBar();
 
     /* Mode switching */
     document.querySelectorAll('[data-stmode]').forEach(btn=>{
@@ -7069,6 +7076,10 @@ const SmartTarteel = {
         surah_name:surah?.name||'', ayah_num:ayahNum
       });
       SmartTarteel._renderResult(r, expectedText);
+      /* Update XP bar with new data from server */
+      if(r.total_xp!=null) SmartTarteel._updateXPBar(r);
+      /* Flash challenge completed toast */
+      if(r.challenge_completed) toast(`🏆 أتممت التحدي! "${r.challenge_completed.title}" +${r.challenge_completed.xp} XP 🌟`,'success');
     }catch(e){ toast('تعذّر التحقق: '+e.message,'error'); }
     finally{ if(btn){ btn.disabled=false; btn.textContent='✅ تحقق'; } }
   },
@@ -7114,10 +7125,18 @@ const SmartTarteel = {
           </div>
         </div>
         ${r.words?.length?`<div dir="rtl" style="line-height:2.4;text-align:center;margin-bottom:10px">${wordsHTML}</div>`:''}
+        ${r.xp_earned!=null?`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:10px;margin-bottom:10px;font-size:.8rem">
+          <span style="font-size:1.1rem">⚡</span>
+          <span style="color:#34d399;font-weight:700">+${r.xp_earned} XP</span>
+          <span style="color:var(--text-3)">·</span>
+          <span style="color:var(--text-2)">إجمالي: ${r.total_xp} XP</span>
+          ${r.streak>1?`<span style="color:var(--text-3)">·</span><span style="color:#fbbf24">🔥 ${r.streak} يوم</span>`:''}
+        </div>`:''}
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
           <button class="btn btn-sm btn-ghost" id="btn-st-retry">🔄 أعد المحاولة</button>
           ${SmartTarteel.currentAyahIdx<SmartTarteel.currentAyahs.length-1?`<button class="btn btn-sm btn-primary" id="btn-st-next-res">التالية ⟶</button>`:''}
           ${acc>=70?`<button class="btn btn-sm btn-ghost" id="btn-st-ask-comp">💡 سؤال فهم</button>`:''}
+          <button class="btn btn-sm btn-ghost" id="btn-st-ask-hermes-result" style="background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(192,38,211,.15));border-color:rgba(139,92,246,.35)">🤖 اسأل هرمز</button>
         </div>
       </div>`;
 
@@ -7128,6 +7147,142 @@ const SmartTarteel = {
     });
     document.getElementById('btn-st-next-res')?.addEventListener('click',()=>{ SmartTarteel.currentAyahIdx++; SmartTarteel._renderAyah(); });
     document.getElementById('btn-st-ask-comp')?.addEventListener('click',()=>SmartTarteel._askComprehension());
+    document.getElementById('btn-st-ask-hermes-result')?.addEventListener('click',()=>{
+      /* Switch to hermes tab and pre-fill a question */
+      const btn=document.querySelector('[data-stab="hermes"]');
+      if(btn) btn.click();
+      const q=document.getElementById('st-hermes-question');
+      if(q&&!q.value) q.value=`دقتي كانت ${acc}% في هذه الآية، ما نصيحتك؟`;
+    });
+  },
+
+  /* ── XP Bar ── */
+  async _loadXPBar(){
+    try{
+      const p=await Api.get('/tarteel/v2/profile');
+      SmartTarteel._renderXPBar(p);
+    }catch{}
+  },
+
+  _updateXPBar(checkResult){
+    /* Called directly after check with partial data */
+    const bar=document.getElementById('st-xp-bar');
+    if(!bar) return;
+    const xpVal=document.getElementById('st-xp-val');
+    const fill=document.getElementById('st-xp-fill');
+    const streak=document.getElementById('st-streak-val');
+    if(xpVal) xpVal.textContent=`${checkResult.total_xp} XP`;
+    if(streak) streak.textContent=checkResult.streak>0?`🔥${checkResult.streak}`:'';
+    /* Fetch full profile to update level */
+    SmartTarteel._loadXPBar();
+  },
+
+  _renderXPBar(p){
+    if(!p?.ok) return;
+    const bar=document.getElementById('st-xp-bar');
+    if(!bar) return;
+    bar.style.display='';
+    const badge=document.getElementById('st-level-badge');
+    const label=document.getElementById('st-level-label');
+    const xpVal=document.getElementById('st-xp-val');
+    const fill=document.getElementById('st-xp-fill');
+    const streak=document.getElementById('st-streak-val');
+    if(badge) badge.textContent=p.level_icon||'🌱';
+    if(label){ label.textContent=p.level; label.style.color=p.level_color||'#94a3b8'; }
+    if(xpVal) xpVal.textContent=p.next_level?`${p.xp}/${p.next_level_xp} XP`:`${p.xp} XP — الحد الأعلى 👑`;
+    if(fill) fill.style.width=(p.level_progress||0)+'%';
+    if(streak) streak.textContent=p.streak>0?`🔥${p.streak}`:'—';
+  },
+
+  /* ── Load Hermes Tab ── */
+  async _loadHermes(){
+    try{
+      const p=await Api.get('/tarteel/v2/profile');
+      /* Render daily challenge */
+      const cWrap=document.getElementById('st-hermes-challenge-wrap');
+      if(cWrap){
+        if(p.today_challenge){
+          const ch=p.today_challenge;
+          const done=ch.completed;
+          cWrap.innerHTML=`<div class="glass-card pad" style="margin-bottom:10px;border:1px solid ${done?'rgba(52,211,153,.35)':'rgba(139,92,246,.35)'};background:${done?'rgba(52,211,153,.06)':'rgba(139,92,246,.06)'}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:1.3rem">${done?'✅':'🎯'}</span>
+              <div style="font-size:.9rem;font-weight:700;color:${done?'#34d399':'#a78bfa'}">${ch.title}</div>
+              ${done?'<span style="font-size:.7rem;background:rgba(52,211,153,.2);color:#34d399;padding:2px 7px;border-radius:10px;margin-right:auto">مكتمل</span>':'<span style="font-size:.7rem;background:rgba(139,92,246,.2);color:#a78bfa;padding:2px 7px;border-radius:10px;margin-right:auto">+${ch.xp_reward} XP</span>'}
+            </div>
+            <div style="font-size:.8rem;color:var(--text-2);margin-bottom:4px">${ch.description}</div>
+            ${ch.focus_words?.length?`<div style="font-size:.75rem;color:var(--text-3)">🔤 ركّز على: <span style="font-family:'Amiri',serif;color:#fbbf24">${ch.focus_words.join(' · ')}</span></div>`:''}
+            ${ch.hermes_note?`<div style="font-size:.72rem;color:var(--text-3);margin-top:5px;border-top:1px solid rgba(255,255,255,.06);padding-top:5px">🤖 ${ch.hermes_note}</div>`:''}
+            ${!done?`<button class="btn btn-sm btn-ghost" style="margin-top:8px" data-ch-id="${ch.id}">✅ إتمام يدوي</button>`:''}
+          </div>`;
+          cWrap.querySelector('[data-ch-id]')?.addEventListener('click',async e=>{
+            const id=e.currentTarget.dataset.chId;
+            await SmartTarteel._completeChallenge(id);
+            SmartTarteel._loadHermes();
+          });
+        } else {
+          cWrap.innerHTML=`<div class="glass-card pad" style="margin-bottom:10px;text-align:center;color:var(--text-3);padding:16px">
+            <div style="font-size:1.5rem;margin-bottom:6px">🤖</div>
+            <div style="font-size:.82rem">هرمز لم يعيّن تحدياً اليوم بعد — انتظر الدورة القادمة</div>
+          </div>`;
+        }
+      }
+      /* Render insights */
+      const iWrap=document.getElementById('st-hermes-insights-wrap');
+      if(iWrap){
+        if(p.hermes_insights?.length){
+          iWrap.innerHTML=`<div style="margin-bottom:10px">
+            <div style="font-size:.82rem;font-weight:700;color:#a78bfa;margin-bottom:8px">💡 رؤى هرمز الأخيرة</div>
+            ${p.hermes_insights.map(ins=>`
+              <div style="padding:10px 12px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;font-size:.82rem;line-height:1.7;color:var(--text-1);margin-bottom:6px">
+                ${ins.text}
+                ${ins.xp>0?`<span style="color:#34d399;font-size:.72rem;font-weight:700"> +${ins.xp} XP</span>`:''}
+                <div style="font-size:.67rem;color:var(--text-3);margin-top:4px">${ins.at?.slice(0,10)||''}</div>
+              </div>`).join('')}
+          </div>`;
+        } else {
+          iWrap.innerHTML=`<div class="glass-card pad" style="text-align:center;color:var(--text-3);font-size:.82rem;padding:20px 14px">
+            <div style="font-size:2rem;margin-bottom:8px">🤖</div>
+            هرمز لم يحلّل أداءك بعد — انتظر الدورة القادمة أو اسأله مباشرة
+          </div>`;
+        }
+      }
+      /* Render completed challenges history */
+      const hWrap=document.getElementById('st-hermes-history');
+      if(hWrap&&p.recent_challenges?.length){
+        hWrap.innerHTML=`<div class="glass-card pad">
+          <div style="font-size:.82rem;font-weight:700;margin-bottom:8px">🏆 تحديات مكتملة سابقة</div>
+          ${p.recent_challenges.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem">
+            <div><div style="color:var(--text-1)">${c.title}</div><div style="color:var(--text-3);font-size:.7rem">${c.date}</div></div>
+            <div style="color:#34d399;font-weight:700">+${c.xp_reward} XP</div>
+          </div>`).join('')}
+        </div>`;
+      } else if(hWrap){ hWrap.innerHTML=''; }
+    }catch(e){ console.warn('[Hermes tab]',e.message); }
+  },
+
+  async _completeChallenge(id){
+    try{
+      const r=await Api.post(`/tarteel/v2/challenge/${id}/complete`,{});
+      if(r.ok) toast(`🏆 تحدي مكتمل! +${r.xp_earned} XP`,'success');
+      SmartTarteel._loadXPBar();
+    }catch(e){ toast('خطأ: '+e.message,'error'); }
+  },
+
+  async _askHermes(){
+    const qEl=document.getElementById('st-hermes-question');
+    const ansEl=document.getElementById('st-hermes-answer');
+    const btn=document.getElementById('btn-st-ask-hermes');
+    const q=(qEl?.value||'').trim();
+    if(!ansEl||!btn) return;
+    btn.disabled=true; btn.textContent='⏳ هرمز يفكر…';
+    ansEl.style.display='none';
+    try{
+      const r=await Api.post('/tarteel/v2/ask-hermes',{question:q});
+      ansEl.style.display='';
+      ansEl.innerHTML=`<div style="font-size:.75rem;color:#a78bfa;margin-bottom:6px;font-weight:700">🤖 هرمز يقول:</div>${escapeHTML(r.answer||'').replace(/\n/g,'<br>')}`;
+    }catch(e){ toast('خطأ: '+e.message,'error'); }
+    finally{ btn.disabled=false; btn.textContent='🤖 اسأل هرمز'; }
   },
 
   /* ── Web Speech API ── */
