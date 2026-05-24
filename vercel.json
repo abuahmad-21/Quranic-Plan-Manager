@@ -1,26 +1,19 @@
 {
   "version": 2,
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter=@workspace/api-server build",
-  "outputDirectory": ".",
-  "public": false,
   "builds": [
     {
-      "src": "artifacts/api-server/dist/index.mjs",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "artifacts/api-server/dist/**"
-      }
+      "src": "quran-coach/public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "artifacts/api-server/dist/index.mjs"
-    }
-  ],
-  "env": {
-    "PNPM_HOME": ".pnpm",
-    "NODE_ENV": "production"
-  }
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/manifest.json", "dest": "/quran-coach/public/manifest.json" },
+    { "src": "/(style\\.css.*|app\\.js.*|.*\\.png|.*\\.ico|.*\\.svg|.*\\.woff2?)", "dest": "/quran-coach/public/$1" },
+    { "src": "/(.*)", "dest": "/quran-coach/public/index.html" }
+  ]
 }
