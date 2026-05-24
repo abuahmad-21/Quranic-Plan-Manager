@@ -1,10 +1,17 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run build",
-  "devCommand": "pnpm run dev",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "express",
-  "outputDirectory": "artifacts/api-server/dist",
+  "builds": [
+    {
+      "src": "artifacts/api-server/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "artifacts/api-server/src/index.ts"
+    }
+  ],
   "env": {
     "PNPM_HOME": ".pnpm",
     "NODE_ENV": "production"
