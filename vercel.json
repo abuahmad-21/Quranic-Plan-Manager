@@ -1,17 +1,22 @@
 {
   "version": 2,
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "cd artifacts/api-server && pnpm run build",
-  "outputDirectory": "artifacts/api-server/dist",
+  "builds": [
+    {
+      "src": "artifacts/api-server/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "zeroConfig": true
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "artifacts/api-server/src/index.ts"
+    }
+  ],
   "env": {
     "PNPM_HOME": ".pnpm",
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "artifacts/api-server/dist/index.js": {
-      "memory": 512,
-      "maxDuration": 30
-    }
   }
 }
-
