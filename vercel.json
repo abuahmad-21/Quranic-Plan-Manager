@@ -1,5 +1,12 @@
-# انسخ الملف vercel.json إلى جذر مشروعك
-# ثم اعمل commit وpush
-git add vercel.json
-git commit -m "Add Vercel configuration"
-git push
+{
+  "version": 2,
+  "buildCommand": "pnpm run build",
+  "devCommand": "pnpm run dev",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "express",
+  "outputDirectory": "artifacts/api-server/dist",
+  "env": {
+    "PNPM_HOME": ".pnpm",
+    "NODE_ENV": "production"
+  }
+}
