@@ -1,0 +1,5 @@
+# انسخ الملف vercel.json إلى جذر مشروعك
+# ثم اعمل commit وpush
+git add vercel.json
+git commit -m "Add Vercel configuration"
+git push
