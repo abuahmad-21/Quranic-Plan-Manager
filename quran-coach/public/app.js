@@ -6994,6 +6994,7 @@ const SmartTarteel = {
 
     /* Ask Hermes button */
     document.getElementById('btn-st-ask-hermes')?.addEventListener('click',()=>SmartTarteel._askHermes());
+    document.getElementById('btn-st-run-hermes-agent')?.addEventListener('click',()=>SmartTarteel._runHermesAgent());
 
     /* Load XP bar on init */
     SmartTarteel._loadXPBar();
@@ -7361,6 +7362,31 @@ const SmartTarteel = {
       if(r.ok) toast(`🏆 تحدي مكتمل! +${r.xp_earned} XP`,'success');
       SmartTarteel._loadXPBar();
     }catch(e){ toast('خطأ: '+e.message,'error'); }
+  },
+
+  async _runHermesAgent(){
+    const btn=document.getElementById('btn-st-run-hermes-agent');
+    const out=document.getElementById('st-hermes-agent-out');
+    const goal=(document.getElementById('st-hermes-agent-goal')?.value||'').trim();
+    if(!btn||!out) return;
+    btn.disabled=true; btn.textContent='⏳ هرمز يعمل…';
+    out.style.display='';
+    out.innerHTML='<div style="font-size:.8rem;color:var(--text-3)">🤖 هرمز يحلّل أداءك ويجهّز خطتك…</div>';
+    try{
+      const r=await Api.post('/tarteel/v2/hermes-agent',{goal});
+      if(!r.ok) throw new Error(r.error||'فشل التشغيل');
+      out.innerHTML=`
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+          ${(r.steps||[]).map(s=>`<div style="font-size:.76rem;color:${s.ok?'var(--text-2)':'#f87171'}">${s.ok?'✔':'✖'} ${escapeHTML(s.label||s.tool)}</div>`).join('')}
+        </div>
+        ${r.summary?`<div style="padding:10px 12px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:.84rem;line-height:1.7;color:var(--text-1)">${escapeHTML(r.summary).replace(/\n/g,'<br>')}</div>`:''}
+        ${r.tips?.length?`<ul style="margin:8px 0 0;padding-inline-start:18px;font-size:.8rem;color:var(--text-2);line-height:1.7">${r.tips.map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul>`:''}`;
+      toast('🤖 هرمز أنهى دورته','success');
+      SmartTarteel._loadHermes();
+      SmartTarteel._loadXPBar();
+    }catch(e){
+      out.innerHTML=`<div style="font-size:.8rem;color:#f87171">❌ ${escapeHTML(e.message)}</div>`;
+    }finally{ btn.disabled=false; btn.textContent='▶ شغّل هرمز الوكيل'; }
   },
 
   async _askHermes(){
