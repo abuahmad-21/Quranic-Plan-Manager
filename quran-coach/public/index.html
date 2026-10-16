@@ -1291,6 +1291,18 @@
 
       <!-- TAB: هرمز -->
       <div id="st-tab-hermes" style="display:none">
+        <!-- Run Hermes Agent -->
+        <div class="glass-card pad" style="margin-bottom:10px;border:1px solid rgba(139,92,246,.35);background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(192,38,211,.06))">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:1.3rem">🤖</span>
+            <div style="font-size:.9rem;font-weight:700;color:#a78bfa">وكيل هرمز للتسميع الذكي</div>
+          </div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-bottom:8px">يحلّل جلساتك وأخطاءك، يعدّ تحدي اليوم، ويرسل لك خطة عملية — الآن.</div>
+          <input id="st-hermes-agent-goal" class="field-input" dir="rtl" placeholder="(اختياري) ما الذي تريد التركيز عليه؟" style="width:100%;box-sizing:border-box;margin-bottom:8px">
+          <button class="btn btn-primary" id="btn-st-run-hermes-agent" style="background:linear-gradient(135deg,#7c3aed,#c026d3)">▶ شغّل هرمز الوكيل</button>
+          <div id="st-hermes-agent-out" style="display:none;margin-top:12px"></div>
+        </div>
+
         <!-- Daily challenge -->
         <div id="st-hermes-challenge-wrap"></div>
 

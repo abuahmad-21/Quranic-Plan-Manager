@@ -4524,6 +4524,144 @@ R('POST','/qqc/tarteel/v2/ask-hermes',async(req,res)=>{
   }catch(e){send(res,500,{error:e.message});}
 });
 
+/* ── POST /qqc/tarteel/v2/hermes-agent ── تشغيل وكيل هرمز داخل التسميع الذكي ──
+   حلقة أدوات حقيقية لكن محصورة بالمستخدم الحالي فقط (لا صلاحيات أدمن). */
+const TARTEEL_AGENT_TOOLS = [
+  { type:'function', function:{ name:'get_my_tarteel_data', description:'تحليل بيانات التسميع الذكي للمستخدم الحالي: الدقة، الأخطاء، SM-2، XP، السلسلة، تحدي اليوم.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'get_my_due_reviews', description:'الكلمات المستحقة للمراجعة اليوم (SM-2) مع السور والآيات.', parameters:{ type:'object', properties:{} } } },
+  { type:'function', function:{ name:'generate_tarteel_daily_challenge', description:'توليد تحدٍّ يومي مخصص للمستخدم الحالي بناءً على أخطائه.', parameters:{ type:'object', properties:{ difficulty:{ type:'string', enum:['easy','medium','hard','adaptive'] } } } } },
+  { type:'function', function:{ name:'send_tarteel_feedback', description:'إرسال تغذية راجعة شخصية للمستخدم الحالي عن أدائه (تُحفظ في رؤى هرمز).', parameters:{ type:'object', properties:{ feedback_text:{ type:'string' } }, required:['feedback_text'] } } },
+  { type:'function', function:{ name:'done', description:'إنهاء الدورة مع ملخص ونصائح عملية.', parameters:{ type:'object', properties:{ summary:{ type:'string' }, tips:{ type:'array', items:{ type:'string' } } }, required:['summary'] } } },
+];
+const TARTEEL_AGENT_LABELS = {
+  get_my_tarteel_data:'📊 حلّل بيانات تسميعك',
+  get_my_due_reviews:'🔁 فحص مراجعات اليوم',
+  generate_tarteel_daily_challenge:'🎯 أعدّ تحدي اليوم',
+  send_tarteel_feedback:'💬 أرسل لك تغذية راجعة',
+  done:'✅ أنهى الدورة',
+};
+
+async function execTarteelAgentTool(u, name, args){
+  const today=new Date().toISOString().slice(0,10);
+  switch(name){
+    case 'get_my_tarteel_data': {
+      const r=await executeHermesTool('analyze_smart_tarteel_data',{username:u.username},readHermesMemory());
+      const me=(r.users_summary||[])[0]||{sessions:0,mistakes:0,avg_acc:0,due_today:0,xp:u.tarteel_xp||0,streak:u.tarteel_streak||0,has_challenge_today:false};
+      const top=Object.values(u.smart_mistakes||{}).sort((a,b)=>b.count-a.count).slice(0,8).map(m=>({word:m.word,surah:m.surah,ayah:m.ayah,count:m.count}));
+      const recent=(u.smart_sessions||[]).slice(-5).map(s=>({surah:s.surah_name,ayah:s.ayah_num,acc:s.accuracy}));
+      const todayCh=(u.tarteel_challenges||[]).find(c=>c.date===today)||null;
+      return {ok:true,...me,top_mistakes:top,recent_sessions:recent,today_challenge:todayCh?{title:todayCh.title,completed:todayCh.completed}:null};
+    }
+    case 'get_my_due_reviews': {
+      const due=Object.values(u.smart_mistakes||{}).filter(m=>!m.next_review||m.next_review<=today).sort((a,b)=>b.count-a.count);
+      return {ok:true,due_count:due.length,due:due.slice(0,10).map(m=>({word:m.word,surah:m.surah,ayah:m.ayah,count:m.count}))};
+    }
+    case 'generate_tarteel_daily_challenge': {
+      const existing=(u.tarteel_challenges||[]).find(c=>c.date===today);
+      if(existing) return {ok:true,already_exists:true,challenge:{title:existing.title,completed:existing.completed}};
+      return executeHermesTool('generate_tarteel_daily_challenge',{username:u.username,difficulty:args.difficulty||'adaptive'},readHermesMemory());
+    }
+    case 'send_tarteel_feedback': {
+      const text=String(args.feedback_text||'').trim();
+      if(!text) return {error:'feedback_text مطلوب'};
+      // بلا مكافأة XP — المستخدم يشغّل الوكيل بنفسه فلا يمنح نفسه نقاطاً
+      return executeHermesTool('send_tarteel_feedback',{username:u.username,feedback_text:text,xp_bonus:0},readHermesMemory());
+    }
+    case 'done': return {ok:true,summary:String(args.summary||'').slice(0,800),tips:(Array.isArray(args.tips)?args.tips:[]).map(t=>String(t).slice(0,200)).slice(0,5)};
+    default: return {error:'أداة غير مسموحة'};
+  }
+}
+
+/* مسار احتياطي حتمي عندما لا يدعم المزوّد الأدوات أو يفشل الاستدعاء */
+async function runTarteelAgentFallback(u, steps){
+  const push=async(name,args={})=>{ const r=await execTarteelAgentTool(u,name,args); steps.push({tool:name,label:TARTEEL_AGENT_LABELS[name],ok:!!r?.ok}); return r; };
+  const data=await push('get_my_tarteel_data');
+  const due=await push('get_my_due_reviews');
+  await push('generate_tarteel_daily_challenge',{difficulty:'adaptive'});
+  const topErr=(data.top_mistakes||[]).slice(0,5).map(m=>`${m.word}(${m.count}×)`).join('، ');
+  let fb=await callAI(
+    'أنت هرمز — مدرّب تسميع ذكي. اكتب تغذية راجعة مشجعة وعملية بالعربية في 3-4 أسطر.',
+    `دقة المستخدم: ${data.avg_acc||0}% في ${data.sessions||0} جلسة. أكثر الأخطاء: ${topErr||'لا يوجد'}. مراجعات مستحقة: ${due.due_count||0}. السلسلة: ${data.streak||0} يوم.`,
+    300);
+  if(!fb){
+    fb=data.sessions
+      ?`دقتك ${data.avg_acc}% في ${data.sessions} جلسة.${topErr?` ركّز على: ${topErr}.`:''}${due.due_count?` لديك ${due.due_count} كلمة للمراجعة اليوم.`:''} استمر — الثبات أهم من الكثرة 🌱`
+      :'ابدأ أول جلسة تسميع اليوم — آية واحدة تكفي لتبدأ، وسأتابع أخطاءك وأبني لك خطة مراجعة 🌱';
+  }
+  await push('send_tarteel_feedback',{feedback_text:fb});
+  return {summary:fb,tips:[]};
+}
+
+R('POST','/qqc/tarteel/v2/hermes-agent',async(req,res)=>{
+  const u=authUser(req);if(!u)return send(res,401,{error:'auth'});
+  const b=await readBody(req);
+  const goal=String(b.goal||'').slice(0,300);
+  const COOLDOWN_MS=3*60*1000;
+  const last=u.hermes_agent_last_run?new Date(u.hermes_agent_last_run).getTime():0;
+  if(Date.now()-last<COOLDOWN_MS) return send(res,429,{error:`هرمز عمل قبل قليل — حاول بعد ${Math.ceil((COOLDOWN_MS-(Date.now()-last))/60000)} دقيقة`});
+  u.hermes_agent_last_run=now();
+
+  const steps=[];
+  let summary='',tips=[],usedFallback=false;
+  const cfg=getActiveAIConfig();
+  const supportsTools=cfg&&!['pollinations','claude_free'].includes(getActiveAIProviderName());
+
+  if(supportsTools){
+    const messages=[
+      {role:'system',content:`أنت هرمز — وكيل الذكاء الاصطناعي داخل "التسميع الذكي" في تطبيق Quantum Quran Coach.
+تعمل الآن لصالح المستخدم "${u.display_name||u.username}" فقط، وأدواتك محصورة ببياناته.
+خطوات الدورة:
+1. get_my_tarteel_data ثم get_my_due_reviews لفهم وضعه.
+2. إن لم يكن لديه تحدٍّ اليوم: generate_tarteel_daily_challenge بصعوبة مناسبة.
+3. send_tarteel_feedback برسالة شخصية مشجعة وعملية (3-4 أسطر) تذكر كلماته الصعبة.
+4. done بملخص قصير و2-4 نصائح عملية.
+الردود بالعربية. لا تخترع بيانات.`},
+      {role:'user',content:goal?`طلب المستخدم: "${goal}". ابدأ الدورة.`:'ابدأ الدورة الآن.'}
+    ];
+    try{
+      let calls=0,finished=false;
+      while(calls<8&&!finished){
+        const resp=await fetch(`${cfg.baseUrl}/chat/completions`,{
+          method:'POST',
+          headers:{'Authorization':`Bearer ${cfg.apiKey}`,'Content-Type':'application/json'},
+          body:JSON.stringify({model:cfg.model||'gpt-4o-mini',messages,max_tokens:700,tools:TARTEEL_AGENT_TOOLS,tool_choice:'auto'}),
+          signal:AbortSignal.timeout(30000)
+        });
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        const data=await resp.json();
+        const msg=data.choices?.[0]?.message;
+        if(!msg) throw new Error('empty');
+        messages.push(msg);
+        if(!msg.tool_calls?.length){ summary=msg.content||''; break; }
+        for(const tc of msg.tool_calls){
+          calls++;
+          const name=tc.function?.name;
+          let args={};try{args=JSON.parse(tc.function?.arguments||'{}');}catch{}
+          let r;try{r=await execTarteelAgentTool(u,name,args);}catch(e){r={error:e.message};}
+          steps.push({tool:name,label:TARTEEL_AGENT_LABELS[name]||name,ok:!!r?.ok});
+          if(name==='done'&&r.ok){ summary=r.summary; tips=r.tips; finished=true; }
+          messages.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(r)});
+        }
+      }
+    }catch(e){
+      console.error('[Hermes tarteel agent]',e.message);
+    }
+    if(!steps.length){ usedFallback=true; ({summary,tips}=await runTarteelAgentFallback(u,steps)); }
+  } else {
+    usedFallback=true;
+    ({summary,tips}=await runTarteelAgentFallback(u,steps));
+  }
+
+  const mem=readHermesMemory();
+  if(!mem.stats) mem.stats={total_runs:0,total_tool_calls:0,users_helped:0,weights_updated:0,plans_adjusted:0};
+  mem.stats.users_helped=(mem.stats.users_helped||0)+1;
+  mem.stats.total_tool_calls=(mem.stats.total_tool_calls||0)+steps.length;
+  writeHermesMemory(mem);
+  persist();
+  const today=new Date().toISOString().slice(0,10);
+  send(res,200,{ok:true,steps,summary,tips,fallback:usedFallback,today_challenge:(u.tarteel_challenges||[]).find(c=>c.date===today)||null});
+});
+
 /* ════════════════════════════════════════════════════════════════
    KHATMA — Full Quran reading plan with daily tracking
    User sets target days → gets pages/day → marks daily ward done
