@@ -4116,6 +4116,22 @@ R('POST','/qqc/tarteel/log', async (req,res)=>{
   u.energy.history.push(decision.energy);
   if(u.energy.history.length>50) u.energy.history=u.energy.history.slice(-50);
 
+  // تغذية بيانات التسميع الذكي (smart_sessions + SM-2) ليحلّلها وكيل هرمز
+  const wrongList=(Array.isArray(b.wrong_words)?b.wrong_words:[]).map(w=>String(w||'').slice(0,40)).filter(Boolean).slice(0,50);
+  if(!u.smart_mistakes) u.smart_mistakes={};
+  wrongList.forEach(w=>{
+    const key=`${surahName}__${normalizeArabic(w)}`;
+    if(!u.smart_mistakes[key]) u.smart_mistakes[key]={word:w,surah:surahName,ayah:fromAyah,count:0,last_seen:null,next_review:null,ease:2.5,next_interval:1};
+    const m=u.smart_mistakes[key];
+    m.count++; m.last_seen=now();
+    const interval=m.count===1?1:m.count===2?3:Math.round((m.next_interval||3)*m.ease);
+    m.next_interval=Math.min(interval,90);
+    m.next_review=new Date(Date.now()+m.next_interval*86400000).toISOString().slice(0,10);
+  });
+  if(!u.smart_sessions) u.smart_sessions=[];
+  u.smart_sessions.push({surah_name:surahName,ayah_num:fromAyah,accuracy:score,correct:correctWords,wrong:errorWords,missing:0,ts:now(),source:'recitation_center'});
+  if(u.smart_sessions.length>1000) u.smart_sessions=u.smart_sessions.slice(-1000);
+
   persist();
   send(res,200,{
     ok: true,

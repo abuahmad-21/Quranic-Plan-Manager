@@ -177,6 +177,33 @@ const Api = {
   del(p,admin){ return fetch(API+p,{method:'DELETE',headers:admin?this.ah():this.h()}).then(r=>r.json()); },
 };
 
+/* ══ Hermes Tarteel Agent (shared by مركز التلاوة + التسميع الذكي) ══ */
+async function runHermesTarteelAgent(btnId,outId,goalId,label,after){
+  const btn=document.getElementById(btnId);
+  const out=document.getElementById(outId);
+  const goal=(document.getElementById(goalId)?.value||'').trim();
+  if(!btn||!out) return;
+  btn.disabled=true; btn.textContent='⏳ هرمز يعمل…';
+  out.style.display='';
+  out.innerHTML='<div style="font-size:.8rem;color:var(--text-3)">🤖 هرمز يحلّل أداءك ويجهّز خطتك…</div>';
+  try{
+    const r=await Api.post('/tarteel/v2/hermes-agent',{goal});
+    if(!r.ok) throw new Error(r.error||'فشل التشغيل');
+    const ch=r.today_challenge;
+    out.innerHTML=`
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+        ${(r.steps||[]).map(s=>`<div style="font-size:.76rem;color:${s.ok?'var(--text-2)':'#f87171'}">${s.ok?'✔':'✖'} ${escapeHTML(s.label||s.tool)}</div>`).join('')}
+      </div>
+      ${r.summary?`<div style="padding:10px 12px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:.84rem;line-height:1.7;color:var(--text-1)">${escapeHTML(r.summary).replace(/\n/g,'<br>')}</div>`:''}
+      ${r.tips?.length?`<ul style="margin:8px 0 0;padding-inline-start:18px;font-size:.8rem;color:var(--text-2);line-height:1.7">${r.tips.map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul>`:''}
+      ${ch?`<div style="margin-top:8px;padding:8px 10px;border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:.8rem"><b style="color:#a78bfa">${ch.completed?'✅':'🎯'} ${escapeHTML(ch.title)}</b><div style="color:var(--text-3);margin-top:3px">${escapeHTML(ch.description||'')}${ch.completed?'':` · +${ch.xp_reward} XP`}</div></div>`:''}`;
+    toast('🤖 هرمز أنهى دورته','success');
+    if(after) after(r);
+  }catch(e){
+    out.innerHTML=`<div style="font-size:.8rem;color:#f87171">❌ ${escapeHTML(e.message)}</div>`;
+  }finally{ btn.disabled=false; btn.textContent=label; }
+}
+
 /* ══ Toast ══ */
 function toast(msg,type='info',dur=3000){
   const el=document.createElement('div'); el.className='toast toast-'+type; el.textContent=msg;
@@ -6048,6 +6075,7 @@ const TarteelMode = {
     });
     document.getElementById('btn-mode-practice')?.addEventListener('click', ()=>TarteelMode.setMode('practice'));
     document.getElementById('btn-mode-memorize')?.addEventListener('click', ()=>TarteelMode.setMode('memorize'));
+    document.getElementById('btn-rt-run-hermes-agent')?.addEventListener('click', ()=>runHermesTarteelAgent('btn-rt-run-hermes-agent','rt-hermes-agent-out','rt-hermes-agent-goal','▶ شغّل هرمز'));
     document.getElementById('btn-tarteel-record')?.addEventListener('click', TarteelMode.toggleRecord);
     document.getElementById('btn-tarteel-reset')?.addEventListener('click', TarteelMode.resetSession);
     document.getElementById('btn-tarteel-listen')?.addEventListener('click', TarteelMode.listenToAyah);
@@ -7365,28 +7393,7 @@ const SmartTarteel = {
   },
 
   async _runHermesAgent(){
-    const btn=document.getElementById('btn-st-run-hermes-agent');
-    const out=document.getElementById('st-hermes-agent-out');
-    const goal=(document.getElementById('st-hermes-agent-goal')?.value||'').trim();
-    if(!btn||!out) return;
-    btn.disabled=true; btn.textContent='⏳ هرمز يعمل…';
-    out.style.display='';
-    out.innerHTML='<div style="font-size:.8rem;color:var(--text-3)">🤖 هرمز يحلّل أداءك ويجهّز خطتك…</div>';
-    try{
-      const r=await Api.post('/tarteel/v2/hermes-agent',{goal});
-      if(!r.ok) throw new Error(r.error||'فشل التشغيل');
-      out.innerHTML=`
-        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
-          ${(r.steps||[]).map(s=>`<div style="font-size:.76rem;color:${s.ok?'var(--text-2)':'#f87171'}">${s.ok?'✔':'✖'} ${escapeHTML(s.label||s.tool)}</div>`).join('')}
-        </div>
-        ${r.summary?`<div style="padding:10px 12px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:10px;font-size:.84rem;line-height:1.7;color:var(--text-1)">${escapeHTML(r.summary).replace(/\n/g,'<br>')}</div>`:''}
-        ${r.tips?.length?`<ul style="margin:8px 0 0;padding-inline-start:18px;font-size:.8rem;color:var(--text-2);line-height:1.7">${r.tips.map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul>`:''}`;
-      toast('🤖 هرمز أنهى دورته','success');
-      SmartTarteel._loadHermes();
-      SmartTarteel._loadXPBar();
-    }catch(e){
-      out.innerHTML=`<div style="font-size:.8rem;color:#f87171">❌ ${escapeHTML(e.message)}</div>`;
-    }finally{ btn.disabled=false; btn.textContent='▶ شغّل هرمز الوكيل'; }
+    await runHermesTarteelAgent('btn-st-run-hermes-agent','st-hermes-agent-out','st-hermes-agent-goal','▶ شغّل هرمز الوكيل',()=>{ SmartTarteel._loadHermes(); SmartTarteel._loadXPBar(); });
   },
 
   async _askHermes(){

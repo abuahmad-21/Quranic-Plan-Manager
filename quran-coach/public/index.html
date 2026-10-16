@@ -1126,6 +1126,18 @@
         <div id="tarteel-result" style="display:none;margin-bottom:10px"></div>
         <div id="tarteel-ai-result-inline" style="margin-bottom:8px"></div>
         <div id="tarteel-ai-feedback" style="display:none;margin-bottom:10px"></div>
+
+        <!-- Hermes Agent -->
+        <div class="glass-card pad" style="margin-bottom:10px;border:1px solid rgba(139,92,246,.35);background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(192,38,211,.06))">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:1.3rem">🤖</span>
+            <div style="font-size:.9rem;font-weight:700;color:#a78bfa">هرمز — وكيل التسميع الذكي</div>
+          </div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-bottom:8px">يحلّل جلسات تسميعك وأخطاءك، يعدّ تحدي اليوم، ويعطيك خطة عملية.</div>
+          <input id="rt-hermes-agent-goal" class="field-input" dir="rtl" placeholder="(اختياري) ما الذي تريد التركيز عليه؟" style="width:100%;box-sizing:border-box;margin-bottom:8px">
+          <button class="btn btn-primary" id="btn-rt-run-hermes-agent" style="background:linear-gradient(135deg,#7c3aed,#c026d3)">▶ شغّل هرمز</button>
+          <div id="rt-hermes-agent-out" style="display:none;margin-top:12px"></div>
+        </div>
       </div>
 
       <!-- ════ TAB 2: Progress ════ -->
