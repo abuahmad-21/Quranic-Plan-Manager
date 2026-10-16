@@ -1149,3 +1149,21 @@ textarea.field-input{
   opacity:.4;
   cursor:not-allowed;
 }
+
+/* Tarteel: word said wrong first, then corrected */
+.tarteel-word.tw-error.tw-fixed{
+  background:rgba(245,158,11,.22);
+  color:#fcd34d;
+  box-shadow:inset 0 -2px 0 rgba(245,158,11,.75);
+  animation:none;
+}
+.tarteel-word.tw-correct.tw-interim{ animation:none; background:rgba(52,211,153,.14); color:#6ee7b7; box-shadow:none; }
+.tarteel-word.tw-hidden{ cursor:pointer; }
+.tarteel-basmala{
+  text-align:center;
+  color:var(--gold, #f59e0b);
+  font-size:.9em;
+  line-height:2.2;
+  margin-bottom:6px;
+  opacity:.9;
+}

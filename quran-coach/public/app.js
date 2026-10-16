@@ -5916,46 +5916,101 @@ const TarteelMode = {
   _interimBuf: '',    // accumulated interim transcript
   _totalTranscript: '',
 
-  /* ── Arabic normalisation (strip diacritics + tatweel) ── */
+  _sessStart: 0,      // cursor when the current SR instance started
+  _sessText: '',      // de-duplicated transcript of the current SR instance
+  bismillah: '',      // البسملة تُعرض كعنوان ولا تدخل في المطابقة
+
+  /* ── Rasm skeleton: يوحّد الرسم العثماني والإملائي للمقارنة ──
+     يزيل التشكيل وعلامات الوقف والألفات والهمزات، ويوحّد ی/ي و ک/ك و ة/ه،
+     ويحذف واو الصلوٰة/الزكوٰة؛ فـ"ٱلصِّرَ ٰطَ" و"الصراط" كلاهما "لصرط". */
   norm(s){
-    return s
-      .replace(/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g,'')
-      .replace(/\u0640/g,'')                            // tatweel
-      .replace(/[أإآا]/g,'ا').replace(/[ىي]/g,'ي')
-      .replace(/[ةه]/g,'ه').replace(/ؤو/g,'و')
+    return String(s||'')
+      .replace(/[ -‏⁠﻿]/g,'')
+      .replace(/[یىےۍ]/g,'ي').replace(/ک/g,'ك').replace(/[ۀة]/g,'ه')
+      .replace(/وٰ/g,'')
+      .replace(/[ؐ-ًؚ-ٰٟۖ-ۭ࣓-ࣿـ]/g,'')
+      .replace(/[اأإآٱٲٳء]/g,'').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+      .replace(/[^ء-ي\s]/g,'')
       .replace(/\s+/g,' ').trim();
   },
 
   /* ── Levenshtein distance (character-level) ── */
   lev(a, b){
     if (!a) return b.length; if (!b) return a.length;
-    const m=a.length, n=b.length;
-    const dp = Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
-    for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
-      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-    return dp[m][n];
+    let prev = Array.from({length:b.length+1},(_,j)=>j);
+    for (let i=1;i<=a.length;i++){
+      const cur=[i];
+      for (let j=1;j<=b.length;j++)
+        cur[j] = a[i-1]===b[j-1] ? prev[j-1] : 1+Math.min(prev[j], cur[j-1], prev[j-1]);
+      prev=cur;
+    }
+    return prev[b.length];
   },
 
-  /* ── Word similarity 0-1 ── */
+  /* ── Word similarity 0-1 (on skeletons) ── */
   wordSim(a, b){
     a = TarteelMode.norm(a); b = TarteelMode.norm(b);
     if (!a || !b) return 0;
     if (a === b) return 1;
-    const maxLen = Math.max(a.length, b.length);
-    if (maxLen === 0) return 1;
-    return 1 - TarteelMode.lev(a,b)/maxLen;
+    return 1 - TarteelMode.lev(a,b)/Math.max(a.length, b.length);
   },
 
-  /* ── Build flat word list from ayahs ── */
+  /* ── Spoken skeleton `s` vs expected skeleton `e` ──
+     strict=true for look-ahead jumps, so skipping words needs a confident match. */
+  skelMatch(s, e, strict=false){
+    if (!s || !e) return false;
+    if (s === e) return true;
+    let allowed = e.length<=2 ? 0 : e.length<=7 ? 1 : 2;
+    if (strict) allowed = Math.max(0, allowed-1);
+    if (!allowed || Math.abs(s.length-e.length) > allowed) return false;
+    return TarteelMode.lev(s, e) <= allowed;
+  },
+
+  // فواتح السور وأسماء حروفها كما ينطقها القارئ (بعد التطبيع)
+  _MUQATTAAT: new Set(['لم','لمص','لر','لمر','كهيعص','طه','طسم','طس','يس','ص','حم','عسق','ق','ن']),
+  _LETTER_NAMES: new Set(['لف','لم','ميم','ر','كف','ه','ي','عين','صد','ط','سين','ح','قف','نون']),
+  // الاستعاذة والبسملة والختم: لا تُحسب خطأً إن قيلت خارج موضعها
+  _PHRASES: [['عوذ','بلله','من','لشيطن','لرجيم'],['بسم','لله','لرحمن','لرحيم'],['صدق','لله','لعظيم'],['مين']],
+  // أدوات قصيرة يُسقطها التعرف الصوتي كثيراً — تخطّيها لا يُعدّ خطأً
+  _PARTICLES: new Set(['و','ف','في','من','م','ل','ي','ن','ثم','قد','لم','لن','عن','بل','مع']),
+
+  /* ── Turn SpeechRecognition results into spoken words, dropping the
+     cumulative repeats some engines (Safari / Android) put in each result ── */
+  spokenFromResults(results){
+    const spoken = [];
+    let prevSk = [], interim = '', final = '';
+    for (let i=0; i<results.length; i++){
+      const r = results[i];
+      let ws = ((r[0] && r[0].transcript) || '').trim().split(/\s+/).filter(Boolean);
+      const sk = ws.map(TarteelMode.norm);
+      if (prevSk.length && sk.length >= prevSk.length && prevSk.every((p,j)=>p===sk[j])) ws = ws.slice(prevSk.length);
+      prevSk = sk;
+      ws.forEach(w=>spoken.push({ s:TarteelMode.norm(w), final:r.isFinal }));
+      if (r.isFinal) final += ws.join(' ') + ' '; else interim += ws.join(' ') + ' ';
+    }
+    return { spoken, final:final.trim(), interim:interim.trim() };
+  },
+
+  /* ── Build flat word list from ayahs ──
+     يُلصق المقاطع المنفصلة (مثل "ٰ⁠طَ" في "ٱلصِّرَ ٰ⁠طَ") بالكلمة السابقة
+     بدلاً من عدّها كلمة مستقلة. */
   buildWords(){
     TarteelMode.words = [];
     TarteelMode.ayahs.forEach((ay, ai)=>{
-      ay.text.split(/\s+/).filter(Boolean).forEach(w=>{
-        TarteelMode.words.push({ raw:w, norm:TarteelMode.norm(w), state:'pending', ayahIdx:ai });
+      ay.text.split(/[\s ]+/).filter(Boolean).forEach((tok, ti)=>{
+        const sk = TarteelMode.norm(tok);
+        const last = TarteelMode.words[TarteelMode.words.length-1];
+        if (last && last.ayahIdx === ai && (!sk || /^[ٰ⁠]/.test(tok))){
+          last.raw += ' ' + tok;
+          last.norm = TarteelMode.norm(last.raw.replace(/\s+/g,''));
+          return;
+        }
+        if (!sk) return;
+        TarteelMode.words.push({ raw:tok, norm:sk, state:'pending', ayahIdx:ai,
+          muq: ay.numberInSurah === 1 && ti === 0 && TarteelMode._MUQATTAAT.has(sk) });
       });
     });
   },
-
   /* ── Load: populate dropdowns + tab system ── */
   async load(){
     const surahs = await QuranBrowser.loadSurahs();
@@ -6045,6 +6100,16 @@ const TarteelMode = {
         surahName: surah.name,
         surahNum: surah.number,
       }));
+      // البسملة في أول السورة (غير الفاتحة) تُعرض كعنوان ولا تُحسب في المطابقة
+      TarteelMode.bismillah = '';
+      const firstAy = TarteelMode.ayahs[0];
+      if (firstAy && firstAy.numberInSurah === 1 && surah.number !== 1){
+        const toks = firstAy.text.split(/\s+/).filter(Boolean);
+        if (toks.length > 4 && toks.slice(0,4).map(TarteelMode.norm).join(' ') === 'بسم لله لرحمن لرحيم'){
+          TarteelMode.bismillah = toks.slice(0,4).join(' ');
+          firstAy.text = toks.slice(4).join(' ');
+        }
+      }
       TarteelMode.buildWords();
       TarteelMode.cursor = 0;
       TarteelMode.correct = 0;
@@ -6068,37 +6133,65 @@ const TarteelMode = {
     finally { if (btn){ btn.disabled=false; btn.textContent='تحميل'; } }
   },
 
-  /* ── Render the word spans ── */
+  /* ── Render the word spans (structure) ── */
   renderWords(){
     const el = document.getElementById('tarteel-text');
     if (!el) return;
-    const memMode = TarteelMode.mode === 'memorize';
     let html = '';
+    if (TarteelMode.bismillah) html += `<div class="tarteel-basmala">${escapeHTML(TarteelMode.bismillah)}</div>`;
     let prevAyah = -1;
     TarteelMode.words.forEach((w, i)=>{
       if (w.ayahIdx !== prevAyah && prevAyah !== -1){
         html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.7);font-size:.68em;margin:0 6px;opacity:.9">﴿${TarteelMode.ayahs[w.ayahIdx-1]?.numberInSurah||''}﴾</span> `;
       }
       prevAyah = w.ayahIdx;
-      const isActive = (i === TarteelMode.cursor && TarteelMode.active);
-      let cls = 'tarteel-word tw-' + w.state;
-      if (isActive) cls += ' tw-active';
-      if (w._interim) cls += ' tw-interim';
-      if (memMode && w.state === 'pending' && !w._interim) cls += ' tw-hidden';
-      html += `<span class="${cls}" id="tw-${i}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
+      html += `<span class="${TarteelMode._wordCls(w, i)}" id="tw-${i}" data-wi="${i}">${escapeHTML(w.raw)}</span> `;
     });
     if (TarteelMode.ayahs.length){
       const last = TarteelMode.ayahs[TarteelMode.ayahs.length-1];
       html += `<span class="ayah-end-marker" style="color:rgba(245,158,11,.7);font-size:.68em">﴿${last.numberInSurah}﴾</span>`;
     }
     el.innerHTML = html;
-    // Auto-scroll active word into center view
-    if (TarteelMode.active){
-      const activeEl = document.getElementById('tw-' + TarteelMode.cursor);
-      if (activeEl) activeEl.scrollIntoView({behavior:'smooth', block:'center'});
+    el.onclick = ev=>{
+      const sp = ev.target.closest && ev.target.closest('[data-wi]');
+      if (sp) TarteelMode.peekWord(+sp.dataset.wi);
+    };
+    TarteelMode._lastScrolled = -1;
+    TarteelMode.paintWords();
+  },
+
+  _wordCls(w, i){
+    let cls = 'tarteel-word tw-' + w.state;
+    if (w.fixed) cls += ' tw-fixed';
+    if (i === TarteelMode.cursor && TarteelMode.active) cls += ' tw-active';
+    if (w._interim) cls += ' tw-interim';
+    if (TarteelMode.mode === 'memorize' && w.state === 'pending' && !w._peek) cls += ' tw-hidden';
+    return cls;
+  },
+
+  /* ── Update classes only (no re-render → animations play once) ── */
+  paintWords(){
+    TarteelMode.words.forEach((w, i)=>{
+      const sp = document.getElementById('tw-' + i);
+      if (!sp) return;
+      const c = TarteelMode._wordCls(w, i);
+      if (sp.className !== c) sp.className = c;
+    });
+    if (TarteelMode.active && TarteelMode.cursor !== TarteelMode._lastScrolled){
+      TarteelMode._lastScrolled = TarteelMode.cursor;
+      const a = document.getElementById('tw-' + TarteelMode.cursor);
+      if (a) a.scrollIntoView({behavior:'smooth', block:'center'});
     }
   },
 
+  /* ── Memorize mode: tap a hidden word to peek at it ── */
+  peekWord(i){
+    const w = TarteelMode.words[i];
+    if (!w || TarteelMode.mode !== 'memorize' || w.state !== 'pending') return;
+    w._peek = true; w.hinted = true;
+    TarteelMode.paintWords();
+    setTimeout(()=>{ w._peek = false; TarteelMode.paintWords(); }, 1800);
+  },
   updateProgress(){
     const total = TarteelMode.words.length;
     const done  = TarteelMode.words.filter(w=>w.state!=='pending').length;
@@ -6110,8 +6203,10 @@ const TarteelMode = {
 
   resetSession(){
     TarteelMode.stopRecord();
-    TarteelMode.words.forEach(w=>w.state='pending');
+    TarteelMode.words.forEach(w=>{ w.state='pending'; w.fixed=false; w._interim=false; });
     TarteelMode.cursor = 0;
+    TarteelMode._sessStart = 0;
+    TarteelMode._sessText = '';
     TarteelMode.correct = 0;
     TarteelMode.errors  = 0;
     TarteelMode.active  = false;
@@ -6167,7 +6262,10 @@ const TarteelMode = {
     TarteelMode.active = true;
     TarteelMode.startedAt = Date.now();
     TarteelMode._interimBuf = '';
-    if (TarteelMode.cursor === 0) TarteelMode.words.forEach(w=>{ w.state='pending'; w._interim=false; w._errCount=0; });
+    if (TarteelMode.cursor === 0 || TarteelMode.cursor >= TarteelMode.words.length){
+      TarteelMode.cursor = 0;
+      TarteelMode.words.forEach(w=>{ w.state='pending'; w._interim=false; w.fixed=false; });
+    }
 
     // ── Step 1: Request microphone ──
     let stream;
@@ -6203,40 +6301,31 @@ const TarteelMode = {
     TarteelMode._stream = stream;
 
     // ── Step 3: SpeechRecognition ──
-    /* ── SR auto-restart factory ──
-       المشكلة: المتصفح يوقف SR بعد أول نتيجة نهائية أو بعد صمت.
-       الحل: نُنشئ instance جديداً تماماً في كل مرة بدلاً من restart. */
+    /* كل instance = جلسة. نعيد مطابقة نص الجلسة كاملاً عند كل نتيجة
+       (alignSession) بدلاً من معالجة كل مقطع على حدة؛ فلا تُحسب الكلمة
+       مرتين إذا كرّر المتصفح النتائج (Safari/Android)، ويُصحَّح التخمين
+       المؤقت تلقائياً عند وصول النتيجة النهائية. */
     const makeSR = ()=>{
       const rec = new SR();
       rec.lang = 'ar-SA';
       rec.continuous = true;
       rec.interimResults = true;
-      rec.maxAlternatives = 3;
+      rec.maxAlternatives = 1;
+      TarteelMode._sessStart = TarteelMode.cursor;
+      TarteelMode._sessText = '';
 
       rec.onresult = ev=>{
-        if (!TarteelMode.active) return;
-        let interim='', final='';
-        for(let i=ev.resultIndex; i<ev.results.length; i++){
-          const top = ev.results[i][0].transcript;
-          if (ev.results[i].isFinal) final += top + ' ';
-          else interim += top;
-        }
-        if (final.trim()){
-          TarteelMode._totalTranscript += final;
-          TarteelMode._interimBuf = ''; // امسح الـ interim عند وصول النتيجة النهائية
-          TarteelMode.processChunk(final.trim(), false);
-        }
-        if (interim.trim()){
-          TarteelMode._interimBuf = interim; // احفظ آخر interim للاستخدام عند انتهاء الجلسة
-          TarteelMode.processChunk(interim.trim(), true);
-        }
+        if (!TarteelMode.active || (TarteelMode.srec && TarteelMode.srec !== rec)) return;
+        const { spoken, final, interim } = TarteelMode.spokenFromResults(ev.results);
+        TarteelMode._sessText = (final + ' ' + interim).trim();
+        TarteelMode.alignSession(spoken);
         const live = document.getElementById('tarteel-live-transcript');
         if (live){
           live.style.display = 'block';
           live.innerHTML = interim
             ? `<span style="color:#fcd34d">🎤 ${escapeHTML(interim)}</span>`
-            : final.trim()
-            ? `<span style="color:#34d399">✅ ${escapeHTML(final.trim().slice(0,100))}</span>`
+            : final
+            ? `<span style="color:#34d399">✅ ${escapeHTML(final.split(/\s+/).slice(-8).join(' '))}</span>`
             : '';
         }
       };
@@ -6251,34 +6340,25 @@ const TarteelMode = {
           'service-not-allowed': 'خدمة التعرف على الصوت غير مسموح بها',
         };
         console.warn('[SR] error:', ev.error);
-        if (!silentErrors.has(ev.error)) toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);
+        toast(errMap[ev.error] || 'خطأ في التعرف على الصوت: ' + ev.error, 'error', 3500);
       };
 
       rec.onend = ()=>{
+        if (TarteelMode.srec !== rec) return;   // stopped manually / replaced
+        TarteelMode.commitSession();
         if (!TarteelMode.active) return;
-        /* ── إصلاح آخر كلمة: ادفع الـ interim المعلّق كنتيجة نهائية ──
-           عندما تنتهي جلسة SR وتُعاد من جديد، قد تضيع آخر كلمة قالها
-           المستخدم لأنها كانت interim فقط ولم تصبح final بعد.
-           الحل: نعالجها كنتيجة نهائية قبل إنشاء الجلسة الجديدة. */
-        const pendingInterim = TarteelMode._interimBuf;
-        TarteelMode._interimBuf = '';
-        if (pendingInterim && pendingInterim.trim() && TarteelMode.cursor < TarteelMode.words.length) {
-          TarteelMode._totalTranscript += pendingInterim;
-          TarteelMode.processChunk(pendingInterim.trim(), false);
-        }
         setTimeout(()=>{
           if (!TarteelMode.active) return;
           try {
             const fresh = makeSR();
-            fresh.start();
             TarteelMode.srec = fresh;
+            fresh.start();
           } catch(e){ console.warn('[SR] re-create failed:', e.message); }
         }, 120);
       };
 
       return rec;
     };
-
     // ── Step 4: Start SR ──
     const sr = makeSR();
     try {
@@ -6304,20 +6384,14 @@ const TarteelMode = {
   },
 
   stopRecord(){
-    /* ── إصلاح آخر كلمة عند الإيقاف اليدوي ──
-       المستخدم يضغط "إيقاف" وآخر كلمة قالها لا تزال interim.
-       نعالجها كنتيجة نهائية قبل إيقاف SR لضمان احتسابها. */
-    const pendingInterim = TarteelMode._interimBuf;
-    TarteelMode._interimBuf = '';
-    if (pendingInterim && pendingInterim.trim() && TarteelMode.cursor < TarteelMode.words.length) {
-      TarteelMode._totalTranscript += pendingInterim;
-      TarteelMode.processChunk(pendingInterim.trim(), false);
-    }
+    const wasActive = TarteelMode.active;
     TarteelMode.active = false;
     // Stop SR first (suppress any restart attempts)
     const sr = TarteelMode.srec;
     TarteelMode.srec = null;
     if (sr){ try{ sr.abort(); }catch(e){} }
+    // آخر كلمة قيلت (حتى لو كانت نتيجة مؤقتة) محسوبة بالفعل في alignSession
+    if (wasActive) TarteelMode.commitSession();
     // Stop MediaRecorder
     if (TarteelMode.mediaRec && TarteelMode.mediaRec.state === 'recording'){
       try{ TarteelMode.mediaRec.stop(); }catch(e){}
@@ -6334,91 +6408,111 @@ const TarteelMode = {
     if (st) st.textContent='';
     const live = document.getElementById('tarteel-live-transcript');
     if (live){ live.style.display='none'; live.innerHTML=''; }
-    // Clear interim flags
-    TarteelMode.words.forEach(w=>{ w._interim=false; });
-    TarteelMode.renderWords();
+    TarteelMode.paintWords();
+    TarteelMode.updateProgress();
     // Show results if something was attempted
-    if (TarteelMode.correct + TarteelMode.errors > 0) TarteelMode.endSession();
+    if (wasActive && TarteelMode.words.some(w=>w.state!=='pending')) TarteelMode.endSession();
   },
 
-  /* ── Process a transcript chunk against expected words ──
-     الإصلاح الجوهري: إضافة penalty موضعي للكلمات المكررة.
-     المشكلة: كلمة "الله" مثلاً تظهر مرات كثيرة في الصفحة.
-     الحل: كل خطوة للأمام تُقلل النتيجة بمعامل 0.82 تصاعدياً
-     فالكلمة عند cursor=0 تكسب 1.0×sim, عند cursor+1 تكسب 0.82×sim, وهكذا.
-     بهذا لا تقفز الكلمات لمواضع بعيدة إلا إن لم تُوجد في المكان الصحيح.
-  */
-  processChunk(transcript, isInterim=false){
-    if (!transcript || !TarteelMode.active) return;
-    const spokenWords = transcript.trim().split(/\s+/).filter(Boolean);
-    let didAdvance = false;
+  /* ── Freeze the current SR session's result and start a new one from cursor ── */
+  commitSession(){
+    if (TarteelMode._sessText) TarteelMode._totalTranscript += TarteelMode._sessText + ' ';
+    TarteelMode._sessText = '';
+    TarteelMode.words.forEach(w=>{ w._interim = false; });
+    TarteelMode._sessStart = TarteelMode.cursor;
+  },
 
-    if (isInterim) TarteelMode.words.forEach(w=>{ w._interim=false; });
-
-    spokenWords.forEach(sw=>{
-      if (TarteelMode.cursor >= TarteelMode.words.length) return;
-
-      /* ── Positional look-ahead with exponential penalty ──
-         نبحث بحد أقصى 5 كلمات للأمام، لكن كل خطوة تُقلل النتيجة.
-         هذا يضمن أن الكلمة الصحيحة في موضعها تكسب دائماً على
-         كلمة مطابقة لكنها في موضع متقدم. */
-      let bestScore = 0, bestIdx = TarteelMode.cursor;
-      const ahead = Math.min(5, TarteelMode.words.length - TarteelMode.cursor);
-      for (let la=0; la<ahead; la++){
-        const wi = TarteelMode.cursor + la;
-        if (TarteelMode.words[wi].state === 'correct') continue;
-        const sim = TarteelMode.wordSim(sw, TarteelMode.words[wi].raw);
-        // penalty: 18% لكل خطوة للأمام — يمنع القفز لكلمات بعيدة متطابقة
-        const posScore = sim * Math.pow(0.82, la);
-        if (posScore > bestScore){ bestScore=posScore; bestIdx=wi; }
+  /* ── Align everything spoken in this SR session against the expected words ──
+     يُعاد حسابه من بداية الجلسة في كل مرة، فهو ثابت (idempotent):
+     - مطابقة على هيكل الرسم مع سماحية حسب طول الكلمة
+     - كلمتان منطوقتان = كلمة واحدة ("يا أيها" ← "يَٰٓأَيُّهَا") والعكس
+     - تخطّي حتى 3 كلمات بمطابقة صارمة؛ الكلمات المتخطاة = خطأ (إلا الأدوات
+       القصيرة كـ"و/في/من" التي يُسقطها التعرف الصوتي كثيراً)
+     - التكرار لكلمات سابقة والاستعاذة/البسملة لا تُحسب خطأً
+     - الكلمة الخاطئة تُحسب فقط من النتائج النهائية، وبعد 3 محاولات ننتقل */
+  alignSession(spoken){
+    const W = TarteelMode.words, N = W.length, start = TarteelMode._sessStart;
+    for (let i=start; i<N; i++){ W[i].state='pending'; W[i].fixed=false; W[i]._interim=false; }
+    let e = start, wrong = 0;
+    const accept = (i, interim)=>{
+      const w = W[i];
+      const hadWrong = (i === e && wrong > 0);
+      w.state = hadWrong ? 'error' : 'correct';
+      w.fixed = hadWrong;
+      w._interim = !!interim;
+    };
+    for (let k=0; k<spoken.length && e<N; k++){
+      const sp = spoken[k], s = sp.s;
+      if (!s) continue;
+      const w = W[e];
+      // Isti'adha / basmala / "صدق الله العظيم" said outside their place → skip whole phrase
+      let phraseLen = 0;
+      for (const ph of (TarteelMode.skelMatch(s, w.norm) ? [] : TarteelMode._PHRASES)){
+        if (TarteelMode.skelMatch(ph[0], w.norm) && TarteelMode.skelMatch(ph[1]||'', W[e+1]?.norm||'')) continue;
+        let n = 0;
+        while (n < ph.length && k+n < spoken.length && spoken[k+n].s === ph[n]) n++;
+        if (n === ph.length || (n >= 1 && k+n === spoken.length && n >= Math.min(2, ph.length))){ phraseLen = n; break; }
       }
-      // sim الحقيقي بدون penalty لمقارنة العتبة
-      const trueSim = TarteelMode.wordSim(sw, TarteelMode.words[bestIdx].raw);
-
-      if (isInterim){
-        if (bestScore >= 0.78) TarteelMode.words[bestIdx]._interim = true;
-      } else {
-        if (trueSim >= 0.70){
-          // صح: احسب الكلمات المتخطاة بين cursor و bestIdx كأخطاء
-          for (let i=TarteelMode.cursor; i<bestIdx; i++){
-            if (TarteelMode.words[i].state === 'pending'){
-              TarteelMode.words[i].state = 'error';
-              TarteelMode.errors++;
-              if (navigator.vibrate) navigator.vibrate([40,20,40]);
-            }
-          }
-          TarteelMode.words[bestIdx]._interim = false;
-          TarteelMode.words[bestIdx].state = 'correct';
-          TarteelMode.correct++;
-          TarteelMode.cursor = bestIdx + 1;
-          didAdvance = true;
-          if (navigator.vibrate) navigator.vibrate(30);
-          if (TarteelMode.cursor >= TarteelMode.words.length){
-            setTimeout(()=>{ TarteelMode.stopRecord(); toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500); },300);
-          }
-        } else if (trueSim < 0.40){
-          // خطأ واضح — عدّ الخطأ وتجاوز بعد محاولتين
-          const w = TarteelMode.words[TarteelMode.cursor];
-          if (w.state !== 'correct'){
-            w._errCount = (w._errCount||0) + 1;
-            w.state = 'error';
-            if (w._errCount === 1) TarteelMode.errors++;
-            if (navigator.vibrate) navigator.vibrate([60,30,60,30,60]);
-            if (w._errCount >= 3){ TarteelMode.cursor++; didAdvance=true; }
-          }
+      if (phraseLen){ k += phraseLen - 1; continue; }
+      // فواتح السور: "الف لام ميم"
+      if (w.muq && (s === w.norm || TarteelMode._LETTER_NAMES.has(s))){
+        while (k+1 < spoken.length && TarteelMode._LETTER_NAMES.has(spoken[k+1].s)) k++;
+        accept(e, !spoken[k].final); e++; wrong = 0; continue;
+      }
+      if (TarteelMode.skelMatch(s, w.norm)){ accept(e, !sp.final); e++; wrong = 0; continue; }
+      const nx = spoken[k+1];
+      if (nx && nx.s && TarteelMode.skelMatch(s + nx.s, w.norm, true)){ accept(e, !nx.final); e++; k++; wrong = 0; continue; }
+      if (e+1 < N && TarteelMode.skelMatch(s, w.norm + W[e+1].norm, true)){
+        accept(e, !sp.final); accept(e+1, !sp.final); e += 2; wrong = 0; continue;
+      }
+      // Look-ahead: the reciter skipped words (or SR dropped them)
+      let jumped = false;
+      for (let j=1; j<=3 && e+j<N; j++){
+        if (!TarteelMode.skelMatch(s, W[e+j].norm, true)) continue;
+        // A jump must be confirmed by the next spoken word, unless this is the
+        // last word heard so far and it isn't simply a repeat of earlier words.
+        const n2 = spoken[k+1];
+        const confirmed = n2 && n2.s ? (e+j+1 < N && TarteelMode.skelMatch(n2.s, W[e+j+1].norm)) : (e+j+1 >= N || W[e+j].norm.length > 2);
+        if (!confirmed) continue;
+        let isRep = false;
+        for (let m=Math.max(0, e-6); m<e && !isRep; m++) isRep = TarteelMode.skelMatch(s, W[m].norm);
+        if (isRep && !(n2 && n2.s)) continue;
+        for (let m=e; m<e+j; m++){
+          const lenient = TarteelMode._PARTICLES.has(W[m].norm) && !(m === e && wrong > 0);
+          W[m].state = lenient ? 'correct' : 'error';
+          W[m]._interim = !sp.final;
         }
-        // 0.40–0.70: غامض — اترك cursor، دع المستخدم يُعيد
+        wrong = 0; e = e + j; accept(e, !sp.final); e++;
+        jumped = true; break;
       }
-    });
-
-    TarteelMode.renderWords();
+      if (jumped) continue;
+      // Repeating earlier words, isti'adha, basmala → not a mistake
+      let rep = false;
+      for (let m=Math.max(0, e-6); m<e && !rep; m++) rep = TarteelMode.skelMatch(s, W[m].norm);
+      if (rep) continue;
+      if (!sp.final) continue;           // interim words may still change
+      wrong++;
+      w.state = 'error'; w.fixed = false;
+      if (navigator.vibrate) navigator.vibrate([60,30,60]);
+      if (wrong >= 3){ e++; wrong = 0; }
+    }
+    const advanced = e > TarteelMode.cursor;
+    TarteelMode.cursor = e;
+    TarteelMode.correct = W.filter(x=>x.state==='correct').length;
+    TarteelMode.errors  = W.filter(x=>x.state==='error').length;
+    if (advanced && navigator.vibrate) navigator.vibrate(20);
+    TarteelMode.paintWords();
     TarteelMode.updateProgress();
-    if (didAdvance){
-      const nextEl = document.getElementById('tw-' + TarteelMode.cursor);
-      if (nextEl) nextEl.scrollIntoView({behavior:'smooth', block:'center'});
+    if (e >= N && N && !TarteelMode._finishing){
+      TarteelMode._finishing = true;
+      setTimeout(()=>{
+        TarteelMode._finishing = false;
+        if (!TarteelMode.active) return;
+        TarteelMode.stopRecord();
+        toast('🎉 أحسنت! انتهيت من جميع الآيات','success',3500);
+      }, 700);
     }
   },
-
   /* ── End session: calculate score, sync with ai_core.js ── */
   async endSession(){
     const total   = TarteelMode.words.length;
